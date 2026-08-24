@@ -6,11 +6,10 @@
 if getrawmetatable and setreadonly then
     local mt = getrawmetatable(game)
     if not isreadonly(mt) then
-        -- ถ้าตรวจสอบพบว่า Metatable ถูกเปิดให้แก้ไขได้แบบผิดปกติ อาจจะให้เกมเด้งออกหรือหยุดทำงาน
         pcall(function()
             game:GetService("Players").LocalPlayer:Kick("❌ ตรวจพบความผิดปกติในการดักจับระบบ (Security Violation)")
         end)
-        return -- ตัดจบการทำงานทันที ไม่ให้สคริปต์รันต่อ
+        return
     end
 end
 
@@ -138,7 +137,6 @@ end
 
 -- ==================== ระบบบล็อค ID ปลอม ====================
 local BlockedIDs = {
-    -- คุณ Hon สามารถนำลิสต์ ID ขยะแบบเต็ม 100% ของคุณมาวางทับตรงนี้ได้เลยครับ
     ["54410081542"] = true, ["70999314371231"] = true,
     ["71352236"] = true, ["76500780055460"] = true,
     ["78515442941510"] = true, ["90533928572341"] = true,
@@ -321,6 +319,38 @@ local function extractIDsFromPattern(text)
     return ids
 end
 
+-- ==================== ฟังก์ชันใหม่: ดึง ID ที่น่าเชื่อถือที่สุด ====================
+local function extractRealIDs(soundObjects)
+    local result = {}
+    local seen = {}
+    for _, soundObj in ipairs(soundObjects) do
+        local rawId = soundObj.SoundId or ""
+        local decoded = deepDecode(rawId)
+        local realId = nil
+        
+        -- ลองจับรูปแบบมาตรฐานของ Roblox ก่อน
+        realId = string.match(decoded, "rbxassetid://(%d+)")
+        if not realId then
+            realId = string.match(decoded, "asset/?id=(%d+)")
+        end
+        
+        if realId and not BlockedIDs[realId] and not seen[realId] then
+            seen[realId] = true
+            table.insert(result, realId)
+        else
+            -- ถ้าไม่มีรูปแบบมาตรฐาน ให้ใช้วิธีเดิม (extractIDsFromPattern)
+            local ids = extractIDsFromPattern(decoded)
+            for _, id in ipairs(ids) do
+                if not seen[id] then
+                    seen[id] = true
+                    table.insert(result, id)
+                end
+            end
+        end
+    end
+    return result
+end
+
 local function getPlayerVehicle(player)
     if not player then return nil end
     local character = player.Character
@@ -341,7 +371,6 @@ end
 
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
-    -- ป้องกันไม่ให้ผู้เล่นทั่วไปสแกนเสียงของ Admin
     if IsAdmin(targetPlayer) and not IsLocalAdmin() then
         return {}
     end
@@ -539,12 +568,11 @@ RefreshBtn.TextSize = 10
 RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
 
--- ปุ่มเปิด-ปิดเมนูหลัก (เปลี่ยนรูปภาพตามคำสั่งเรียบร้อยแล้ว)
 local ToggleBtn = Instance.new("ImageButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 52, 0, 52)
 ToggleBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-ToggleBtn.Image = "rbxassetid://104747656190057" -- เปลี่ยนตรงนี้ตามสั่ง 100%
+ToggleBtn.Image = "rbxassetid://104747656190057"
 ToggleBtn.ZIndex = 10
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 16)
 local tStroke = Instance.new("UIStroke", ToggleBtn)
@@ -802,6 +830,7 @@ local function refreshPlayers()
     ListScroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y)
 end
 
+-- ==================== ปุ่ม เจาะเพลง (ปรับแล้ว) ====================
 GetIDBtn.MouseButton1Click:Connect(function()
     if CurrentSelectedPlayer then
         if IsAdmin(CurrentSelectedPlayer) and not IsLocalAdmin() then
@@ -811,25 +840,10 @@ GetIDBtn.MouseButton1Click:Connect(function()
         StatusLabel.Text = "🔍 กำลังเจาะ ID ทั้งหมด"
         local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
         local soundObjects = checkPlayerAllSounds(targetPlayer)
-        local finalIds = {}
-        local seenIds = {}
-        for _, soundObj in ipairs(soundObjects) do
-            local rawId = soundObj.SoundId or ""
-            local decoded = deepDecode(rawId)
-            local searchText = (decoded ~= "" and decoded) or rawId
-            local extractedIds = extractIDsFromPattern(searchText)
-            if #extractedIds == 0 then
-                for num in string.gmatch(searchText, "%d+") do
-                    if not BlockedIDs[num] then table.insert(extractedIds, num) end
-                end
-            end
-            for _, id in ipairs(extractedIds) do
-                if not seenIds[id] then
-                    seenIds[id] = true
-                    table.insert(finalIds, id)
-                end
-            end
-        end
+        
+        -- ใช้ฟังก์ชันใหม่ extractRealIDs เพื่อดึงเฉพาะ ID ที่น่าเชื่อถือ
+        local finalIds = extractRealIDs(soundObjects)
+        
         if #finalIds > 0 then
             copyToClipboard(table.concat(finalIds, " "))
             StatusLabel.Text = "📋 คัดลอก " .. #finalIds .. " ID เรียบร้อย!"
