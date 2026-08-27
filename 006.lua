@@ -251,6 +251,8 @@ local BlockedIDs = {
     ["00123568751245557"] = true,
     ["00965488877651295"] = true,
     ["008106708446416535"] = true,
+    ["123728962822472"] = true,
+    ["122929786531506"] = true,
 }
 
 local function urlDecode(str)
