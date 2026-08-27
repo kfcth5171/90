@@ -288,13 +288,13 @@ Sidebar.Position = UDim2.new(0, 14, 0, 68)
 Sidebar.BackgroundTransparency = 1
 
 local TabGame = Instance.new("TextButton", Sidebar)
-TabGame.Size = UDim2.new(1, 0, 0, 42)
+TabGame.Size = UDim2.new(1, 0, 0, 38)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
 TabGame.Text = "   🎮   GAMES"
 TabGame.TextColor3 = Color3.fromRGB(0, 229, 255)
 TabGame.Font = Enum.Font.GothamBold
-TabGame.TextSize = 12
+TabGame.TextSize = 11
 TabGame.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabGame).CornerRadius = UDim.new(0, 10)
 
@@ -303,19 +303,34 @@ TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
 
 local TabInfo = Instance.new("TextButton", Sidebar)
-TabInfo.Size = UDim2.new(1, 0, 0, 42)
-TabInfo.Position = UDim2.new(0, 0, 0, 52)
+TabInfo.Size = UDim2.new(1, 0, 0, 38)
+TabInfo.Position = UDim2.new(0, 0, 0, 46)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabInfo.Text = "   📊   STATUS"
 TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabInfo.Font = Enum.Font.GothamBold
-TabInfo.TextSize = 12
+TabInfo.TextSize = 11
 TabInfo.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabInfo).CornerRadius = UDim.new(0, 10)
 
 local TabInfoStroke = Instance.new("UIStroke", TabInfo)
 TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
+
+local TabTools = Instance.new("TextButton", Sidebar)
+TabTools.Size = UDim2.new(1, 0, 0, 38)
+TabTools.Position = UDim2.new(0, 0, 0, 92)
+TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+TabTools.Text = "   🛠️   Tools🔥"
+TabTools.TextColor3 = Color3.fromRGB(120, 125, 140)
+TabTools.Font = Enum.Font.GothamBold
+TabTools.TextSize = 11
+TabTools.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 10)
+
+local TabToolsStroke = Instance.new("UIStroke", TabTools)
+TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
+TabToolsStroke.Thickness = 1
 
 -- Main Content Frame
 local ContentFrame = Instance.new("Frame", MainFrame)
@@ -340,8 +355,8 @@ PageListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function(
     PageGame.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 10)
 end)
 
-local function CreateScriptCard(title, subtitle, isSpecialGradient)
-    local Card = Instance.new("Frame", PageGame)
+local function CreateScriptCard(parent, title, subtitle, btnText, isSpecialGradient)
+    local Card = Instance.new("Frame", parent)
     Card.Size = UDim2.new(1, -10, 0, 75)
     Card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
     Card.BorderSizePixel = 0
@@ -375,7 +390,7 @@ local function CreateScriptCard(title, subtitle, isSpecialGradient)
     RunBtn.Size = UDim2.new(0, 100, 0, 38)
     RunBtn.Position = UDim2.new(1, -114, 0.5, -19)
     RunBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
-    RunBtn.Text = "EXECUTE"
+    RunBtn.Text = btnText or "EXECUTE"
     RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     RunBtn.Font = Enum.Font.GothamBold
     RunBtn.TextSize = 11
@@ -398,13 +413,13 @@ local function CreateScriptCard(title, subtitle, isSpecialGradient)
     BtnStroke.Color = isSpecialGradient and Color3.fromRGB(255, 150, 240) or Color3.fromRGB(150, 240, 255)
     BtnStroke.Thickness = 1.5
 
-    return RunBtn
+    return RunBtn, Gradient, BtnStroke
 end
 
-local RunBtn1 = CreateScriptCard("ดูดไอดีเพลง By.Honkuki", "Audio Logger System (Universal)", false)
-local RunBtn2 = CreateScriptCard("Script by AVX HUB", "RVX / AVX Hub Main System", true)
-local RunBtn3 = CreateScriptCard("Coquette Hub Remake", "Brookhaven RP Special Script", false)
-local RunBtn4 = CreateScriptCard("Dark Hub", "Brookhaven RP Dark Edition", true)
+local RunBtn1 = CreateScriptCard(PageGame, "ดูดไอดีเพลง By.Honkuki", "Audio Logger System (Universal)", "EXECUTE", false)
+local RunBtn2 = CreateScriptCard(PageGame, "Script by AVX HUB", "RVX / AVX Hub Main System", "EXECUTE", true)
+local RunBtn3 = CreateScriptCard(PageGame, "Coquette Hub Remake", "Brookhaven RP Special Script", "EXECUTE", false)
+local RunBtn4 = CreateScriptCard(PageGame, "Dark Hub", "Brookhaven RP Dark Edition", "EXECUTE", true)
 
 -- Tab 2: Status Page
 local PageInfo = Instance.new("Frame", ContentFrame)
@@ -441,16 +456,87 @@ PlaceIdLabel.Font = Enum.Font.Gotham
 PlaceIdLabel.TextSize = 11
 PlaceIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Tab 3: Tools Page
+local PageTools = Instance.new("ScrollingFrame", ContentFrame)
+PageTools.Size = UDim2.new(1, 0, 1, 0)
+PageTools.BackgroundTransparency = 1
+PageTools.ScrollBarThickness = 4
+PageTools.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageTools.BorderSizePixel = 0
+PageTools.Visible = false
+
+local ToolsListLayout = Instance.new("UIListLayout", PageTools)
+ToolsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ToolsListLayout.Padding = UDim.new(0, 10)
+
+ToolsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- ปุ่มเสก / ลบ BoomBox ใน Tools
+local BoomBoxBtn, BoomBoxGradient, BoomBoxBtnStroke = CreateScriptCard(PageTools, "เสก BoomBox", "Spawn & Delete Boombox Item", "เสก", false)
+local isBoomBoxSpawned = false
+
+local function GetNil(Name, DebugId)
+	for _, Object in getnilinstances() do
+		if Object.Name == Name and Object:GetDebugId() == DebugId then
+			return Object
+		end
+	end
+end
+
+BoomBoxBtn.MouseButton1Click:Connect(function()
+    if not isBoomBoxSpawned then
+        -- เสก BoomBox
+        local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
+        if Event then
+            Event:FireServer("Boombox")
+        end
+        
+        BoomBoxBtn.Text = "ลบ"
+        BoomBoxGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 50))
+        }
+        BoomBoxBtnStroke.Color = Color3.fromRGB(255, 100, 150)
+        isBoomBoxSpawned = true
+    else
+        -- ลบ BoomBox
+        local Event = GetNil("QuickDelete", "1_27943252")
+        if Event then
+            Event:FireServer()
+        end
+        
+        BoomBoxBtn.Text = "เสก"
+        BoomBoxGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 120, 255))
+        }
+        BoomBoxBtnStroke.Color = Color3.fromRGB(150, 240, 255)
+        isBoomBoxSpawned = false
+    end
+end)
+
+-- Tab Switch Events
 TabGame.MouseButton1Click:Connect(function()
-    PageGame.Visible = true; PageInfo.Visible = false
+    PageGame.Visible = true; PageInfo.Visible = false; PageTools.Visible = false
     TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabGame.TextColor3 = Color3.fromRGB(0, 229, 255); TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
     TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140); TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
+    TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabTools.TextColor3 = Color3.fromRGB(120, 125, 140); TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 end)
 
 TabInfo.MouseButton1Click:Connect(function()
-    PageGame.Visible = false; PageInfo.Visible = true
+    PageGame.Visible = false; PageInfo.Visible = true; PageTools.Visible = false
     TabInfo.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabInfo.TextColor3 = Color3.fromRGB(0, 229, 255); TabInfoStroke.Color = Color3.fromRGB(0, 229, 255)
     TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
+    TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabTools.TextColor3 = Color3.fromRGB(120, 125, 140); TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
+end)
+
+TabTools.MouseButton1Click:Connect(function()
+    PageGame.Visible = false; PageInfo.Visible = false; PageTools.Visible = true
+    TabTools.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabTools.TextColor3 = Color3.fromRGB(0, 229, 255); TabToolsStroke.Color = Color3.fromRGB(0, 229, 255)
+    TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
+    TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140); TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 end)
 
 -- 🔑 KEY SYSTEM OVERLAY
