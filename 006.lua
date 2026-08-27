@@ -36,6 +36,13 @@ local IsListeningRealTime = false
 
 local TAG_NAME = "Honkuki_Active_Runner_Tag"
 
+-- 🛡️ Blacklist Protection (ป้องกันไม่ให้ผู้เล่นทั่วไปดึง Object เสียงจาก 3 คนนี้)
+local ProtectedCreatorUsers = {
+    ["kfc_punyai"] = true,
+    ["Aekshop_34d3c"] = true,
+    ["CGGG_PRJOOOO"] = true
+}
+
 -- ==================== ระบบสื่อสาร & TAG 3D บนหัวผู้เล่น ====================
 local function markSelfAsRunner()
     if LocalPlayer.Character then
@@ -366,6 +373,12 @@ end
 
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
+    
+    -- 🔒 บล็อกการดึงเพลง หากเป้าหมายคือ 3 ผู้สร้างสคริปต์
+    if ProtectedCreatorUsers[targetPlayer.Name] then
+        return {}
+    end
+
     local scanTargets = {}
     if targetPlayer.Character then table.insert(scanTargets, targetPlayer.Character) end
     local backpack = targetPlayer:FindFirstChild("Backpack")
