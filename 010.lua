@@ -490,7 +490,7 @@ BoomBoxBtn.MouseButton1Click:Connect(function()
         -- เสก BoomBox
         local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
         if Event then
-            Event:FireServer("Boombox")
+            Event:InvokeServer("PickingTools", "Boombox")
         end
         
         BoomBoxBtn.Text = "ลบ"
@@ -502,7 +502,7 @@ BoomBoxBtn.MouseButton1Click:Connect(function()
         isBoomBoxSpawned = true
     else
         -- ลบ BoomBox
-        local Event = GetNil("QuickDelete", "1_27943252")
+        local Event = GetNil("QuickDelete", "1_29270557")
         if Event then
             Event:FireServer()
         end
