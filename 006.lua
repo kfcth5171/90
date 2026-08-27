@@ -543,6 +543,7 @@ local function create3DButton(parent, text, color)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 11
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = (parent and parent.ZIndex or 1) + 2
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     local stroke = Instance.new("UIStroke", btn)
     stroke.Color = Color3.fromRGB(255, 255, 255)
@@ -603,6 +604,7 @@ JunkTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
 JunkTitle.Font = Enum.Font.GothamBold
 JunkTitle.TextSize = 12
 JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
+JunkTitle.ZIndex = 11
 
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
 JunkScroll.Size = UDim2.new(0.92, 0, 0.68, 0)
@@ -610,10 +612,11 @@ JunkScroll.Position = UDim2.new(0.04, 0, 0.16, 0)
 JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
 JunkScroll.ScrollBarThickness = 4
 JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
+JunkScroll.ZIndex = 11
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
 local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
-JunkTextLabel.Size = UDim2.new(1, -10, 1, -10)
+JunkTextLabel.Size = UDim2.new(1, -10, 0, 0)
 JunkTextLabel.Position = UDim2.new(0, 5, 0, 5)
 JunkTextLabel.BackgroundTransparency = 1
 JunkTextLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
@@ -622,14 +625,17 @@ JunkTextLabel.TextSize = 10
 JunkTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 JunkTextLabel.TextYAlignment = Enum.TextYAlignment.Top
 JunkTextLabel.TextWrapped = true
+JunkTextLabel.ZIndex = 12
 
 local JunkCopyBtn = create3DButton(JunkFrame, "📋 คัดลอกข้อมูล", Color3.fromRGB(0, 160, 100))
 JunkCopyBtn.Size = UDim2.new(0.43, 0, 0, 26)
 JunkCopyBtn.Position = UDim2.new(0.04, 0, 0.86, 0)
+JunkCopyBtn.ZIndex = 12
 
 local JunkBackBtn = create3DButton(JunkFrame, "⬅️ ย้อนกลับ", Color3.fromRGB(200, 50, 60))
 JunkBackBtn.Size = UDim2.new(0.43, 0, 0, 26)
 JunkBackBtn.Position = UDim2.new(0.53, 0, 0.86, 0)
+JunkBackBtn.ZIndex = 12
 
 -- ==================== ULTRA SMOOTH UI ANIMATIONS ====================
 local function toggleUI(state)
@@ -777,7 +783,8 @@ local function updateJunkViewerLive()
     end
 
     JunkTextLabel.Text = outputText
-    local textBounds = TextService:GetTextSize(outputText, 10, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 15, math.huge))
+    local textBounds = TextService:GetTextSize(outputText, 10, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 15, 10000))
+    JunkTextLabel.Size = UDim2.new(1, -10, 0, textBounds.Y + 20)
     JunkScroll.CanvasSize = UDim2.new(0, 0, 0, textBounds.Y + 30)
 end
 
