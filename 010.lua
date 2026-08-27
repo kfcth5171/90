@@ -1,126 +1,116 @@
--- [[ STYLEKUKI ACTIVATE - ULTIMATE NEON 3D VIP EDITION ]] --
+-- =====================================================================
+-- [[ STYLEKUKI VIP LOADER & KEY SYSTEM - CYBERPUNK 3D EDITION ]] --
+-- =====================================================================
+
 local MarketplaceService = game:GetService("MarketplaceService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
 local ProfileImageId = "93034804228650"
 local PlaceId = game.PlaceId
+local CORRECT_KEY = "Honeiei56" -- คีย์สำหรับปลดล็อกระบบ
 
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
 end)
 local CurrentGameName = Success and GameInfo.Name or "Unknown Map"
 
-if CoreGui:FindFirstChild("StyleKukiVIPLoader") then
-    CoreGui.StyleKukiVIPLoader:Destroy()
+local GuiParent = CoreGui:FindFirstChild("RobloxGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+if GuiParent:FindFirstChild("StyleKukiVIPLoader") then
+    GuiParent.StyleKukiVIPLoader:Destroy()
 end
 
-local function ExecuteMainScript()
+-- ฟังก์ชันรันสคริปต์หลักต่างๆ
+local function RunScript(scriptUrl, scriptName)
     task.spawn(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua"))()
+        loadstring(game:HttpGet(scriptUrl))()
     end)
     
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "⚡ Executed Audio Logger System Successfully!",
+        Text = "⚡ Executed " .. scriptName .. " Successfully!",
         Duration = 5
     })
 end
 
--- Base ScreenGui
+-- ScreenGui Main Container
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "StyleKukiVIPLoader"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = CoreGui
+ScreenGui.Parent = GuiParent
 
--- 1. Outer Neon Aura Layer (แสงนีออนฟุ้งชั้นนอกสุด)
-local AuraGlow = Instance.new("Frame")
+-- 📦 MainContainer
+local MainContainer = Instance.new("Frame")
+MainContainer.Name = "MainContainer"
+MainContainer.Size = UDim2.new(0, 570, 0, 360)
+MainContainer.Position = UDim2.new(0.5, -285, 0.5, -180)
+MainContainer.BackgroundTransparency = 1
+MainContainer.Parent = ScreenGui
+
+-- 1. Outer Neon Aura Layer
+local AuraGlow = Instance.new("Frame", MainContainer)
 AuraGlow.Name = "AuraGlow"
-AuraGlow.Size = UDim2.new(0, 584, 0, 374)
-AuraGlow.Position = UDim2.new(0.5, -292, 0.5, -187)
+AuraGlow.Size = UDim2.new(1, 14, 1, 14)
+AuraGlow.Position = UDim2.new(0, -7, 0, -7)
 AuraGlow.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
 AuraGlow.BackgroundTransparency = 0.6
 AuraGlow.BorderSizePixel = 0
-AuraGlow.Parent = ScreenGui
+Instance.new("UICorner", AuraGlow).CornerRadius = UDim.new(0, 18)
 
-local AuraCorner = Instance.new("UICorner")
-AuraCorner.CornerRadius = UDim.new(0, 18)
-AuraCorner.Parent = AuraGlow
-
--- 2. 3D Shadow Layer (ทำมิติเงาสมจริง)
-local Shadow3D = Instance.new("Frame")
+-- 2. 3D Shadow Layer
+local Shadow3D = Instance.new("Frame", MainContainer)
 Shadow3D.Name = "Shadow3D"
-Shadow3D.Size = UDim2.new(0, 570, 0, 360)
-Shadow3D.Position = UDim2.new(0.5, -283, 0.5, -173)
+Shadow3D.Size = UDim2.new(1, 0, 1, 0)
+Shadow3D.Position = UDim2.new(0, 4, 0, 8)
 Shadow3D.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Shadow3D.BackgroundTransparency = 0.2
+Shadow3D.BackgroundTransparency = 0.3
 Shadow3D.BorderSizePixel = 0
-Shadow3D.Parent = ScreenGui
+Instance.new("UICorner", Shadow3D).CornerRadius = UDim.new(0, 16)
 
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 16)
-ShadowCorner.Parent = Shadow3D
-
--- 3. Outer LED Frame (ขอบไฟเคลื่อนไหว)
-local LEDBorder = Instance.new("Frame")
+-- 3. Outer LED Frame
+local LEDBorder = Instance.new("Frame", MainContainer)
 LEDBorder.Name = "LEDBorder"
-LEDBorder.Size = UDim2.new(0, 570, 0, 360)
-LEDBorder.Position = UDim2.new(0.5, -285, 0.5, -180)
+LEDBorder.Size = UDim2.new(1, 0, 1, 0)
+LEDBorder.Position = UDim2.new(0, 0, 0, 0)
 LEDBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LEDBorder.BorderSizePixel = 0
 LEDBorder.Active = true
-LEDBorder.Draggable = true
-LEDBorder.Parent = ScreenGui
+Instance.new("UICorner", LEDBorder).CornerRadius = UDim.new(0, 16)
 
-local LEDCorner = Instance.new("UICorner")
-LEDCorner.CornerRadius = UDim.new(0, 16)
-LEDCorner.Parent = LEDBorder
-
-local LEDGradient = Instance.new("UIGradient")
+local LEDGradient = Instance.new("UIGradient", LEDBorder)
 LEDGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
     ColorSequenceKeypoint.new(0.3, Color3.fromRGB(138, 43, 226)),
     ColorSequenceKeypoint.new(0.6, Color3.fromRGB(255, 0, 128)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 229, 255))
 }
-LEDGradient.Rotation = 0
-LEDGradient.Parent = LEDBorder
 
--- 4. Main Window (พื้นหลังแบบ Glassmorphism)
-local MainFrame = Instance.new("Frame")
+-- 4. Main Window
+local MainFrame = Instance.new("Frame", LEDBorder)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(1, -6, 1, -6)
 MainFrame.Position = UDim2.new(0, 3, 0, 3)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 11, 16)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
-MainFrame.Parent = LEDBorder
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
 
-local MainUICorner = Instance.new("UICorner")
-MainUICorner.CornerRadius = UDim.new(0, 14)
-MainUICorner.Parent = MainFrame
-
--- Background Canvas (สำหรับเอฟเฟกต์อนุภาค)
-local ParticleCanvas = Instance.new("Frame")
+-- Dynamic Star Particle System
+local ParticleCanvas = Instance.new("Frame", MainFrame)
 ParticleCanvas.Size = UDim2.new(1, 0, 1, 0)
 ParticleCanvas.BackgroundTransparency = 1
-ParticleCanvas.Parent = MainFrame
 
--- 🌌 ระบบละอองดาวเรืองแสง (Star Particles Engine)
 for i = 1, 20 do
-    local Star = Instance.new("Frame")
+    local Star = Instance.new("Frame", ParticleCanvas)
     Star.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
     Star.Position = UDim2.new(math.random(), 0, math.random(), 0)
     Star.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
     Star.BorderSizePixel = 0
     Star.BackgroundTransparency = math.random(3, 7) / 10
-    Star.Parent = ParticleCanvas
-    
-    local StarCorner = Instance.new("UICorner")
-    StarCorner.CornerRadius = UDim.new(1, 0)
-    StarCorner.Parent = Star
+    Instance.new("UICorner", Star).CornerRadius = UDim.new(1, 0)
     
     task.spawn(function()
         while Star and Star.Parent do
@@ -137,40 +127,55 @@ for i = 1, 20 do
     end)
 end
 
--- ลูปแอนิเมชัน Neon Rainbow และ Aura Pulse
+-- RenderStepped Animation
 RunService.RenderStepped:Connect(function()
     LEDGradient.Rotation = (LEDGradient.Rotation + 1.5) % 360
     local PulseVal = (math.sin(tick() * 3) + 1) / 2
     AuraGlow.BackgroundTransparency = 0.5 + (PulseVal * 0.2)
 end)
 
--- 🖼️ รูปภาพโปรไฟล์ (พร้อมกรอบเรืองแสง 3D)
-local IconHolder = Instance.new("Frame")
+-- Smooth Dragging System
+local dragging, dragInput, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainContainer.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Header Bar Component
+local IconHolder = Instance.new("Frame", MainFrame)
 IconHolder.Size = UDim2.new(0, 42, 0, 42)
 IconHolder.Position = UDim2.new(0, 14, 0, 12)
 IconHolder.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
 IconHolder.BorderSizePixel = 0
-IconHolder.Parent = MainFrame
+Instance.new("UICorner", IconHolder).CornerRadius = UDim.new(0, 10)
 
-local IconHolderCorner = Instance.new("UICorner")
-IconHolderCorner.CornerRadius = UDim.new(0, 10)
-IconHolderCorner.Parent = IconHolder
-
-local IconImage = Instance.new("ImageLabel")
+local IconImage = Instance.new("ImageLabel", IconHolder)
 IconImage.Size = UDim2.new(1, -4, 1, -4)
 IconImage.Position = UDim2.new(0, 2, 0, 2)
 IconImage.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 IconImage.BorderSizePixel = 0
 IconImage.Image = "rbxassetid://" .. ProfileImageId
 IconImage.ScaleType = Enum.ScaleType.Crop
-IconImage.Parent = IconHolder
+Instance.new("UICorner", IconImage).CornerRadius = UDim.new(0, 8)
 
-local IconCorner = Instance.new("UICorner")
-IconCorner.CornerRadius = UDim.new(0, 8)
-IconCorner.Parent = IconImage
-
--- Title Header: StyleKuki Activate (Neon Gradient Glow)
-local TitleLabel = Instance.new("TextLabel")
+local TitleLabel = Instance.new("TextLabel", MainFrame)
 TitleLabel.Size = UDim2.new(0, 200, 0, 42)
 TitleLabel.Position = UDim2.new(0, 64, 0, 12)
 TitleLabel.BackgroundTransparency = 1
@@ -179,34 +184,26 @@ TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 17
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = MainFrame
 
-local TitleGradient = Instance.new("UIGradient")
+local TitleGradient = Instance.new("UIGradient", TitleLabel)
 TitleGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
 }
-TitleGradient.Parent = TitleLabel
 
--- 📍 ชื่อแมพตรงกลางบนสุด (3D Glass Pill Banner)
-local TopMapBanner = Instance.new("Frame")
+local TopMapBanner = Instance.new("Frame", MainFrame)
 TopMapBanner.Size = UDim2.new(0, 210, 0, 32)
 TopMapBanner.Position = UDim2.new(0.5, -105, 0, 17)
 TopMapBanner.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
 TopMapBanner.BorderSizePixel = 0
-TopMapBanner.Parent = MainFrame
+Instance.new("UICorner", TopMapBanner).CornerRadius = UDim.new(0, 8)
 
-local MapBannerCorner = Instance.new("UICorner")
-MapBannerCorner.CornerRadius = UDim.new(0, 8)
-MapBannerCorner.Parent = TopMapBanner
-
-local BannerStroke = Instance.new("UIStroke")
+local BannerStroke = Instance.new("UIStroke", TopMapBanner)
 BannerStroke.Color = Color3.fromRGB(0, 229, 255)
 BannerStroke.Thickness = 1
 BannerStroke.Transparency = 0.6
-BannerStroke.Parent = TopMapBanner
 
-local TopMapText = Instance.new("TextLabel")
+local TopMapText = Instance.new("TextLabel", TopMapBanner)
 TopMapText.Size = UDim2.new(1, -12, 1, 0)
 TopMapText.Position = UDim2.new(0, 6, 0, 0)
 TopMapText.BackgroundTransparency = 1
@@ -215,10 +212,8 @@ TopMapText.TextColor3 = Color3.fromRGB(240, 240, 255)
 TopMapText.TextSize = 11
 TopMapText.Font = Enum.Font.GothamMedium
 TopMapText.TextTruncate = Enum.TextTruncate.AtEnd
-TopMapText.Parent = TopMapBanner
 
--- Close Button (✕ 3D Glowing)
-local CloseBtn = Instance.new("TextButton")
+local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -44, 0, 14)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
@@ -226,29 +221,20 @@ CloseBtn.Text = "✕"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.TextSize = 14
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Parent = MainFrame
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 8)
-CloseCorner.Parent = CloseBtn
-
-local CloseStroke = Instance.new("UIStroke")
+local CloseStroke = Instance.new("UIStroke", CloseBtn)
 CloseStroke.Color = Color3.fromRGB(255, 0, 100)
 CloseStroke.Thickness = 1.5
-CloseStroke.Parent = CloseBtn
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Sidebar Container
-local Sidebar = Instance.new("Frame")
+-- Navigation Sidebar
+local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0, 145, 1, -80)
 Sidebar.Position = UDim2.new(0, 14, 0, 68)
 Sidebar.BackgroundTransparency = 1
-Sidebar.Parent = MainFrame
 
-local TabGame = Instance.new("TextButton")
+local TabGame = Instance.new("TextButton", Sidebar)
 TabGame.Size = UDim2.new(1, 0, 0, 42)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
@@ -257,18 +243,13 @@ TabGame.TextColor3 = Color3.fromRGB(0, 229, 255)
 TabGame.Font = Enum.Font.GothamBold
 TabGame.TextSize = 12
 TabGame.TextXAlignment = Enum.TextXAlignment.Left
-TabGame.Parent = Sidebar
+Instance.new("UICorner", TabGame).CornerRadius = UDim.new(0, 10)
 
-local TabGameCorner = Instance.new("UICorner")
-TabGameCorner.CornerRadius = UDim.new(0, 10)
-TabGameCorner.Parent = TabGame
-
-local TabGameStroke = Instance.new("UIStroke")
+local TabGameStroke = Instance.new("UIStroke", TabGame)
 TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
-TabGameStroke.Parent = TabGame
 
-local TabInfo = Instance.new("TextButton")
+local TabInfo = Instance.new("TextButton", Sidebar)
 TabInfo.Size = UDim2.new(1, 0, 0, 42)
 TabInfo.Position = UDim2.new(0, 0, 0, 52)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
@@ -277,117 +258,155 @@ TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabInfo.Font = Enum.Font.GothamBold
 TabInfo.TextSize = 12
 TabInfo.TextXAlignment = Enum.TextXAlignment.Left
-TabInfo.Parent = Sidebar
+Instance.new("UICorner", TabInfo).CornerRadius = UDim.new(0, 10)
 
-local TabInfoCorner = Instance.new("UICorner")
-TabInfoCorner.CornerRadius = UDim.new(0, 10)
-TabInfoCorner.Parent = TabInfo
-
-local TabInfoStroke = Instance.new("UIStroke")
+local TabInfoStroke = Instance.new("UIStroke", TabInfo)
 TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
-TabInfoStroke.Parent = TabInfo
 
--- Content Container
-local ContentFrame = Instance.new("Frame")
+-- Main Content Frame
+local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Size = UDim2.new(1, -185, 1, -80)
 ContentFrame.Position = UDim2.new(0, 170, 0, 68)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
 
--- Page 1: Game Scripts
-local PageGame = Instance.new("Frame")
+-- Tab 1: Games Page (ปรับเป็น ScrollingFrame เพื่อให้รองรับสคริปต์เยอะๆ ได้)
+local PageGame = Instance.new("ScrollingFrame", ContentFrame)
 PageGame.Size = UDim2.new(1, 0, 1, 0)
 PageGame.BackgroundTransparency = 1
+PageGame.ScrollBarThickness = 4
+PageGame.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageGame.BorderSizePixel = 0
 PageGame.Visible = true
-PageGame.Parent = ContentFrame
 
-local ScriptCard = Instance.new("Frame")
-ScriptCard.Size = UDim2.new(1, 0, 0, 75)
-ScriptCard.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
-ScriptCard.BorderSizePixel = 0
-ScriptCard.Parent = PageGame
+local PageListLayout = Instance.new("UIListLayout", PageGame)
+PageListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+PageListLayout.Padding = UDim.new(0, 10)
 
-local ScriptCardCorner = Instance.new("UICorner")
-ScriptCardCorner.CornerRadius = UDim.new(0, 12)
-ScriptCardCorner.Parent = ScriptCard
+PageListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageGame.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 10)
+end)
 
-local ScriptCardStroke = Instance.new("UIStroke")
-ScriptCardStroke.Color = Color3.fromRGB(35, 40, 55)
-ScriptCardStroke.Thickness = 1
-ScriptCardStroke.Parent = ScriptCard
+-- ----------------------------------------------------
+-- 📜 SCRIPT 1: ดูดไอดีเพลง By.Honkuki
+-- ----------------------------------------------------
+local ScriptCard1 = Instance.new("Frame", PageGame)
+ScriptCard1.Size = UDim2.new(1, -10, 0, 75)
+ScriptCard1.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+ScriptCard1.BorderSizePixel = 0
+Instance.new("UICorner", ScriptCard1).CornerRadius = UDim.new(0, 12)
 
-local ScriptTitle = Instance.new("TextLabel")
-ScriptTitle.Size = UDim2.new(1, -130, 0, 25)
-ScriptTitle.Position = UDim2.new(0, 16, 0, 14)
-ScriptTitle.BackgroundTransparency = 1
-ScriptTitle.Text = "ดูดไอดีเพลง By.Honkuki"
-ScriptTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ScriptTitle.Font = Enum.Font.GothamBold
-ScriptTitle.TextSize = 13
-ScriptTitle.TextXAlignment = Enum.TextXAlignment.Left
-ScriptTitle.Parent = ScriptCard
+local ScriptCardStroke1 = Instance.new("UIStroke", ScriptCard1)
+ScriptCardStroke1.Color = Color3.fromRGB(35, 40, 55)
+ScriptCardStroke1.Thickness = 1
 
-local ScriptSub = Instance.new("TextLabel")
-ScriptSub.Size = UDim2.new(1, -130, 0, 18)
-ScriptSub.Position = UDim2.new(0, 16, 0, 39)
-ScriptSub.BackgroundTransparency = 1
-ScriptSub.Text = "Audio Logger System (Universal)"
-ScriptSub.TextColor3 = Color3.fromRGB(0, 229, 255)
-ScriptSub.Font = Enum.Font.Gotham
-ScriptSub.TextSize = 11
-ScriptSub.TextXAlignment = Enum.TextXAlignment.Left
-ScriptSub.Parent = ScriptCard
+local ScriptTitle1 = Instance.new("TextLabel", ScriptCard1)
+ScriptTitle1.Size = UDim2.new(1, -130, 0, 25)
+ScriptTitle1.Position = UDim2.new(0, 16, 0, 14)
+ScriptTitle1.BackgroundTransparency = 1
+ScriptTitle1.Text = "ดูดไอดีเพลง By.Honkuki"
+ScriptTitle1.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScriptTitle1.Font = Enum.Font.GothamBold
+ScriptTitle1.TextSize = 13
+ScriptTitle1.TextXAlignment = Enum.TextXAlignment.Left
 
--- 🚀 ปุ่ม EXECUTE แบบ 3D Glow Button
-local RunBtn = Instance.new("TextButton")
-RunBtn.Size = UDim2.new(0, 100, 0, 38)
-RunBtn.Position = UDim2.new(1, -114, 0.5, -19)
-RunBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
-RunBtn.Text = "EXECUTE"
-RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-RunBtn.Font = Enum.Font.GothamBold
-RunBtn.TextSize = 11
-RunBtn.Parent = ScriptCard
+local ScriptSub1 = Instance.new("TextLabel", ScriptCard1)
+ScriptSub1.Size = UDim2.new(1, -130, 0, 18)
+ScriptSub1.Position = UDim2.new(0, 16, 0, 39)
+ScriptSub1.BackgroundTransparency = 1
+ScriptSub1.Text = "Audio Logger System (Universal)"
+ScriptSub1.TextColor3 = Color3.fromRGB(0, 229, 255)
+ScriptSub1.Font = Enum.Font.Gotham
+ScriptSub1.TextSize = 11
+ScriptSub1.TextXAlignment = Enum.TextXAlignment.Left
 
-local RunBtnCorner = Instance.new("UICorner")
-RunBtnCorner.CornerRadius = UDim.new(0, 10)
-RunBtnCorner.Parent = RunBtn
+local RunBtn1 = Instance.new("TextButton", ScriptCard1)
+RunBtn1.Size = UDim2.new(0, 100, 0, 38)
+RunBtn1.Position = UDim2.new(1, -114, 0.5, -19)
+RunBtn1.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
+RunBtn1.Text = "EXECUTE"
+RunBtn1.TextColor3 = Color3.fromRGB(255, 255, 255)
+RunBtn1.Font = Enum.Font.GothamBold
+RunBtn1.TextSize = 11
+Instance.new("UICorner", RunBtn1).CornerRadius = UDim.new(0, 10)
 
-local RunBtnGradient = Instance.new("UIGradient")
-RunBtnGradient.Color = ColorSequence.new{
+local RunBtnGradient1 = Instance.new("UIGradient", RunBtn1)
+RunBtnGradient1.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 120, 255))
 }
-RunBtnGradient.Parent = RunBtn
+local RunBtnStroke1 = Instance.new("UIStroke", RunBtn1)
+RunBtnStroke1.Color = Color3.fromRGB(150, 240, 255)
+RunBtnStroke1.Thickness = 1.5
 
-local RunBtnStroke = Instance.new("UIStroke")
-RunBtnStroke.Color = Color3.fromRGB(150, 240, 255)
-RunBtnStroke.Thickness = 1.5
-RunBtnStroke.Parent = RunBtn
+-- ----------------------------------------------------
+-- 📜 SCRIPT 2: Script by AVX HUB
+-- ----------------------------------------------------
+local ScriptCard2 = Instance.new("Frame", PageGame)
+ScriptCard2.Size = UDim2.new(1, -10, 0, 75)
+ScriptCard2.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+ScriptCard2.BorderSizePixel = 0
+Instance.new("UICorner", ScriptCard2).CornerRadius = UDim.new(0, 12)
 
--- Page 2: Map Status
-local PageInfo = Instance.new("Frame")
+local ScriptCardStroke2 = Instance.new("UIStroke", ScriptCard2)
+ScriptCardStroke2.Color = Color3.fromRGB(35, 40, 55)
+ScriptCardStroke2.Thickness = 1
+
+local ScriptTitle2 = Instance.new("TextLabel", ScriptCard2)
+ScriptTitle2.Size = UDim2.new(1, -130, 0, 25)
+ScriptTitle2.Position = UDim2.new(0, 16, 0, 14)
+ScriptTitle2.BackgroundTransparency = 1
+ScriptTitle2.Text = "Script by AVX HUB"
+ScriptTitle2.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScriptTitle2.Font = Enum.Font.GothamBold
+ScriptTitle2.TextSize = 13
+ScriptTitle2.TextXAlignment = Enum.TextXAlignment.Left
+
+local ScriptSub2 = Instance.new("TextLabel", ScriptCard2)
+ScriptSub2.Size = UDim2.new(1, -130, 0, 18)
+ScriptSub2.Position = UDim2.new(0, 16, 0, 39)
+ScriptSub2.BackgroundTransparency = 1
+ScriptSub2.Text = "RVX / AVX Hub Main System"
+ScriptSub2.TextColor3 = Color3.fromRGB(255, 0, 200)
+ScriptSub2.Font = Enum.Font.Gotham
+ScriptSub2.TextSize = 11
+ScriptSub2.TextXAlignment = Enum.TextXAlignment.Left
+
+local RunBtn2 = Instance.new("TextButton", ScriptCard2)
+RunBtn2.Size = UDim2.new(0, 100, 0, 38)
+RunBtn2.Position = UDim2.new(1, -114, 0.5, -19)
+RunBtn2.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
+RunBtn2.Text = "EXECUTE"
+RunBtn2.TextColor3 = Color3.fromRGB(255, 255, 255)
+RunBtn2.Font = Enum.Font.GothamBold
+RunBtn2.TextSize = 11
+Instance.new("UICorner", RunBtn2).CornerRadius = UDim.new(0, 10)
+
+local RunBtnGradient2 = Instance.new("UIGradient", RunBtn2)
+RunBtnGradient2.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 200)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(138, 43, 226))
+}
+local RunBtnStroke2 = Instance.new("UIStroke", RunBtn2)
+RunBtnStroke2.Color = Color3.fromRGB(255, 150, 240)
+RunBtnStroke2.Thickness = 1.5
+
+-- Tab 2: Status Page
+local PageInfo = Instance.new("Frame", ContentFrame)
 PageInfo.Size = UDim2.new(1, 0, 1, 0)
 PageInfo.BackgroundTransparency = 1
 PageInfo.Visible = false
-PageInfo.Parent = ContentFrame
 
-local StatusCard = Instance.new("Frame")
+local StatusCard = Instance.new("Frame", PageInfo)
 StatusCard.Size = UDim2.new(1, 0, 0, 90)
 StatusCard.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
-StatusCard.Parent = PageInfo
+Instance.new("UICorner", StatusCard).CornerRadius = UDim.new(0, 12)
 
-local StatusCardCorner = Instance.new("UICorner")
-StatusCardCorner.CornerRadius = UDim.new(0, 12)
-StatusCardCorner.Parent = StatusCard
-
-local StatusCardStroke = Instance.new("UIStroke")
+local StatusCardStroke = Instance.new("UIStroke", StatusCard)
 StatusCardStroke.Color = Color3.fromRGB(35, 40, 55)
 StatusCardStroke.Thickness = 1
-StatusCardStroke.Parent = StatusCard
 
-local MapLabel = Instance.new("TextLabel")
+local MapLabel = Instance.new("TextLabel", StatusCard)
 MapLabel.Size = UDim2.new(1, -20, 0, 25)
 MapLabel.Position = UDim2.new(0, 16, 0, 16)
 MapLabel.BackgroundTransparency = 1
@@ -396,9 +415,8 @@ MapLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 MapLabel.Font = Enum.Font.GothamBold
 MapLabel.TextSize = 13
 MapLabel.TextXAlignment = Enum.TextXAlignment.Left
-MapLabel.Parent = StatusCard
 
-local PlaceIdLabel = Instance.new("TextLabel")
+local PlaceIdLabel = Instance.new("TextLabel", StatusCard)
 PlaceIdLabel.Size = UDim2.new(1, -20, 0, 20)
 PlaceIdLabel.Position = UDim2.new(0, 16, 0, 46)
 PlaceIdLabel.BackgroundTransparency = 1
@@ -407,47 +425,108 @@ PlaceIdLabel.TextColor3 = Color3.fromRGB(0, 255, 170)
 PlaceIdLabel.Font = Enum.Font.Gotham
 PlaceIdLabel.TextSize = 11
 PlaceIdLabel.TextXAlignment = Enum.TextXAlignment.Left
-PlaceIdLabel.Parent = StatusCard
 
--- Tab Switching Logic
+-- Tab Switch Logic
 TabGame.MouseButton1Click:Connect(function()
-    PageGame.Visible = true
-    PageInfo.Visible = false
-    TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
-    TabGame.TextColor3 = Color3.fromRGB(0, 229, 255)
-    TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
-    
-    TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
-    TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
-    TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
+    PageGame.Visible = true; PageInfo.Visible = false
+    TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabGame.TextColor3 = Color3.fromRGB(0, 229, 255); TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
+    TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140); TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 end)
 
 TabInfo.MouseButton1Click:Connect(function()
-    PageGame.Visible = false
-    PageInfo.Visible = true
-    TabInfo.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
-    TabInfo.TextColor3 = Color3.fromRGB(0, 229, 255)
-    TabInfoStroke.Color = Color3.fromRGB(0, 229, 255)
-    
-    TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
-    TabGame.TextColor3 = Color3.fromRGB(120, 125, 140)
-    TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
+    PageGame.Visible = false; PageInfo.Visible = true
+    TabInfo.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabInfo.TextColor3 = Color3.fromRGB(0, 229, 255); TabInfoStroke.Color = Color3.fromRGB(0, 229, 255)
+    TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
 end)
 
--- Loading Screen Overlay
-local LoadingOverlay = Instance.new("Frame")
+-- ==================== 🔑 KEY SYSTEM & LOADING OVERLAY ====================
+local KeyOverlay = Instance.new("Frame", MainFrame)
+KeyOverlay.Size = UDim2.new(1, 0, 1, 0)
+KeyOverlay.BackgroundColor3 = Color3.fromRGB(8, 9, 13)
+KeyOverlay.BackgroundTransparency = 0.02
+KeyOverlay.Visible = true
+KeyOverlay.ZIndex = 30
+Instance.new("UICorner", KeyOverlay).CornerRadius = UDim.new(0, 14)
+
+local KeyTitle = Instance.new("TextLabel", KeyOverlay)
+KeyTitle.Size = UDim2.new(1, 0, 0, 30)
+KeyTitle.Position = UDim2.new(0, 0, 0.18, 0)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Text = "🔑 KEY SYSTEM VERIFICATION"
+KeyTitle.TextColor3 = Color3.fromRGB(0, 229, 255)
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.TextSize = 15
+KeyTitle.ZIndex = 31
+
+local KeySub = Instance.new("TextLabel", KeyOverlay)
+KeySub.Size = UDim2.new(1, 0, 0, 20)
+KeySub.Position = UDim2.new(0, 0, 0.27, 0)
+KeySub.BackgroundTransparency = 1
+KeySub.Text = "Please enter the access key to unlock StyleKuki VIP"
+KeySub.TextColor3 = Color3.fromRGB(140, 145, 160)
+KeySub.Font = Enum.Font.Gotham
+KeySub.TextSize = 11
+KeySub.ZIndex = 31
+
+-- Key Input Box
+local KeyInputBox = Instance.new("TextBox", KeyOverlay)
+KeyInputBox.Size = UDim2.new(0.7, 0, 0, 40)
+KeyInputBox.Position = UDim2.new(0.15, 0, 0.40, 0)
+KeyInputBox.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
+KeyInputBox.Text = ""
+KeyInputBox.PlaceholderText = "Enter Access Key Here..."
+KeyInputBox.PlaceholderColor3 = Color3.fromRGB(80, 85, 100)
+KeyInputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInputBox.Font = Enum.Font.GothamMedium
+KeyInputBox.TextSize = 12
+KeyInputBox.ClearTextOnFocus = false
+KeyInputBox.ZIndex = 31
+Instance.new("UICorner", KeyInputBox).CornerRadius = UDim.new(0, 10)
+
+local KeyInputStroke = Instance.new("UIStroke", KeyInputBox)
+KeyInputStroke.Color = Color3.fromRGB(0, 229, 255)
+KeyInputStroke.Thickness = 1.2
+KeyInputStroke.Transparency = 0.5
+
+-- Key Status Label
+local KeyStatusLabel = Instance.new("TextLabel", KeyOverlay)
+KeyStatusLabel.Size = UDim2.new(1, 0, 0, 20)
+KeyStatusLabel.Position = UDim2.new(0, 0, 0.53, 0)
+KeyStatusLabel.BackgroundTransparency = 1
+KeyStatusLabel.Text = ""
+KeyStatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+KeyStatusLabel.Font = Enum.Font.GothamBold
+KeyStatusLabel.TextSize = 11
+KeyStatusLabel.ZIndex = 31
+
+-- Check Key Button
+local CheckKeyBtn = Instance.new("TextButton", KeyOverlay)
+CheckKeyBtn.Size = UDim2.new(0.5, 0, 0, 38)
+CheckKeyBtn.Position = UDim2.new(0.25, 0, 0.65, 0)
+CheckKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
+CheckKeyBtn.Text = "CHECK KEY"
+CheckKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CheckKeyBtn.Font = Enum.Font.GothamBold
+CheckKeyBtn.TextSize = 12
+CheckKeyBtn.ZIndex = 31
+Instance.new("UICorner", CheckKeyBtn).CornerRadius = UDim.new(0, 10)
+
+local CheckBtnGradient = Instance.new("UIGradient", CheckKeyBtn)
+CheckBtnGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
+}
+
+-- Loading Overlay
+local LoadingOverlay = Instance.new("Frame", MainFrame)
 LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
 LoadingOverlay.BackgroundColor3 = Color3.fromRGB(8, 9, 13)
 LoadingOverlay.BackgroundTransparency = 0.03
 LoadingOverlay.Visible = false
-LoadingOverlay.ZIndex = 20
-LoadingOverlay.Parent = MainFrame
+LoadingOverlay.ZIndex = 40
+Instance.new("UICorner", LoadingOverlay).CornerRadius = UDim.new(0, 14)
 
-local OverlayCorner = Instance.new("UICorner")
-OverlayCorner.CornerRadius = UDim.new(0, 14)
-OverlayCorner.Parent = LoadingOverlay
-
-local LoadingText = Instance.new("TextLabel")
+local LoadingText = Instance.new("TextLabel", LoadingOverlay)
 LoadingText.Size = UDim2.new(1, 0, 0, 30)
 LoadingText.Position = UDim2.new(0, 0, 0.38, 0)
 LoadingText.BackgroundTransparency = 1
@@ -455,55 +534,72 @@ LoadingText.Text = "INITIALIZING SYSTEM... 0%"
 LoadingText.TextColor3 = Color3.fromRGB(0, 229, 255)
 LoadingText.Font = Enum.Font.GothamBold
 LoadingText.TextSize = 13
-LoadingText.ZIndex = 21
-LoadingText.Parent = LoadingOverlay
+LoadingText.ZIndex = 41
 
-local BarTrack = Instance.new("Frame")
+local BarTrack = Instance.new("Frame", LoadingOverlay)
 BarTrack.Size = UDim2.new(0.75, 0, 0, 10)
 BarTrack.Position = UDim2.new(0.125, 0, 0.52, 0)
 BarTrack.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
 BarTrack.BorderSizePixel = 0
-BarTrack.ZIndex = 21
-BarTrack.Parent = LoadingOverlay
+BarTrack.ZIndex = 41
+Instance.new("UICorner", BarTrack).CornerRadius = UDim.new(0, 5)
 
-local TrackCorner = Instance.new("UICorner")
-TrackCorner.CornerRadius = UDim.new(0, 5)
-TrackCorner.Parent = BarTrack
-
-local TrackStroke = Instance.new("UIStroke")
-TrackStroke.Color = Color3.fromRGB(40, 45, 60)
-TrackStroke.Thickness = 1
-TrackStroke.Parent = BarTrack
-
-local BarFill = Instance.new("Frame")
+local BarFill = Instance.new("Frame", BarTrack)
 BarFill.Size = UDim2.new(0, 0, 1, 0)
 BarFill.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
 BarFill.BorderSizePixel = 0
-BarFill.ZIndex = 22
-BarFill.Parent = BarTrack
+BarFill.ZIndex = 42
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(0, 5)
 
-local FillCorner = Instance.new("UICorner")
-FillCorner.CornerRadius = UDim.new(0, 5)
-FillCorner.Parent = BarFill
-
-local BarFillGradient = Instance.new("UIGradient")
+local BarFillGradient = Instance.new("UIGradient", BarFill)
 BarFillGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
 }
-BarFillGradient.Parent = BarFill
 
--- Run Event
-RunBtn.MouseButton1Click:Connect(function()
+-- Verify Key Event
+CheckKeyBtn.MouseButton1Click:Connect(function()
+    local userKey = KeyInputBox.Text
+    if userKey == CORRECT_KEY then
+        KeyStatusLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+        KeyStatusLabel.Text = "✅ Key Verified Successfully!"
+        
+        -- แจ้งเตือนเมื่อใส่คีย์สำเร็จ
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "StyleKuki VIP",
+            Text = "พร้อมรันสคริปต์ต่างๆแล้วครับ",
+            Duration = 5
+        })
+        
+        task.wait(0.6)
+        KeyOverlay.Visible = false
+    else
+        KeyStatusLabel.TextColor3 = Color3.fromRGB(255, 70, 70)
+        KeyStatusLabel.Text = "❌ Key Incorrect! Try Again."
+        KeyInputStroke.Color = Color3.fromRGB(255, 50, 50)
+        task.wait(1.5)
+        KeyInputStroke.Color = Color3.fromRGB(0, 229, 255)
+    end
+end)
+
+-- ฟังก์ชันรันอนิเมชัน Loading
+local function ExecuteWithLoading(scriptUrl, scriptName)
     LoadingOverlay.Visible = true
-    
     for i = 1, 100 do
         BarFill.Size = UDim2.new(i / 100, 0, 1, 0)
         LoadingText.Text = "INITIALIZING SYSTEM... " .. i .. "%"
         task.wait(0.008)
     end
-    
     task.wait(0.15)
     LoadingOverlay.Visible = false
-    ExecuteMainScript()
+    RunScript(scriptUrl, scriptName)
+end
+
+-- Run Execution Events
+RunBtn1.MouseButton1Click:Connect(function()
+    ExecuteWithLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System")
+end)
+
+RunBtn2.MouseButton1Click:Connect(function()
+    ExecuteWithLoading("https://raw.githubusercontent.com/RVXv2/RVX-hub/main/main.lua", "Script by AVX HUB")
 end)
