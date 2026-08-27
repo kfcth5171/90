@@ -288,7 +288,7 @@ Sidebar.Position = UDim2.new(0, 14, 0, 68)
 Sidebar.BackgroundTransparency = 1
 
 local TabGame = Instance.new("TextButton", Sidebar)
-TabGame.Size = UDim2.new(1, 0, 0, 38)
+TabGame.Size = UDim2.new(1, 0, 0, 34)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
 TabGame.Text = "   🎮   GAMES"
@@ -303,8 +303,8 @@ TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
 
 local TabInfo = Instance.new("TextButton", Sidebar)
-TabInfo.Size = UDim2.new(1, 0, 0, 38)
-TabInfo.Position = UDim2.new(0, 0, 0, 46)
+TabInfo.Size = UDim2.new(1, 0, 0, 34)
+TabInfo.Position = UDim2.new(0, 0, 0, 40)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabInfo.Text = "   📊   STATUS"
 TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
@@ -318,8 +318,8 @@ TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
 
 local TabTools = Instance.new("TextButton", Sidebar)
-TabTools.Size = UDim2.new(1, 0, 0, 38)
-TabTools.Position = UDim2.new(0, 0, 0, 92)
+TabTools.Size = UDim2.new(1, 0, 0, 34)
+TabTools.Position = UDim2.new(0, 0, 0, 80)
 TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabTools.Text = "   🛠️   Tools🔥"
 TabTools.TextColor3 = Color3.fromRGB(120, 125, 140)
@@ -331,6 +331,22 @@ Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 10)
 local TabToolsStroke = Instance.new("UIStroke", TabTools)
 TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabToolsStroke.Thickness = 1
+
+-- 🛡️ TAB 4: PROTECTION BUTTON
+local TabProtect = Instance.new("TextButton", Sidebar)
+TabProtect.Size = UDim2.new(1, 0, 0, 34)
+TabProtect.Position = UDim2.new(0, 0, 0, 120)
+TabProtect.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+TabProtect.Text = "   🛡️   Protection"
+TabProtect.TextColor3 = Color3.fromRGB(120, 125, 140)
+TabProtect.Font = Enum.Font.GothamBold
+TabProtect.TextSize = 11
+TabProtect.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", TabProtect).CornerRadius = UDim.new(0, 10)
+
+local TabProtectStroke = Instance.new("UIStroke", TabProtect)
+TabProtectStroke.Color = Color3.fromRGB(40, 45, 60)
+TabProtectStroke.Thickness = 1
 
 -- Main Content Frame
 local ContentFrame = Instance.new("Frame", MainFrame)
@@ -395,6 +411,15 @@ local function CreateScriptCard(parent, title, subtitle, btnText, isSpecialGradi
     RunBtn.Font = Enum.Font.GothamBold
     RunBtn.TextSize = 11
     Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 10)
+
+    -- Ultra Smooth Animations (Hover / Active Effect)
+    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    RunBtn.MouseEnter:Connect(function()
+        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 104, 0, 40), Position = UDim2.new(1, -116, 0.5, -20)}):Play()
+    end)
+    RunBtn.MouseLeave:Connect(function()
+        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 100, 0, 38), Position = UDim2.new(1, -114, 0.5, -19)}):Play()
+    end)
 
     local Gradient = Instance.new("UIGradient", RunBtn)
     if isSpecialGradient then
@@ -473,21 +498,58 @@ ToolsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function
     PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 10)
 end)
 
--- ปุ่มเสก / ลบ BoomBox ใน Tools
+-- ฟังก์ชันลบอุปกรณ์อย่างเด็ดขาด (กดครั้งเดียว ระบบจัดการส่งย้ำเบื้องหลังให้ทันที)
+local function GetNil(Name, DebugId)
+    for _, Object in getnilinstances() do
+        if Object.Name == Name and Object:GetDebugId() == DebugId then
+            return Object
+        end
+    end
+end
+
+local function SmartClearTools()
+    local localPlayer = Players.LocalPlayer
+    
+    -- ลบไอเทมฝั่ง Client ทันที
+    if localPlayer then
+        if localPlayer:FindFirstChildOfClass("Backpack") then
+            for _, item in ipairs(localPlayer.Backpack:GetChildren()) do
+                if item:IsA("Tool") then item:Destroy() end
+            end
+        end
+        if localPlayer.Character then
+            for _, item in ipairs(localPlayer.Character:GetChildren()) do
+                if item:IsA("Tool") then item:Destroy() end
+            end
+        end
+    end
+    
+    -- ส่งสัญญาณ Remote ลบไปยัง Server แบบ Loop ซ้ำใน Background (กดปุ่มลบครั้งเดียวจบ)
+    task.spawn(function()
+        for i = 1, 3 do
+            local QuickDeleteEvent = GetNil("QuickDelete", "1_29270557")
+            if QuickDeleteEvent then
+                QuickDeleteEvent:FireServer()
+            end
+            
+            local MainEvent = game:GetService("ReplicatedStorage"):FindFirstChild("RE") and game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l")
+            if MainEvent then
+                pcall(function()
+                    MainEvent:InvokeServer("ClearTools")
+                    MainEvent:InvokeServer("RemoveTools")
+                end)
+            end
+            task.wait(0.05)
+        end
+    end)
+end
+
+-- 1. ปุ่มเสก / ลบ BoomBox ใน Tools
 local BoomBoxBtn, BoomBoxGradient, BoomBoxBtnStroke = CreateScriptCard(PageTools, "เสก BoomBox", "Spawn & Delete Boombox Item", "เสก", false)
 local isBoomBoxSpawned = false
 
-local function GetNil(Name, DebugId)
-	for _, Object in getnilinstances() do
-		if Object.Name == Name and Object:GetDebugId() == DebugId then
-			return Object
-		end
-	end
-end
-
 BoomBoxBtn.MouseButton1Click:Connect(function()
     if not isBoomBoxSpawned then
-        -- เสก BoomBox
         local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
         if Event then
             Event:InvokeServer("PickingTools", "Boombox")
@@ -501,11 +563,7 @@ BoomBoxBtn.MouseButton1Click:Connect(function()
         BoomBoxBtnStroke.Color = Color3.fromRGB(255, 100, 150)
         isBoomBoxSpawned = true
     else
-        -- ลบ BoomBox
-        local Event = GetNil("QuickDelete", "1_29270557")
-        if Event then
-            Event:FireServer()
-        end
+        SmartClearTools()
         
         BoomBoxBtn.Text = "เสก"
         BoomBoxGradient.Color = ColorSequence.new{
@@ -517,27 +575,275 @@ BoomBoxBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tab Switch Events
-TabGame.MouseButton1Click:Connect(function()
-    PageGame.Visible = true; PageInfo.Visible = false; PageTools.Visible = false
-    TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabGame.TextColor3 = Color3.fromRGB(0, 229, 255); TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
-    TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140); TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
-    TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabTools.TextColor3 = Color3.fromRGB(120, 125, 140); TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
+-- 2. ปุ่มเสก / ลบ ปืนตด (Minions2026_FartGun) หมวดหมู่นี้อยู่ต่อจาก Boombox
+local FartGunBtn, FartGunGradient, FartGunBtnStroke = CreateScriptCard(PageTools, "เสก ปืนตด (Fart Gun)", "Spawn & Delete Minions Fart Gun", "เสก", true)
+local isFartGunSpawned = false
+
+FartGunBtn.MouseButton1Click:Connect(function()
+    if not isFartGunSpawned then
+        -- [ห้ามแก้: โค้ดส่ง Server ของคุณ]
+        local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
+        Event:InvokeServer(
+            "PickingTools",
+            "Minions2026_FartGun"
+        )
+        
+        FartGunBtn.Text = "ลบ"
+        FartGunGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 50))
+        }
+        FartGunBtnStroke.Color = Color3.fromRGB(255, 100, 150)
+        isFartGunSpawned = true
+    else
+        SmartClearTools()
+        
+        FartGunBtn.Text = "เสก"
+        FartGunGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 200)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(138, 43, 226))
+        }
+        FartGunBtnStroke.Color = Color3.fromRGB(255, 150, 240)
+        isFartGunSpawned = false
+    end
 end)
 
-TabInfo.MouseButton1Click:Connect(function()
-    PageGame.Visible = false; PageInfo.Visible = true; PageTools.Visible = false
-    TabInfo.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabInfo.TextColor3 = Color3.fromRGB(0, 229, 255); TabInfoStroke.Color = Color3.fromRGB(0, 229, 255)
-    TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
-    TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabTools.TextColor3 = Color3.fromRGB(120, 125, 140); TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
+-- 🛡️ TAB 4: PROTECTION PAGE (NEW)
+local PageProtection = Instance.new("ScrollingFrame", ContentFrame)
+PageProtection.Size = UDim2.new(1, 0, 1, 0)
+PageProtection.BackgroundTransparency = 1
+PageProtection.ScrollBarThickness = 4
+PageProtection.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageProtection.BorderSizePixel = 0
+PageProtection.Visible = false
+
+local ProtectListLayout = Instance.new("UIListLayout", PageProtection)
+ProtectListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ProtectListLayout.Padding = UDim.new(0, 8)
+
+ProtectListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageProtection.CanvasSize = UDim2.new(0, 0, 0, ProtectListLayout.AbsoluteContentSize.Y + 10)
 end)
 
-TabTools.MouseButton1Click:Connect(function()
-    PageGame.Visible = false; PageInfo.Visible = false; PageTools.Visible = true
-    TabTools.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabTools.TextColor3 = Color3.fromRGB(0, 229, 255); TabToolsStroke.Color = Color3.fromRGB(0, 229, 255)
-    TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
-    TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140); TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
-end)
+-- Helper Function สร้าง Toggle Switch สไตล์ Cyberpunk
+local ProtectionStates = {}
+local ProtectionConnections = {}
+
+local function CreateToggleCard(parent, title, desc, keyName, onToggleCallback)
+    ProtectionStates[keyName] = false
+
+    local Card = Instance.new("Frame", parent)
+    Card.Size = UDim2.new(1, -10, 0, 52)
+    Card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+    Card.BorderSizePixel = 0
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 10)
+
+    local Stroke = Instance.new("UIStroke", Card)
+    Stroke.Color = Color3.fromRGB(35, 40, 55)
+    Stroke.Thickness = 1
+
+    local TitleLabel = Instance.new("TextLabel", Card)
+    TitleLabel.Size = UDim2.new(1, -80, 0, 20)
+    TitleLabel.Position = UDim2.new(0, 14, 0, 8)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 12
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local DescLabel = Instance.new("TextLabel", Card)
+    DescLabel.Size = UDim2.new(1, -80, 0, 16)
+    DescLabel.Position = UDim2.new(0, 14, 0, 28)
+    DescLabel.BackgroundTransparency = 1
+    DescLabel.Text = desc
+    DescLabel.TextColor3 = Color3.fromRGB(130, 135, 150)
+    DescLabel.Font = Enum.Font.Gotham
+    DescLabel.TextSize = 10
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Switch Outer Frame
+    local SwitchFrame = Instance.new("Frame", Card)
+    SwitchFrame.Size = UDim2.new(0, 44, 0, 22)
+    SwitchFrame.Position = UDim2.new(1, -54, 0.5, -11)
+    SwitchFrame.BackgroundColor3 = Color3.fromRGB(30, 32, 45)
+    Instance.new("UICorner", SwitchFrame).CornerRadius = UDim.new(1, 0)
+
+    local SwitchStroke = Instance.new("UIStroke", SwitchFrame)
+    SwitchStroke.Color = Color3.fromRGB(50, 55, 75)
+    SwitchStroke.Thickness = 1
+
+    -- Switch Circle Dot
+    local SwitchDot = Instance.new("Frame", SwitchFrame)
+    SwitchDot.Size = UDim2.new(0, 16, 0, 16)
+    SwitchDot.Position = UDim2.new(0, 3, 0.5, -8)
+    SwitchDot.BackgroundColor3 = Color3.fromRGB(150, 155, 170)
+    Instance.new("UICorner", SwitchDot).CornerRadius = UDim.new(1, 0)
+
+    local SwitchBtn = Instance.new("TextButton", SwitchFrame)
+    SwitchBtn.Size = UDim2.new(1, 0, 1, 0)
+    SwitchBtn.BackgroundTransparency = 1
+    SwitchBtn.Text = ""
+
+    SwitchBtn.MouseButton1Click:Connect(function()
+        ProtectionStates[keyName] = not ProtectionStates[keyName]
+        local isEnabled = ProtectionStates[keyName]
+
+        if isEnabled then
+            TweenService:Create(SwitchDot, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(1, -19, 0.5, -8), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(SwitchFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(255, 0, 128)}):Play()
+            SwitchStroke.Color = Color3.fromRGB(0, 229, 255)
+        else
+            TweenService:Create(SwitchDot, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 3, 0.5, -8), BackgroundColor3 = Color3.fromRGB(150, 155, 170)}):Play()
+            TweenService:Create(SwitchFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(30, 32, 45)}):Play()
+            SwitchStroke.Color = Color3.fromRGB(50, 55, 75)
+        end
+
+        onToggleCallback(isEnabled)
+    end)
+end
+
+-- ==================== ⚡ LOGIC SYSTEMS FOR PROTECTION ====================
+
+-- 1. Anti Fling All (Velocity Nullifier)
+local function ToggleAntiFling(enabled)
+    if enabled then
+        ProtectionConnections["AntiFling"] = RunService.Heartbeat:Connect(function()
+            local char = Players.LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                        part.Velocity = Vector3.new(0, 0, 0)
+                        part.RotVelocity = Vector3.new(0, 0, 0)
+                    end
+                end
+            end
+        end)
+    else
+        if ProtectionConnections["AntiFling"] then
+            ProtectionConnections["AntiFling"]:Disconnect()
+            ProtectionConnections["AntiFling"] = nil
+        end
+    end
+end
+
+-- 2. Anti Sit
+local function ToggleAntiSit(enabled)
+    if enabled then
+        ProtectionConnections["AntiSit"] = RunService.Stepped:Connect(function()
+            local char = Players.LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+                if char:FindFirstChildOfClass("Humanoid").Sit then
+                    char:FindFirstChildOfClass("Humanoid").Sit = false
+                end
+            end
+        end)
+    else
+        if ProtectionConnections["AntiSit"] then
+            ProtectionConnections["AntiSit"]:Disconnect()
+            ProtectionConnections["AntiSit"] = nil
+            local char = Players.LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            end
+        end
+    end
+end
+
+-- 3. Anti Sound Lag / Loud Audio
+local function ToggleAntiSound(enabled)
+    if enabled then
+        ProtectionConnections["AntiSound"] = game:GetService("Workspace").DescendantAdded:Connect(function(desc)
+            if desc:IsA("Sound") then
+                desc.Volume = 0
+            end
+        end)
+        for _, desc in ipairs(game:GetService("Workspace"):GetDescendants()) do
+            if desc:IsA("Sound") then
+                desc.Volume = 0
+            end
+        end
+    else
+        if ProtectionConnections["AntiSound"] then
+            ProtectionConnections["AntiSound"]:Disconnect()
+            ProtectionConnections["AntiSound"] = nil
+        end
+    end
+end
+
+-- 4. Anti Vehicle Fling
+local function ToggleAntiVehicleFling(enabled)
+    if enabled then
+        ProtectionConnections["AntiVehicle"] = RunService.Heartbeat:Connect(function()
+            for _, v in ipairs(game:GetService("Workspace"):GetDescendants()) do
+                if v:IsA("VehicleSeat") or v:IsA("Seat") then
+                    v.CanCollide = false
+                end
+            end
+        end)
+    else
+        if ProtectionConnections["AntiVehicle"] then
+            ProtectionConnections["AntiVehicle"]:Disconnect()
+            ProtectionConnections["AntiVehicle"] = nil
+        end
+    end
+end
+
+-- 5. Anti Tool Lag
+local function ToggleAntiToolLag(enabled)
+    if enabled then
+        ProtectionConnections["AntiToolLag"] = RunService.Stepped:Connect(function()
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= Players.LocalPlayer and player.Character then
+                    for _, item in ipairs(player.Character:GetChildren()) do
+                        if item:IsA("Tool") and item:FindFirstChild("Handle") then
+                            item.Handle.CanTouch = false
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        if ProtectionConnections["AntiToolLag"] then
+            ProtectionConnections["AntiToolLag"]:Disconnect()
+            ProtectionConnections["AntiToolLag"] = nil
+        end
+    end
+end
+
+-- สร้างการ์ดสวิตช์ในหน้า Protection
+CreateToggleCard(PageProtection, "Anti Fling (R6 / R15 / Null Velocity)", "กันโดนชนกระเด็นทุกรูปแบบ ปรับค่า Velocity เป็น 0", "AntiFling", ToggleAntiFling)
+CreateToggleCard(PageProtection, "Anti Sit (กันถูกบังคับนั่ง)", "ป้องกันการโดนอุ้ม/ยึดตัว หรือนั่งบนเก้าอี้โดยไม่ยินยอม", "AntiSit", ToggleAntiSit)
+CreateToggleCard(PageProtection, "Anti Sound Lag (ปิดเสียงป่วน)", "ปิดเสียงลูปและเสียงตระโกนรบกวนใน Brookhaven", "AntiSound", ToggleAntiSound)
+CreateToggleCard(PageProtection, "Anti Vehicle Fling (กันรถพุ่งชน)", "ปิดระบบการชนของรถผู้เล่นคนอื่น", "AntiVehicle", ToggleAntiVehicleFling)
+CreateToggleCard(PageProtection, "Anti Tool Lag (กันไอเทมป่วน)", "ป้องกันการถูกก่อกวนด้วยเครื่องมือจากผู้เล่นอื่น", "AntiToolLag", ToggleAntiToolLag)
+
+-- Tab Switch Events (Ultra Smooth Transition)
+local function SwitchTab(activePage, activeTab, activeStroke)
+    PageGame.Visible = (activePage == PageGame)
+    PageInfo.Visible = (activePage == PageInfo)
+    PageTools.Visible = (activePage == PageTools)
+    PageProtection.Visible = (activePage == PageProtection)
+
+    local tabs = {{TabGame, TabGameStroke}, {TabInfo, TabInfoStroke}, {TabTools, TabToolsStroke}, {TabProtect, TabProtectStroke}}
+    for _, item in ipairs(tabs) do
+        local btn, stroke = item[1], item[2]
+        if btn == activeTab then
+            TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(25, 30, 45), TextColor3 = Color3.fromRGB(0, 229, 255)}):Play()
+            stroke.Color = Color3.fromRGB(0, 229, 255)
+        else
+            TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(15, 17, 24), TextColor3 = Color3.fromRGB(120, 125, 140)}):Play()
+            stroke.Color = Color3.fromRGB(40, 45, 60)
+        end
+    end
+end
+
+TabGame.MouseButton1Click:Connect(function() SwitchTab(PageGame, TabGame, TabGameStroke) end)
+TabInfo.MouseButton1Click:Connect(function() SwitchTab(PageInfo, TabInfo, TabInfoStroke) end)
+TabTools.MouseButton1Click:Connect(function() SwitchTab(PageTools, TabTools, TabToolsStroke) end)
+TabProtect.MouseButton1Click:Connect(function() SwitchTab(PageProtection, TabProtect, TabProtectStroke) end)
 
 -- 🔑 KEY SYSTEM OVERLAY
 local KeyOverlay = Instance.new("Frame", MainFrame)
@@ -747,7 +1053,7 @@ local LoadCardStroke = Instance.new("UIStroke", LoadCard)
 LoadCardStroke.Color = Color3.fromRGB(0, 229, 255)
 LoadCardStroke.Thickness = 1.5
 
--- 3D Neon Circular Percentage Gauge (วงกลมเปอร์เซ็นต์เรืองแสง 3D)
+-- 3D Neon Circular Percentage Gauge
 local LoadCircleFrame = Instance.new("Frame", LoadCard)
 LoadCircleFrame.Size = UDim2.new(0, 95, 0, 95)
 LoadCircleFrame.Position = UDim2.new(0, 25, 0, 25)
@@ -848,7 +1154,7 @@ LoadFillGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
 }
 
--- Visualizer แถบเสียงวิ่งดนตรี (Coquette Dynamic Audio Bars)
+-- Visualizer แถบเสียงวิ่งดนตรี
 local LoadVisContainer = Instance.new("Frame", LoadCard)
 LoadVisContainer.Size = UDim2.new(0, 390, 0, 25)
 LoadVisContainer.Position = UDim2.new(0, 25, 0, 175)
