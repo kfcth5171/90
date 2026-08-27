@@ -9,9 +9,9 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
-local ProfileImageId = "130797657143524" -- Asset ID โลโก้ตามที่ระบุ
+local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
-local CORRECT_KEY = "Honeiei56" -- คีย์สำหรับปลดล็อกระบบ
+local CORRECT_KEY = "Honeiei56"
 
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
@@ -23,7 +23,7 @@ if GuiParent:FindFirstChild("StyleKukiVIPLoader") then
     GuiParent.StyleKukiVIPLoader:Destroy()
 end
 
--- ฟังก์ชันรันสคริปต์หลักต่างๆ
+-- ฟังก์ชันรันสคริปต์หลัก
 local function RunScript(scriptUrl, scriptName)
     task.spawn(function()
         loadstring(game:HttpGet(scriptUrl))()
@@ -127,9 +127,7 @@ for i = 1, 20 do
     end)
 end
 
--- ----------------------------------------------------
--- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM (มีไฟ LED วิ่ง + โลโก้)
--- ----------------------------------------------------
+-- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM
 local ToggleBtnContainer = Instance.new("Frame", ScreenGui)
 ToggleBtnContainer.Name = "ToggleBtnContainer"
 ToggleBtnContainer.Size = UDim2.new(0, 50, 0, 50)
@@ -159,7 +157,6 @@ ToggleBtn.Image = "rbxassetid://" .. ProfileImageId
 ToggleBtn.ScaleType = Enum.ScaleType.Crop
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
--- RenderStepped Animation for UI and Toggle LED
 RunService.RenderStepped:Connect(function()
     LEDGradient.Rotation = (LEDGradient.Rotation + 1.5) % 360
     ToggleLEDGradient.Rotation = (ToggleLEDGradient.Rotation + 2) % 360
@@ -167,7 +164,6 @@ RunService.RenderStepped:Connect(function()
     AuraGlow.BackgroundTransparency = 0.5 + (PulseVal * 0.2)
 end)
 
--- Dragging System for Toggle Button
 local toggleDragging, toggleDragStart, toggleStartPos
 ToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -192,7 +188,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainContainer.Visible = not MainContainer.Visible
 end)
 
--- Smooth Dragging System for Main Container
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -271,7 +266,6 @@ TopMapText.TextSize = 11
 TopMapText.Font = Enum.Font.GothamMedium
 TopMapText.TextTruncate = Enum.TextTruncate.AtEnd
 
--- ปุ่มย่อ/ปิด GUI
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -44, 0, 14)
@@ -346,8 +340,7 @@ PageListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function(
     PageGame.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 10)
 end)
 
--- ฟังก์ชันสำหรับสร้างการ์ดสคริปต์ให้อ่านง่าย
-local function CreateScriptCard(title, subtitle, scriptUrl, isSpecialGradient)
+local function CreateScriptCard(title, subtitle, isSpecialGradient)
     local Card = Instance.new("Frame", PageGame)
     Card.Size = UDim2.new(1, -10, 0, 75)
     Card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
@@ -408,14 +401,10 @@ local function CreateScriptCard(title, subtitle, scriptUrl, isSpecialGradient)
     return RunBtn
 end
 
--- 📜 SCRIPT 1: ดูดไอดีเพลง By.Honkuki
-local RunBtn1 = CreateScriptCard("ดูดไอดีเพลง By.Honkuki", "Audio Logger System (Universal)", "", false)
--- 📜 SCRIPT 2: Script by AVX HUB
-local RunBtn2 = CreateScriptCard("Script by AVX HUB", "RVX / AVX Hub Main System", "", true)
--- 📜 SCRIPT 3: Coquette Hub Remake
-local RunBtn3 = CreateScriptCard("Coquette Hub Remake", "Brookhaven RP Special Script", "", false)
--- 📜 SCRIPT 4: Dark Hub
-local RunBtn4 = CreateScriptCard("Dark Hub", "Brookhaven RP Dark Edition", "", true)
+local RunBtn1 = CreateScriptCard("ดูดไอดีเพลง By.Honkuki", "Audio Logger System (Universal)", false)
+local RunBtn2 = CreateScriptCard("Script by AVX HUB", "RVX / AVX Hub Main System", true)
+local RunBtn3 = CreateScriptCard("Coquette Hub Remake", "Brookhaven RP Special Script", false)
+local RunBtn4 = CreateScriptCard("Dark Hub", "Brookhaven RP Dark Edition", true)
 
 -- Tab 2: Status Page
 local PageInfo = Instance.new("Frame", ContentFrame)
@@ -452,7 +441,6 @@ PlaceIdLabel.Font = Enum.Font.Gotham
 PlaceIdLabel.TextSize = 11
 PlaceIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Tab Switch Logic
 TabGame.MouseButton1Click:Connect(function()
     PageGame.Visible = true; PageInfo.Visible = false
     TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45); TabGame.TextColor3 = Color3.fromRGB(0, 229, 255); TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
@@ -465,7 +453,7 @@ TabInfo.MouseButton1Click:Connect(function()
     TabGame.BackgroundColor3 = Color3.fromRGB(15, 17, 24); TabGame.TextColor3 = Color3.fromRGB(120, 125, 140); TabGameStroke.Color = Color3.fromRGB(40, 45, 60)
 end)
 
--- ==================== 🔑 KEY SYSTEM & OVERLAY DESIGN (ดัดแปลงตามรูปภาพ) ====================
+-- 🔑 KEY SYSTEM OVERLAY
 local KeyOverlay = Instance.new("Frame", MainFrame)
 KeyOverlay.Size = UDim2.new(1, 0, 1, 0)
 KeyOverlay.BackgroundColor3 = Color3.fromRGB(8, 9, 13)
@@ -474,7 +462,6 @@ KeyOverlay.Visible = true
 KeyOverlay.ZIndex = 30
 Instance.new("UICorner", KeyOverlay).CornerRadius = UDim.new(0, 14)
 
--- กล่องป็อปอัปสี่เหลี่ยมขอบมนกะทัดรัด (Style Coquette Hub ในรูป)
 local CompactKeyCard = Instance.new("Frame", KeyOverlay)
 CompactKeyCard.Size = UDim2.new(0, 440, 0, 230)
 CompactKeyCard.Position = UDim2.new(0.5, -220, 0.5, -115)
@@ -486,7 +473,6 @@ local CompactCardStroke = Instance.new("UIStroke", CompactKeyCard)
 CompactCardStroke.Color = Color3.fromRGB(40, 45, 60)
 CompactCardStroke.Thickness = 1.5
 
--- ส่วน Header ของป็อปอัป
 local KeyBadge = Instance.new("Frame", CompactKeyCard)
 KeyBadge.Size = UDim2.new(0, 42, 0, 22)
 KeyBadge.Position = UDim2.new(0, 140, 0, 22)
@@ -514,7 +500,6 @@ PopupTitle.TextSize = 16
 PopupTitle.TextXAlignment = Enum.TextXAlignment.Left
 PopupTitle.ZIndex = 32
 
--- วงกลมแสดงสถานะ/เปอร์เซ็นต์ (ตามแบบรูปภาพ)
 local CircleFrame = Instance.new("Frame", CompactKeyCard)
 CircleFrame.Size = UDim2.new(0, 95, 0, 95)
 CircleFrame.Position = UDim2.new(0, 25, 0, 25)
@@ -546,7 +531,6 @@ StatusSubText.Font = Enum.Font.GothamMedium
 StatusSubText.TextSize = 8
 StatusSubText.ZIndex = 33
 
--- ข้อความแนะนำ
 local KeySub = Instance.new("TextLabel", CompactKeyCard)
 KeySub.Size = UDim2.new(0, 260, 0, 20)
 KeySub.Position = UDim2.new(0, 140, 0, 52)
@@ -558,7 +542,6 @@ KeySub.TextSize = 11
 KeySub.TextXAlignment = Enum.TextXAlignment.Left
 KeySub.ZIndex = 32
 
--- ช่องป้อนคีย์
 local KeyInputBox = Instance.new("TextBox", CompactKeyCard)
 KeyInputBox.Size = UDim2.new(0, 275, 0, 32)
 KeyInputBox.Position = UDim2.new(0, 140, 0, 80)
@@ -578,7 +561,6 @@ KeyInputStroke.Color = Color3.fromRGB(0, 229, 255)
 KeyInputStroke.Thickness = 1
 KeyInputStroke.Transparency = 0.5
 
--- ปุ่มตรวจสอบคีย์
 local CheckKeyBtn = Instance.new("TextButton", CompactKeyCard)
 CheckKeyBtn.Size = UDim2.new(0, 275, 0, 32)
 CheckKeyBtn.Position = UDim2.new(0, 140, 0, 120)
@@ -596,7 +578,6 @@ CheckBtnGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
 }
 
--- Visualizer แถบเสียงแบบในรูป
 local VisContainer = Instance.new("Frame", CompactKeyCard)
 VisContainer.Size = UDim2.new(0, 390, 0, 25)
 VisContainer.Position = UDim2.new(0, 25, 0, 180)
@@ -627,47 +608,6 @@ for i = 1, 24 do
     end)
 end
 
--- Loading Overlay
-local LoadingOverlay = Instance.new("Frame", MainFrame)
-LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
-LoadingOverlay.BackgroundColor3 = Color3.fromRGB(8, 9, 13)
-LoadingOverlay.BackgroundTransparency = 0.03
-LoadingOverlay.Visible = false
-LoadingOverlay.ZIndex = 40
-Instance.new("UICorner", LoadingOverlay).CornerRadius = UDim.new(0, 14)
-
-local LoadingText = Instance.new("TextLabel", LoadingOverlay)
-LoadingText.Size = UDim2.new(1, 0, 0, 30)
-LoadingText.Position = UDim2.new(0, 0, 0.38, 0)
-LoadingText.BackgroundTransparency = 1
-LoadingText.Text = "INITIALIZING SYSTEM... 0%"
-LoadingText.TextColor3 = Color3.fromRGB(0, 229, 255)
-LoadingText.Font = Enum.Font.GothamBold
-LoadingText.TextSize = 13
-LoadingText.ZIndex = 41
-
-local BarTrack = Instance.new("Frame", LoadingOverlay)
-BarTrack.Size = UDim2.new(0.75, 0, 0, 10)
-BarTrack.Position = UDim2.new(0.125, 0, 0.52, 0)
-BarTrack.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
-BarTrack.BorderSizePixel = 0
-BarTrack.ZIndex = 41
-Instance.new("UICorner", BarTrack).CornerRadius = UDim.new(0, 5)
-
-local BarFill = Instance.new("Frame", BarTrack)
-BarFill.Size = UDim2.new(0, 0, 1, 0)
-BarFill.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
-BarFill.BorderSizePixel = 0
-BarFill.ZIndex = 42
-Instance.new("UICorner", BarFill).CornerRadius = UDim.new(0, 5)
-
-local BarFillGradient = Instance.new("UIGradient", BarFill)
-BarFillGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
-}
-
--- Verify Key Event
 CheckKeyBtn.MouseButton1Click:Connect(function()
     local userKey = KeyInputBox.Text
     if userKey == CORRECT_KEY then
@@ -700,32 +640,190 @@ CheckKeyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ฟังก์ชันรันอนิเมชัน Loading
-local function ExecuteWithLoading(scriptUrl, scriptName)
+-- ==================== ⚡ COQUETTE HUB STYLE LOADING SYSTEM (1-100% 3D NEON) ====================
+local LoadingOverlay = Instance.new("Frame", MainFrame)
+LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
+LoadingOverlay.BackgroundColor3 = Color3.fromRGB(8, 9, 13)
+LoadingOverlay.BackgroundTransparency = 0.02
+LoadingOverlay.Visible = false
+LoadingOverlay.ZIndex = 40
+Instance.new("UICorner", LoadingOverlay).CornerRadius = UDim.new(0, 14)
+
+-- Pop-up Loader Frame (แบบ Coquette Hub)
+local LoadCard = Instance.new("Frame", LoadingOverlay)
+LoadCard.Size = UDim2.new(0, 440, 0, 230)
+LoadCard.Position = UDim2.new(0.5, -220, 0.5, -115)
+LoadCard.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
+LoadCard.ZIndex = 41
+Instance.new("UICorner", LoadCard).CornerRadius = UDim.new(0, 16)
+
+local LoadCardStroke = Instance.new("UIStroke", LoadCard)
+LoadCardStroke.Color = Color3.fromRGB(0, 229, 255)
+LoadCardStroke.Thickness = 1.5
+
+-- 3D Neon Circular Percentage Gauge (วงกลมเปอร์เซ็นต์เรืองแสง 3D)
+local LoadCircleFrame = Instance.new("Frame", LoadCard)
+LoadCircleFrame.Size = UDim2.new(0, 95, 0, 95)
+LoadCircleFrame.Position = UDim2.new(0, 25, 0, 25)
+LoadCircleFrame.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
+LoadCircleFrame.ZIndex = 42
+Instance.new("UICorner", LoadCircleFrame).CornerRadius = UDim.new(1, 0)
+
+local LoadCircleStroke = Instance.new("UIStroke", LoadCircleFrame)
+LoadCircleStroke.Color = Color3.fromRGB(0, 229, 255)
+LoadCircleStroke.Thickness = 4
+
+local LoadCircle3DShadow = Instance.new("UIStroke", LoadCircleFrame)
+LoadCircle3DShadow.Color = Color3.fromRGB(255, 0, 200)
+LoadCircle3DShadow.Thickness = 1.5
+LoadCircle3DShadow.Transparency = 0.3
+
+local LoadPercentText = Instance.new("TextLabel", LoadCircleFrame)
+LoadPercentText.Size = UDim2.new(1, 0, 0, 30)
+LoadPercentText.Position = UDim2.new(0, 0, 0.28, 0)
+LoadPercentText.BackgroundTransparency = 1
+LoadPercentText.Text = "0%"
+LoadPercentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadPercentText.Font = Enum.Font.GothamBold
+LoadPercentText.TextSize = 16
+LoadPercentText.ZIndex = 43
+
+local LoadSubText = Instance.new("TextLabel", LoadCircleFrame)
+LoadSubText.Size = UDim2.new(1, 0, 0, 15)
+LoadSubText.Position = UDim2.new(0, 0, 0.60, 0)
+LoadSubText.BackgroundTransparency = 1
+LoadSubText.Text = "CARREGANDO"
+LoadSubText.TextColor3 = Color3.fromRGB(0, 229, 255)
+LoadSubText.Font = Enum.Font.GothamMedium
+LoadSubText.TextSize = 7
+LoadSubText.ZIndex = 43
+
+-- Badge แสดงภาษา/โหมด
+local LoadBadge = Instance.new("Frame", LoadCard)
+LoadBadge.Size = UDim2.new(0, 42, 0, 22)
+LoadBadge.Position = UDim2.new(0, 140, 0, 22)
+LoadBadge.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+LoadBadge.ZIndex = 42
+Instance.new("UICorner", LoadBadge).CornerRadius = UDim.new(0, 6)
+
+local LoadBadgeText = Instance.new("TextLabel", LoadBadge)
+LoadBadgeText.Size = UDim2.new(1, 0, 1, 0)
+LoadBadgeText.BackgroundTransparency = 1
+LoadBadgeText.Text = "RUN"
+LoadBadgeText.TextColor3 = Color3.fromRGB(0, 229, 255)
+LoadBadgeText.Font = Enum.Font.GothamBold
+LoadBadgeText.TextSize = 10
+LoadBadgeText.ZIndex = 43
+
+-- ข้อความชื่อสคริปต์ที่กำลังรัน
+local RunningScriptName = Instance.new("TextLabel", LoadCard)
+RunningScriptName.Size = UDim2.new(0, 240, 0, 25)
+RunningScriptName.Position = UDim2.new(0, 190, 0, 20)
+RunningScriptName.BackgroundTransparency = 1
+RunningScriptName.Text = "Script Name"
+RunningScriptName.TextColor3 = Color3.fromRGB(255, 255, 255)
+RunningScriptName.Font = Enum.Font.GothamBold
+RunningScriptName.TextSize = 13
+RunningScriptName.TextXAlignment = Enum.TextXAlignment.Left
+RunningScriptName.TextTruncate = Enum.TextTruncate.AtEnd
+RunningScriptName.ZIndex = 42
+
+local SubStatusLabel = Instance.new("TextLabel", LoadCard)
+SubStatusLabel.Size = UDim2.new(0, 260, 0, 20)
+SubStatusLabel.Position = UDim2.new(0, 140, 0, 50)
+SubStatusLabel.BackgroundTransparency = 1
+SubStatusLabel.Text = "Aguardando o hub carregar..."
+SubStatusLabel.TextColor3 = Color3.fromRGB(140, 145, 160)
+SubStatusLabel.Font = Enum.Font.Gotham
+SubStatusLabel.TextSize = 11
+SubStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+SubStatusLabel.ZIndex = 42
+
+-- แถบ Loading Bar แนวนอน (Neon Glow)
+local LoadTrack = Instance.new("Frame", LoadCard)
+LoadTrack.Size = UDim2.new(0, 275, 0, 10)
+LoadTrack.Position = UDim2.new(0, 140, 0, 85)
+LoadTrack.BackgroundColor3 = Color3.fromRGB(22, 25, 36)
+LoadTrack.BorderSizePixel = 0
+LoadTrack.ZIndex = 42
+Instance.new("UICorner", LoadTrack).CornerRadius = UDim.new(0, 5)
+
+local LoadFill = Instance.new("Frame", LoadTrack)
+LoadFill.Size = UDim2.new(0, 0, 1, 0)
+LoadFill.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
+LoadFill.BorderSizePixel = 0
+LoadFill.ZIndex = 43
+Instance.new("UICorner", LoadFill).CornerRadius = UDim.new(0, 5)
+
+local LoadFillGradient = Instance.new("UIGradient", LoadFill)
+LoadFillGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
+    ColorSequenceKeypoint.new(0.6, Color3.fromRGB(138, 43, 226)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
+}
+
+-- Visualizer แถบเสียงวิ่งดนตรี (Coquette Dynamic Audio Bars)
+local LoadVisContainer = Instance.new("Frame", LoadCard)
+LoadVisContainer.Size = UDim2.new(0, 390, 0, 25)
+LoadVisContainer.Position = UDim2.new(0, 25, 0, 175)
+LoadVisContainer.BackgroundTransparency = 1
+LoadVisContainer.ZIndex = 42
+
+local LoadVisLayout = Instance.new("UIListLayout", LoadVisContainer)
+LoadVisLayout.FillDirection = Enum.FillDirection.Horizontal
+LoadVisLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+LoadVisLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+LoadVisLayout.Padding = UDim.new(0, 4)
+
+for i = 1, 24 do
+    local Bar = Instance.new("Frame", LoadVisContainer)
+    Bar.Size = UDim2.new(0, 3, 0, math.random(6, 20))
+    Bar.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
+    Bar.BorderSizePixel = 0
+    Bar.ZIndex = 43
+    Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 2)
+    
+    task.spawn(function()
+        while Bar and Bar.Parent do
+            TweenService:Create(Bar, TweenInfo.new(0.18), {
+                Size = UDim2.new(0, 3, 0, math.random(4, 22))
+            }):Play()
+            task.wait(0.16)
+        end
+    end)
+end
+
+-- ฟังก์ชันรันอนิเมชัน Loading สไตล์ Coquette Hub (1-100%)
+local function ExecuteWithCoquetteLoading(scriptUrl, scriptName, displayThaiName)
+    RunningScriptName.Text = "กำลังรันสคริปต์: " .. displayThaiName
+    LoadPercentText.Text = "0%"
+    LoadFill.Size = UDim2.new(0, 0, 1, 0)
     LoadingOverlay.Visible = true
+
     for i = 1, 100 do
-        BarFill.Size = UDim2.new(i / 100, 0, 1, 0)
-        LoadingText.Text = "INITIALIZING SYSTEM... " .. i .. "%"
+        LoadFill.Size = UDim2.new(i / 100, 0, 1, 0)
+        LoadPercentText.Text = i .. "%"
         task.wait(0.008)
     end
+
     task.wait(0.15)
     LoadingOverlay.Visible = false
     RunScript(scriptUrl, scriptName)
 end
 
--- Run Execution Events
+-- Bind Execution Events สำหรับสคริปต์ทั้ง 4 ตัว
 RunBtn1.MouseButton1Click:Connect(function()
-    ExecuteWithLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System")
+    ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
 end)
 
 RunBtn2.MouseButton1Click:Connect(function()
-    ExecuteWithLoading("https://raw.githubusercontent.com/RVXv2/RVX-hub/main/main.lua", "Script by AVX HUB")
+    ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/RVXv2/RVX-hub/main/main.lua", "Script by AVX HUB", "AVX HUB")
 end)
 
 RunBtn3.MouseButton1Click:Connect(function()
-    ExecuteWithLoading("https://rawscripts.net/raw/Brookhaven-RP-Coquette-Hub-Remake-133562", "Coquette Hub Remake")
+    ExecuteWithCoquetteLoading("https://rawscripts.net/raw/Brookhaven-RP-Coquette-Hub-Remake-133562", "Coquette Hub Remake", "Coquette Hub Remake")
 end)
 
 RunBtn4.MouseButton1Click:Connect(function()
-    ExecuteWithLoading("https://rawscripts.net/raw/Brookhaven-RP-Dark-Hub-214104", "Dark Hub")
+    ExecuteWithCoquetteLoading("https://rawscripts.net/raw/Brookhaven-RP-Dark-Hub-214104", "Dark Hub", "Dark Hub")
 end)
