@@ -623,72 +623,72 @@ end)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Vehicle Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    -- STEP 1: ลบรถคันเดิมที่ตกค้างออกก่อน
-    local EventDelete = game:GetService("ReplicatedStorage").RE["1Ca1r"]
-    EventDelete:FireServer("NoMotorVehicleDeleteCar")
+    local Event = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
+Event:FireServer(
+    "filterClick",
+    {
+        name = "Sled",
+        itemType = "Vehicles"
+    }
+)
 
-    -- STEP 2: หยุดการทำงานของ Emotes และเคลียร์เสียงตกค้างทั้งหมด
-    local EventEmote = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
-    EventEmote:FireServer()
+local Event = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+Event:FireServer(
+    "Sled",
+    nil,
+    nil
+)
 
-    local SoundEvent1 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
-    SoundEvent1:FireServer("VehicleMusicStop", "", nil, true)
+local Event = game:GetService("ReplicatedStorage").Remotes.LoadPanel
+Event:FireServer(
+    "MainGUIHandler",
+    "NoMotorVehicleControl",
+    true
+)
 
-    local SoundEvent2 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
-    SoundEvent2:FireServer("CarMusicStop", "", nil, true)
+local Event = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
+Event:InvokeServer()
 
-    local SoundEvent3 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
-    SoundEvent3:FireServer("WickedGramophoneMusicStop", "", nil, true)
+local Event = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
+Event:InvokeServer(
+    25
+)
 
-    local SoundEvent4 = game:GetService("ReplicatedStorage").RE.PlayerToolEvent
-    SoundEvent4:FireServer("ToolMusicStop", "", nil, true)
+local Event = game:GetService("ReplicatedStorage").RE["1Ca1r"]
+Event:FireServer(
+    "NoMotorVehicleDeleteCar"
+)
 
-    local SoundEvent5 = game:GetService("ReplicatedStorage").RE.Props
-    SoundEvent5:FireServer("PropMusicStop", "", nil, true)
-
-    local SoundEvent6 = game:GetService("ReplicatedStorage").RE["1Hors1eRemot1e"]
-    SoundEvent6:FireServer("HorseMusicStop", "", nil, true)
-
-    local SoundEvent7 = game:GetService("ReplicatedStorage").RE["1Player1sHous1e"]
-    SoundEvent7:FireServer("PickingHouseMusicStop", "", nil, true)
-
-    -- STEP 3: เสกรถแพ (Sled) ออกมา
-    local EventSpawn = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    EventSpawn:FireServer("Sled", nil, nil)
-
-    -- STEP 4: ดึงข้อมูลความเร็วและปรับความเร็วรถแพ
-    local EventGetSpeed = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
-    EventGetSpeed:InvokeServer()
-
-    local EventSetSpeed = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
-    EventSetSpeed:InvokeServer(25)
-
-    -- STEP 5: ส่งข้อมูล Profiling ยืนยันระบบ UI หลักของตัวเกม
-    local EventProfile = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
-    EventProfile:FireServer({
+local Event = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
+Event:FireServer(
+    {
         frameTimeStability = {
-            min = 0.0168,
-            p1Low = 0.0168,
-            mean = 0.0646,
-            max = 0.1723,
-            stdDev = 0.0553,
-            p01Low = 0.0168
+            min = 0.0174,
+            p1Low = 0.0174,
+            mean = 0.1306,
+            max = 0.4845,
+            stdDev = 0.1776,
+            p01Low = 0.0174
         },
         identifier = "MainVehicleMenu",
         memoryStability = {
-            min = 1317.1289,
-            p1Low = 1317.1289,
-            mean = 1338.5609,
-            max = 1346.4766,
-            stdDev = 10.9634,
-            p01Low = 1317.1289
+            min = 1535.6211,
+            p1Low = 1535.6211,
+            mean = 1546.9508,
+            max = 1573.9414,
+            stdDev = 13.8404,
+            p01Low = 1535.6211
         },
-        avgCPURenderTime = 0.0192,
-        avgGPURenderTime = 0.0227,
-        duration = 5.1211,
-        avgTotalMemory = 1338.5609,
-        avgFrameTime = 0.0646
-    })
+        avgCPURenderTime = 0.0296,
+        avgGPURenderTime = 0.0196,
+        duration = 4.4981,
+        avgTotalMemory = 1546.9508,
+        avgFrameTime = 0.1306
+    }
+)
+
+local Event = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
+Event:FireServer()
     
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
