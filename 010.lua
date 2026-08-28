@@ -619,17 +619,13 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 3. ปุ่มเสกรถแพ (เรียง Sequence ถูกต้อง: ลบรถเก่า -> เลือก -> เสก -> เปิด GUI ควบคุม -> ตั้งความเร็ว)
+-- 🚗 3. ปุ่มเสกรถแพ (Sequence: เลือก -> เสก -> เปิด Panel -> ตั้งความเร็ว -> เตรียมปุ่มกากบาทลบ)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Vehicle Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    -- 1. ลบรถคันเก่าออกก่อนเพื่อเตรียมเสกใหม่
-    local Event1 = game:GetService("ReplicatedStorage").RE["1Ca1r"]
-    Event1:FireServer("NoMotorVehicleDeleteCar")
-
-    -- 2. ส่ง Telemetry บันทึกการเลือก Sled
-    local Event2 = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
-    Event2:FireServer(
+    -- 1. ส่ง Telemetry บันทึกการเลือก Sled
+    local EventTelemetry = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
+    EventTelemetry:FireServer(
         "filterClick",
         {
             name = "Sled",
@@ -637,32 +633,28 @@ RaftCarBtn.MouseButton1Click:Connect(function()
         }
     )
 
-    -- 3. เสกรถ Sled
-    local Event3 = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    Event3:FireServer(
-        "Sled",
-        nil,
-        nil
-    )
+    -- 2. สั่ง Server ให้เสกรถแพ (Sled) ออกมา
+    local EventSpawn = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    EventSpawn:FireServer("Sled", nil, nil)
 
-    -- 4. เปิดหน้าต่างควบคุมรถ (Color / Music Panel)
-    local Event4 = game:GetService("ReplicatedStorage").Remotes.LoadPanel
-    Event4:FireServer(
+    -- 3. โหลด UI Panel ควบคุมรถ (แถบไอคอนบนหัว)
+    local EventPanel = game:GetService("ReplicatedStorage").Remotes.LoadPanel
+    EventPanel:FireServer(
         "MainGUIHandler",
         "NoMotorVehicleControl",
         true
     )
 
-    -- 5. ดึงและตั้งค่าความเร็วรถ
-    local Event5 = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
-    Event5:InvokeServer()
+    -- 4. ซิงค์และตั้งค่าความเร็วรถ
+    local EventGetSpeed = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
+    EventGetSpeed:InvokeServer()
 
-    local Event6 = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
-    Event6:InvokeServer(25)
+    local EventSetSpeed = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
+    EventSetSpeed:InvokeServer(25)
 
-    -- 6. ส่ง Client Profiling Data
-    local Event7 = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
-    Event7:FireServer(
+    -- 5. ส่ง Data Client Profiling
+    local EventProfile = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
+    EventProfile:FireServer(
         {
             frameTimeStability = {
                 min = 0.0174,
@@ -689,16 +681,21 @@ RaftCarBtn.MouseButton1Click:Connect(function()
         }
     )
 
-    -- 7. ปิด Emote ซิงค์
-    local Event8 = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
-    Event8:FireServer()
+    -- 6. ปิด Emote ซิงค์
+    local EventEmote = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
+    EventEmote:FireServer()
+
+    -- ❌ 7. Remote ปุ่มกากบาท (ทำงานล่างสุด หลังเสกรถเสร็จแล้ว)
+    local EventDelete = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    EventDelete:FireServer("Delete NoMotorVehicle")
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถแพ + เปิดระบบควบคุมสำเร็จ!",
+        Text = "🛶 เสกรถและรัน Sequence ลบสำเร็จ!",
         Duration = 4
     })
 end)
+
 
 -- Tab Switch Events (Ultra Smooth Transition)
 local function SwitchTab(activePage, activeTab, activeStroke)
