@@ -619,80 +619,83 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 3. ปุ่มเสกรถแพ (จัดลำดับตามขั้นตอน ลบ -> เสก -> ตั้งค่า -> เคลียร์เสียง)
+-- 🚗 3. ปุ่มเสกรถแพ (เรียง Sequence ถูกต้อง: ลบรถเก่า -> เลือก -> เสก -> เปิด GUI ควบคุม -> ตั้งความเร็ว)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Vehicle Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    local Event = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
-Event:FireServer(
-    "filterClick",
-    {
-        name = "Sled",
-        itemType = "Vehicles"
-    }
-)
+    -- 1. ลบรถคันเก่าออกก่อนเพื่อเตรียมเสกใหม่
+    local Event1 = game:GetService("ReplicatedStorage").RE["1Ca1r"]
+    Event1:FireServer("NoMotorVehicleDeleteCar")
 
-local Event = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-Event:FireServer(
-    "Sled",
-    nil,
-    nil
-)
+    -- 2. ส่ง Telemetry บันทึกการเลือก Sled
+    local Event2 = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
+    Event2:FireServer(
+        "filterClick",
+        {
+            name = "Sled",
+            itemType = "Vehicles"
+        }
+    )
 
-local Event = game:GetService("ReplicatedStorage").Remotes.LoadPanel
-Event:FireServer(
-    "MainGUIHandler",
-    "NoMotorVehicleControl",
-    true
-)
+    -- 3. เสกรถ Sled
+    local Event3 = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    Event3:FireServer(
+        "Sled",
+        nil,
+        nil
+    )
 
-local Event = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
-Event:InvokeServer()
+    -- 4. เปิดหน้าต่างควบคุมรถ (Color / Music Panel)
+    local Event4 = game:GetService("ReplicatedStorage").Remotes.LoadPanel
+    Event4:FireServer(
+        "MainGUIHandler",
+        "NoMotorVehicleControl",
+        true
+    )
 
-local Event = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
-Event:InvokeServer(
-    25
-)
+    -- 5. ดึงและตั้งค่าความเร็วรถ
+    local Event5 = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
+    Event5:InvokeServer()
 
-local Event = game:GetService("ReplicatedStorage").RE["1Ca1r"]
-Event:FireServer(
-    "NoMotorVehicleDeleteCar"
-)
+    local Event6 = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
+    Event6:InvokeServer(25)
 
-local Event = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
-Event:FireServer(
-    {
-        frameTimeStability = {
-            min = 0.0174,
-            p1Low = 0.0174,
-            mean = 0.1306,
-            max = 0.4845,
-            stdDev = 0.1776,
-            p01Low = 0.0174
-        },
-        identifier = "MainVehicleMenu",
-        memoryStability = {
-            min = 1535.6211,
-            p1Low = 1535.6211,
-            mean = 1546.9508,
-            max = 1573.9414,
-            stdDev = 13.8404,
-            p01Low = 1535.6211
-        },
-        avgCPURenderTime = 0.0296,
-        avgGPURenderTime = 0.0196,
-        duration = 4.4981,
-        avgTotalMemory = 1546.9508,
-        avgFrameTime = 0.1306
-    }
-)
+    -- 6. ส่ง Client Profiling Data
+    local Event7 = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
+    Event7:FireServer(
+        {
+            frameTimeStability = {
+                min = 0.0174,
+                p1Low = 0.0174,
+                mean = 0.1306,
+                max = 0.4845,
+                stdDev = 0.1776,
+                p01Low = 0.0174
+            },
+            identifier = "MainVehicleMenu",
+            memoryStability = {
+                min = 1535.6211,
+                p1Low = 1535.6211,
+                mean = 1546.9508,
+                max = 1573.9414,
+                stdDev = 13.8404,
+                p01Low = 1535.6211
+            },
+            avgCPURenderTime = 0.0296,
+            avgGPURenderTime = 0.0196,
+            duration = 4.4981,
+            avgTotalMemory = 1546.9508,
+            avgFrameTime = 0.1306
+        }
+    )
 
-local Event = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
-Event:FireServer()
-    
+    -- 7. ปิด Emote ซิงค์
+    local Event8 = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
+    Event8:FireServer()
+
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถแพ + รันรีโมทเสียงสำเร็จ!",
+        Text = "🛶 เสกรถแพ + เปิดระบบควบคุมสำเร็จ!",
         Duration = 4
     })
 end)
