@@ -332,7 +332,6 @@ local TabToolsStroke = Instance.new("UIStroke", TabTools)
 TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabToolsStroke.Thickness = 1
 
--- 🚗 หมวดหมู่ใหม่: CARS (Tab 4)
 local TabCars = Instance.new("TextButton", Sidebar)
 TabCars.Size = UDim2.new(1, 0, 0, 32)
 TabCars.Position = UDim2.new(0, 0, 0, 108)
@@ -412,7 +411,6 @@ local function CreateScriptCard(parent, title, subtitle, btnText, isSpecialGradi
     RunBtn.TextSize = 11
     Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 10)
 
-    -- Ultra Smooth Animations (Hover / Active Effect)
     local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     RunBtn.MouseEnter:Connect(function()
         TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 104, 0, 40), Position = UDim2.new(1, -116, 0.5, -20)}):Play()
@@ -515,7 +513,6 @@ CarsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function(
     PageCars.CanvasSize = UDim2.new(0, 0, 0, CarsListLayout.AbsoluteContentSize.Y + 10)
 end)
 
--- ฟังก์ชันลบอุปกรณ์อย่างเด็ดขาด
 local function GetNil(Name, DebugId)
     for _, Object in getnilinstances() do
         if Object.Name == Name and Object:GetDebugId() == DebugId then
@@ -622,55 +619,59 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 3. ปุ่มเสกรถสปริงเกมพาส (ย้ายมาอยู่หมวด CARS + ปลดล็อก VIP อัตโนมัติด้วย User ID + รีเซ็ต Remote เสียงภายในรถ)
-local SpringCarBtn, SpringCarGradient, SpringCarBtnStroke = CreateScriptCard(PageCars, "รถสปริงเกมพาส", "Unlock VIP & Spawn Spring Gamepass Car", "เสก", false)
+-- 🚗 3. ปุ่มเสกรถสปริง (อัปเดตรองรับผู้เล่นที่ไม่มี VIP ด้วยการจำลอง Active Dynamic Key + Sequence รีโมทครบชุด)
+local SpringCarBtn, SpringCarGradient, SpringCarBtnStroke = CreateScriptCard(PageCars, "รถสปริงเกมพาส", "Unlock VIP & Native Map Spawn Sequence", "เสก", false)
 
 SpringCarBtn.MouseButton1Click:Connect(function()
-    -- 1. ระบบเช็คและ Bypass Active Gamepass ด้วย User ID อัตโนมัติ
     local localUserId = tostring(Players.LocalPlayer.UserId)
-    local ReplicaEvent = game:GetService("ReplicatedStorage"):FindFirstChild("RemoteEvents") and game:GetService("ReplicatedStorage").RemoteEvents:FindFirstChild("ReplicaSetValues")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
     
+    -- Step 1: ปลดล็อกเกมพาสด้วย Dynamic UserId ของเครื่องผู้เล่น
+    local ReplicaEvent = ReplicatedStorage:FindFirstChild("RemoteEvents") and ReplicatedStorage.RemoteEvents:FindFirstChild("ReplicaSetValues")
     if ReplicaEvent then
         pcall(function()
             firesignal(ReplicaEvent.OnClientEvent, 
                 1,
-                {
-                    localUserId,
-                    "profile",
-                    "gamepasses"
-                },
-                {
-                    ["9066970"] = 1787905177
-                }
+                { localUserId, "profile", "gamepasses" },
+                { ["9066970"] = 1787905177 }
             )
         end)
     end
 
-    -- 2. รีเซ็ต Remote เสียงเพลงภายในรถทุกชนิด
+    -- Step 2: ล้างสถานะรีโมทเสียงและเพลงที่อาจตกค้าง
+    pcall(function() ReplicatedStorage.RE.Props:FireServer("PropMusicStop", "", nil, true) end)
+    pcall(function() ReplicatedStorage.RE["1Hors1eRemot1e"]:FireServer("HorseMusicStop", "", nil, true) end)
+    pcall(function() ReplicatedStorage.RE["1Player1sHous1e"]:FireServer("PickingHouseMusicStop", "", nil, true) end)
+    pcall(function() ReplicatedStorage.RE["1NoMoto1rVehicle1s"]:FireServer("PickingScooterMusicStop", "", nil) end)
+
+    -- Step 3: ดึงค่า Speed ปัจจุบันของพาหนะจากแมพ (Remote 1)
     pcall(function()
-        game:GetService("ReplicatedStorage").RE.Props:FireServer("PropMusicStop", "", nil, true)
-    end)
-    pcall(function()
-        game:GetService("ReplicatedStorage").RE["1Hors1eRemot1e"]:FireServer("HorseMusicStop", "", nil, true)
-    end)
-    pcall(function()
-        game:GetService("ReplicatedStorage").RE["1Player1sHous1e"]:FireServer("PickingHouseMusicStop", "", nil, true)
-    end)
-    pcall(function()
-        game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]:FireServer("PickingScooterMusicStop", "", nil)
+        if ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("GetNoMotorVehicleSpeed") then
+            ReplicatedStorage.Remotes.GetNoMotorVehicleSpeed:InvokeServer()
+        end
     end)
 
-    -- 3. ยิง Remote เสกรถสปริง (PogoStick) เหมือนเสกผ่านอินเทอร์เฟซแมพจริง
-    local VehicleEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    VehicleEvent:FireServer(
-        "PogoStick",
-        nil,
-        nil
-    )
-    
+    -- Step 4: สั่งเสกรถสปริง PogoStick (Remote 2)
+    local VehicleEvent = ReplicatedStorage.RE["1NoMoto1rVehicle1s"]
+    VehicleEvent:FireServer("PogoStick", nil, nil)
+
+    -- Step 5: ตั้งค่าความเร็วของรถเป็น 25 ตามค่าเริ่มต้นของเกม (Remote 3)
+    pcall(function()
+        if ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("SetNoMotorVehicleSpeed") then
+            ReplicatedStorage.Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
+        end
+    end)
+
+    -- Step 6: ล้างสถานะการเล่นท่า/Emote เพื่อให้ตัวละครนั่งขับได้สมบูรณ์ (Remote 4)
+    pcall(function()
+        if ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Emotes:StopSyncableEmote") then
+            ReplicatedStorage.Remotes["Emotes:StopSyncableEmote"]:FireServer()
+        end
+    end)
+
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🏎️ เสกรถสปริงสำเร็จแล้ว!",
+        Text = "🏎️ เสกรถสปริงระบบแมพแท้สำเร็จ!",
         Duration = 4
     })
 end)
