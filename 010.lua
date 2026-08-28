@@ -619,69 +619,57 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (Sequence ปรับ Timing ดักรอ Object โหลด UI)
+-- 🚗 ปุ่มเสกรถแพ (จัด Sequence ใหม่แบบเป๊ะๆ)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local EventTelemetry = ReplicatedStorage.Remotes.TelemetryClientInteraction
 
-    -- 1. ยิง Remote เปิด HUD เมนูรถ
+    -- 📌 1. ส่ง Event เปิดเมนูและเลือก Sled ก่อน
     EventTelemetry:FireServer("uiInteraction", {
         buttonName = "VehicleHudButton",
         inVehicle = false
     })
-
-    -- 2. ยิง Remote เลือกหมวดหมู่ Sled
+    
     EventTelemetry:FireServer("filterClick", {
         name = "Sled",
         itemType = "Vehicles"
     })
 
-    -- 3. สั่ง Server เสกรถแพ (Sled)
+    -- 📌 2. สั่ง Server เสกรถออกมา
     ReplicatedStorage.RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
 
-    -- ⏳ [ดึงเวลา] รอให้ Server เสกรถลง Workspace และสร้าง เบาะ/ตัวรถ เสร็จก่อน 0.3 วินาที
-    task.wait(0.3)
+    -- 📌 3. ⚠️ [จุดสำคัญสุด] ต้องรอ 0.4 - 0.5 วินาที ให้ Server โหลด Object รถลงเครื่อง Client ก่อน!
+    task.wait(0.6)
 
-    -- 4. ยิงสั่งเปิด Panel ควบคุม (หลังจากรถเกิดแล้ว)
+    -- 📌 4. พอตัวรถเกิดใน Workspace แล้ว ค่อยสั่งโหลด Panel UI ควบคุมบนหัว
     ReplicatedStorage.Remotes.LoadPanel:FireServer(
         "MainGUIHandler",
         "NoMotorVehicleControl",
         true
     )
 
-    -- 5. ซิงค์ความเร็ว
+    -- 📌 5. ซิงค์และตั้งค่าความเร็ว
     pcall(function()
         ReplicatedStorage.Remotes.GetNoMotorVehicleSpeed:InvokeServer()
         ReplicatedStorage.Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
     end)
 
-    -- ⚡ 6. [สำรอง] บังคับสั่ง Visible ตัว UI Panel ฝั่ง Client ตรงๆ ป้องกันเกมซ่อนไว้
+    -- 📌 6. ปิด Emote และส่ง Telemetry ปิดท้าย
     pcall(function()
-        local pGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-        if pGui:FindFirstChild("MainGui") then
-            -- สั่งแสดง UI Control Panel บนหัวทันที
-            if pGui.MainGui:FindFirstChild("NoMotorVehicleControl") then
-                pGui.MainGui.NoMotorVehicleControl.Visible = true
-            end
-        end
-    end)
-
-    -- 7. ส่ง Profiling Data & ปิด Emote
-    pcall(function()
+        ReplicatedStorage.Remotes["Emotes:StopSyncableEmote"]:FireServer()
         ReplicatedStorage.Remotes["ClientProfiling:SendData"]:FireServer({
             frameTimeStability = { min = 0.0174, p1Low = 0.0174, mean = 0.1306, max = 0.4845, stdDev = 0.1776, p01Low = 0.0174 },
             identifier = "MainVehicleMenu",
             memoryStability = { min = 1535.6211, p1Low = 1535.6211, mean = 1546.9508, max = 1573.9414, stdDev = 13.8404, p01Low = 1535.6211 },
             avgCPURenderTime = 0.0296, avgGPURenderTime = 0.0196, duration = 4.4981, avgTotalMemory = 1546.9508, avgFrameTime = 0.1306
         })
-        ReplicatedStorage.Remotes["Emotes:StopSyncableEmote"]:FireServer()
     end)
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถและซิงค์ UI เรียบร้อย!",
+        Text = "🛶 เสกรถและโหลด UI สำเร็จ!",
         Duration = 3
     })
 end)
