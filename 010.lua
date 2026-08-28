@@ -619,80 +619,57 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 3. ปุ่มเสกรถแพ (Sequence: เลือก -> เสก -> เปิด Panel -> ตั้งความเร็ว -> เตรียมปุ่มกากบาทลบ)
-local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Vehicle Native Sequence", "เสก", false)
+-- 🛶 ปุ่มเสกรถแพ (Auto-Sit System เพื่อบังคับโหลด UI เกม)
+local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft & Auto-Sit UI", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    -- 1. ส่ง Telemetry บันทึกการเลือก Sled
-    local EventTelemetry = game:GetService("ReplicatedStorage").Remotes.TelemetryClientInteraction
-    EventTelemetry:FireServer(
-        "filterClick",
-        {
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    -- 1. บันทึก Telemetry การกดเลือก Sled
+    pcall(function()
+        ReplicatedStorage.Remotes.TelemetryClientInteraction:FireServer("filterClick", {
             name = "Sled",
             itemType = "Vehicles"
-        }
-    )
+        })
+    end)
 
-    -- 2. สั่ง Server ให้เสกรถแพ (Sled) ออกมา
-    local EventSpawn = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    EventSpawn:FireServer("Sled", nil, nil)
+    -- 2. สั่ง Server ให้เสกรถแพ (Sled)
+    ReplicatedStorage.RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
 
-    -- 3. โหลด UI Panel ควบคุมรถ (แถบไอคอนบนหัว)
-    local EventPanel = game:GetService("ReplicatedStorage").Remotes.LoadPanel
-    EventPanel:FireServer(
-        "MainGUIHandler",
-        "NoMotorVehicleControl",
-        true
-    )
+    -- 3. โหลด UI Panel ควบคุมฝั่ง Server
+    pcall(function()
+        ReplicatedStorage.Remotes.LoadPanel:FireServer("MainGUIHandler", "NoMotorVehicleControl", true)
+        ReplicatedStorage.Remotes.GetNoMotorVehicleSpeed:InvokeServer()
+        ReplicatedStorage.Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
+    end)
 
-    -- 4. ซิงค์และตั้งค่าความเร็วรถ
-    local EventGetSpeed = game:GetService("ReplicatedStorage").Remotes.GetNoMotorVehicleSpeed
-    EventGetSpeed:InvokeServer()
-
-    local EventSetSpeed = game:GetService("ReplicatedStorage").Remotes.SetNoMotorVehicleSpeed
-    EventSetSpeed:InvokeServer(25)
-
-    -- 5. ส่ง Data Client Profiling
-    local EventProfile = game:GetService("ReplicatedStorage").Remotes["ClientProfiling:SendData"]
-    EventProfile:FireServer(
-        {
-            frameTimeStability = {
-                min = 0.0174,
-                p1Low = 0.0174,
-                mean = 0.1306,
-                max = 0.4845,
-                stdDev = 0.1776,
-                p01Low = 0.0174
-            },
-            identifier = "MainVehicleMenu",
-            memoryStability = {
-                min = 1535.6211,
-                p1Low = 1535.6211,
-                mean = 1546.9508,
-                max = 1573.9414,
-                stdDev = 13.8404,
-                p01Low = 1535.6211
-            },
-            avgCPURenderTime = 0.0296,
-            avgGPURenderTime = 0.0196,
-            duration = 4.4981,
-            avgTotalMemory = 1546.9508,
-            avgFrameTime = 0.1306
-        }
-    )
-
-    -- 6. ปิด Emote ซิงค์
-    local EventEmote = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
-    EventEmote:FireServer()
-
-    -- ❌ 7. Remote ปุ่มกากบาท (ทำงานล่างสุด หลังเสกรถเสร็จแล้ว)
-    local EventDelete = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    EventDelete:FireServer("Delete NoMotorVehicle")
+    -- 4. ⚡ [ขั้นตอนสำคัญ] วาร์ปตัวละครเข้าเบาะเพื่อปลุก Client UI ของเกม
+    task.spawn(function()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        
+        -- วนหาเบาะรถแพที่เพิ่งเสกมาใน Workspace
+        for i = 1, 15 do
+            for _, obj in ipairs(workspace:GetChildren()) do
+                if (obj.Name:find("Sled") or obj.Name:find("Vehicle") or obj:FindFirstChild("VehicleSeat")) then
+                    local seat = obj:FindFirstChildOfClass("VehicleSeat") or obj:FindFirstChild("VehicleSeat", true)
+                    if seat and humanoid then
+                        -- ย้ายตัวไปนั่งเบาะ เพื่อให้ UI เกมทำงานอัตโนมัติ
+                        seat:Sit(humanoid)
+                        break
+                    end
+                end
+            end
+            task.wait(0.1)
+        end
+    end)
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถและรัน Sequence ลบสำเร็จ!",
-        Duration = 4
+        Text = "🛶 เสกรถและซิงค์ UI เรียบร้อย!",
+        Duration = 3
     })
 end)
 
