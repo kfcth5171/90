@@ -288,7 +288,7 @@ Sidebar.Position = UDim2.new(0, 14, 0, 68)
 Sidebar.BackgroundTransparency = 1
 
 local TabGame = Instance.new("TextButton", Sidebar)
-TabGame.Size = UDim2.new(1, 0, 0, 34)
+TabGame.Size = UDim2.new(1, 0, 0, 32)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
 TabGame.Text = "   🎮   GAMES"
@@ -303,8 +303,8 @@ TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
 
 local TabInfo = Instance.new("TextButton", Sidebar)
-TabInfo.Size = UDim2.new(1, 0, 0, 34)
-TabInfo.Position = UDim2.new(0, 0, 0, 40)
+TabInfo.Size = UDim2.new(1, 0, 0, 32)
+TabInfo.Position = UDim2.new(0, 0, 0, 36)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabInfo.Text = "   📊   STATUS"
 TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
@@ -318,8 +318,8 @@ TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
 
 local TabTools = Instance.new("TextButton", Sidebar)
-TabTools.Size = UDim2.new(1, 0, 0, 34)
-TabTools.Position = UDim2.new(0, 0, 0, 80)
+TabTools.Size = UDim2.new(1, 0, 0, 32)
+TabTools.Position = UDim2.new(0, 0, 0, 72)
 TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabTools.Text = "   🛠️   Tools🔥"
 TabTools.TextColor3 = Color3.fromRGB(120, 125, 140)
@@ -331,6 +331,22 @@ Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 10)
 local TabToolsStroke = Instance.new("UIStroke", TabTools)
 TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabToolsStroke.Thickness = 1
+
+-- 🚗 หมวดหมู่ใหม่: CARS (Tab 4)
+local TabCars = Instance.new("TextButton", Sidebar)
+TabCars.Size = UDim2.new(1, 0, 0, 32)
+TabCars.Position = UDim2.new(0, 0, 0, 108)
+TabCars.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+TabCars.Text = "   🚗   CARS"
+TabCars.TextColor3 = Color3.fromRGB(120, 125, 140)
+TabCars.Font = Enum.Font.GothamBold
+TabCars.TextSize = 11
+TabCars.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", TabCars).CornerRadius = UDim.new(0, 10)
+
+local TabCarsStroke = Instance.new("UIStroke", TabCars)
+TabCarsStroke.Color = Color3.fromRGB(40, 45, 60)
+TabCarsStroke.Thickness = 1
 
 -- Main Content Frame
 local ContentFrame = Instance.new("Frame", MainFrame)
@@ -482,7 +498,24 @@ ToolsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function
     PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 10)
 end)
 
--- ฟังก์ชันลบอุปกรณ์อย่างเด็ดขาด (กดครั้งเดียว ระบบจัดการส่งย้ำเบื้องหลังให้ทันที)
+-- Tab 4: Cars Page (ScrollingFrame)
+local PageCars = Instance.new("ScrollingFrame", ContentFrame)
+PageCars.Size = UDim2.new(1, 0, 1, 0)
+PageCars.BackgroundTransparency = 1
+PageCars.ScrollBarThickness = 4
+PageCars.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageCars.BorderSizePixel = 0
+PageCars.Visible = false
+
+local CarsListLayout = Instance.new("UIListLayout", PageCars)
+CarsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+CarsListLayout.Padding = UDim.new(0, 10)
+
+CarsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageCars.CanvasSize = UDim2.new(0, 0, 0, CarsListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- ฟังก์ชันลบอุปกรณ์อย่างเด็ดขาด
 local function GetNil(Name, DebugId)
     for _, Object in getnilinstances() do
         if Object.Name == Name and Object:GetDebugId() == DebugId then
@@ -494,7 +527,6 @@ end
 local function SmartClearTools()
     local localPlayer = Players.LocalPlayer
     
-    -- ลบไอเทมฝั่ง Client ทันที
     if localPlayer then
         if localPlayer:FindFirstChildOfClass("Backpack") then
             for _, item in ipairs(localPlayer.Backpack:GetChildren()) do
@@ -508,7 +540,6 @@ local function SmartClearTools()
         end
     end
     
-    -- ส่งสัญญาณ Remote ลบไปยัง Server แบบ Loop ซ้ำใน Background (กดปุ่มลบครั้งเดียวจบ)
     task.spawn(function()
         for i = 1, 3 do
             local QuickDeleteEvent = GetNil("QuickDelete", "1_29270557")
@@ -559,7 +590,7 @@ BoomBoxBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 2. ปุ่มเสก / ลบ ปืนตด (Minions2026_FartGun)
+-- 2. ปุ่มเสก / ลบ ปืนตด (Minions2026_FartGun) ใน Tools
 local FartGunBtn, FartGunGradient, FartGunBtnStroke = CreateScriptCard(PageTools, "เสก ปืนตด (Fart Gun)", "Spawn & Delete Minions Fart Gun", "เสก", true)
 local isFartGunSpawned = false
 
@@ -591,54 +622,57 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 3. ปุ่มเสก / ลบ รถสปริงเกมพาส (Spring Gamepass Car)
-local SpringCarBtn, SpringCarGradient, SpringCarBtnStroke = CreateScriptCard(PageTools, "รถสปริงเกมพาส", "Unlock & Spawn Spring Gamepass Car", "เสก", false)
-local isSpringCarSpawned = false
+-- 🚗 3. ปุ่มเสกรถสปริงเกมพาส (ย้ายมาอยู่หมวด CARS + ปลดล็อก VIP อัตโนมัติด้วย User ID + รีเซ็ต Remote เสียงภายในรถ)
+local SpringCarBtn, SpringCarGradient, SpringCarBtnStroke = CreateScriptCard(PageCars, "รถสปริงเกมพาส", "Unlock VIP & Spawn Spring Gamepass Car", "เสก", false)
 
 SpringCarBtn.MouseButton1Click:Connect(function()
-    local VehicleEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    -- 1. ระบบเช็คและ Bypass Active Gamepass ด้วย User ID อัตโนมัติ
+    local localUserId = tostring(Players.LocalPlayer.UserId)
+    local ReplicaEvent = game:GetService("ReplicatedStorage"):FindFirstChild("RemoteEvents") and game:GetService("ReplicatedStorage").RemoteEvents:FindFirstChild("ReplicaSetValues")
     
-    if not isSpringCarSpawned then
-        -- เสกรถสปริง (PogoStick)
-        VehicleEvent:FireServer(
-            "PogoStick",
-            nil,
-            nil
-        )
-        
-        SpringCarBtn.Text = "ลบ"
-        SpringCarGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 50))
-        }
-        SpringCarBtnStroke.Color = Color3.fromRGB(255, 100, 150)
-        isSpringCarSpawned = true
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "StyleKuki VIP",
-            Text = "🏎️ เสกรถสปริงสำเร็จแล้ว!",
-            Duration = 4
-        })
-    else
-        -- ลบรถสปริง
-        VehicleEvent:FireServer(
-            "Delete NoMotorVehicle"
-        )
-        
-        SpringCarBtn.Text = "เสก"
-        SpringCarGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 120, 255))
-        }
-        SpringCarBtnStroke.Color = Color3.fromRGB(150, 240, 255)
-        isSpringCarSpawned = false
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "StyleKuki VIP",
-            Text = "🗑️ ลบรถสปริงสำเร็จแล้ว!",
-            Duration = 4
-        })
+    if ReplicaEvent then
+        pcall(function()
+            firesignal(ReplicaEvent.OnClientEvent, 
+                1,
+                {
+                    localUserId,
+                    "profile",
+                    "gamepasses"
+                },
+                {
+                    ["9066970"] = 1787905177
+                }
+            )
+        end)
     end
+
+    -- 2. รีเซ็ต Remote เสียงเพลงภายในรถทุกชนิด
+    pcall(function()
+        game:GetService("ReplicatedStorage").RE.Props:FireServer("PropMusicStop", "", nil, true)
+    end)
+    pcall(function()
+        game:GetService("ReplicatedStorage").RE["1Hors1eRemot1e"]:FireServer("HorseMusicStop", "", nil, true)
+    end)
+    pcall(function()
+        game:GetService("ReplicatedStorage").RE["1Player1sHous1e"]:FireServer("PickingHouseMusicStop", "", nil, true)
+    end)
+    pcall(function()
+        game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]:FireServer("PickingScooterMusicStop", "", nil)
+    end)
+
+    -- 3. ยิง Remote เสกรถสปริง (PogoStick) เหมือนเสกผ่านอินเทอร์เฟซแมพจริง
+    local VehicleEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    VehicleEvent:FireServer(
+        "PogoStick",
+        nil,
+        nil
+    )
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "StyleKuki VIP",
+        Text = "🏎️ เสกรถสปริงสำเร็จแล้ว!",
+        Duration = 4
+    })
 end)
 
 -- Tab Switch Events (Ultra Smooth Transition)
@@ -646,8 +680,14 @@ local function SwitchTab(activePage, activeTab, activeStroke)
     PageGame.Visible = (activePage == PageGame)
     PageInfo.Visible = (activePage == PageInfo)
     PageTools.Visible = (activePage == PageTools)
+    PageCars.Visible = (activePage == PageCars)
 
-    local tabs = {{TabGame, TabGameStroke}, {TabInfo, TabInfoStroke}, {TabTools, TabToolsStroke}}
+    local tabs = {
+        {TabGame, TabGameStroke}, 
+        {TabInfo, TabInfoStroke}, 
+        {TabTools, TabToolsStroke},
+        {TabCars, TabCarsStroke}
+    }
     for _, item in ipairs(tabs) do
         local btn, stroke = item[1], item[2]
         if btn == activeTab then
@@ -663,6 +703,7 @@ end
 TabGame.MouseButton1Click:Connect(function() SwitchTab(PageGame, TabGame, TabGameStroke) end)
 TabInfo.MouseButton1Click:Connect(function() SwitchTab(PageInfo, TabInfo, TabInfoStroke) end)
 TabTools.MouseButton1Click:Connect(function() SwitchTab(PageTools, TabTools, TabToolsStroke) end)
+TabCars.MouseButton1Click:Connect(function() SwitchTab(PageCars, TabCars, TabCarsStroke) end)
 
 -- 🔑 KEY SYSTEM OVERLAY
 local KeyOverlay = Instance.new("Frame", MainFrame)
@@ -860,7 +901,6 @@ LoadingOverlay.Visible = false
 LoadingOverlay.ZIndex = 40
 Instance.new("UICorner", LoadingOverlay).CornerRadius = UDim.new(0, 14)
 
--- Pop-up Loader Frame (แบบ Coquette Hub)
 local LoadCard = Instance.new("Frame", LoadingOverlay)
 LoadCard.Size = UDim2.new(0, 440, 0, 230)
 LoadCard.Position = UDim2.new(0.5, -220, 0.5, -115)
@@ -872,7 +912,6 @@ local LoadCardStroke = Instance.new("UIStroke", LoadCard)
 LoadCardStroke.Color = Color3.fromRGB(0, 229, 255)
 LoadCardStroke.Thickness = 1.5
 
--- 3D Neon Circular Percentage Gauge
 local LoadCircleFrame = Instance.new("Frame", LoadCard)
 LoadCircleFrame.Size = UDim2.new(0, 95, 0, 95)
 LoadCircleFrame.Position = UDim2.new(0, 25, 0, 25)
@@ -909,7 +948,6 @@ LoadSubText.Font = Enum.Font.GothamMedium
 LoadSubText.TextSize = 7
 LoadSubText.ZIndex = 43
 
--- Badge แสดงภาษา/โหมด
 local LoadBadge = Instance.new("Frame", LoadCard)
 LoadBadge.Size = UDim2.new(0, 42, 0, 22)
 LoadBadge.Position = UDim2.new(0, 140, 0, 22)
@@ -926,7 +964,6 @@ LoadBadgeText.Font = Enum.Font.GothamBold
 LoadBadgeText.TextSize = 10
 LoadBadgeText.ZIndex = 43
 
--- ข้อความชื่อสคริปต์ที่กำลังรัน
 local RunningScriptName = Instance.new("TextLabel", LoadCard)
 RunningScriptName.Size = UDim2.new(0, 240, 0, 25)
 RunningScriptName.Position = UDim2.new(0, 190, 0, 20)
@@ -950,7 +987,6 @@ SubStatusLabel.TextSize = 11
 SubStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 SubStatusLabel.ZIndex = 42
 
--- แถบ Loading Bar แนวนอน (Neon Glow)
 local LoadTrack = Instance.new("Frame", LoadCard)
 LoadTrack.Size = UDim2.new(0, 275, 0, 10)
 LoadTrack.Position = UDim2.new(0, 140, 0, 85)
@@ -973,7 +1009,6 @@ LoadFillGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 200))
 }
 
--- Visualizer แถบเสียงวิ่งดนตรี
 local LoadVisContainer = Instance.new("Frame", LoadCard)
 LoadVisContainer.Size = UDim2.new(0, 390, 0, 25)
 LoadVisContainer.Position = UDim2.new(0, 25, 0, 175)
@@ -1004,7 +1039,6 @@ for i = 1, 24 do
     end)
 end
 
--- ฟังก์ชันรันอนิเมชัน Loading สไตล์ Coquette Hub (1-100%)
 local function ExecuteWithCoquetteLoading(scriptUrl, scriptName, displayThaiName)
     RunningScriptName.Text = "กำลังรันสคริปต์: " .. displayThaiName
     LoadPercentText.Text = "0%"
@@ -1022,7 +1056,6 @@ local function ExecuteWithCoquetteLoading(scriptUrl, scriptName, displayThaiName
     RunScript(scriptUrl, scriptName)
 end
 
--- Bind Execution Events สำหรับสคริปต์ทั้ง 4 ตัว
 RunBtn1.MouseButton1Click:Connect(function()
     ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
 end)
