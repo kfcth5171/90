@@ -619,59 +619,92 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (จัด Sequence ใหม่แบบเป๊ะๆ)
+-- 🚗 ปุ่มเสกรถแพ (Sequence + Trigger Client Drive Signal)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local EventTelemetry = ReplicatedStorage.Remotes.TelemetryClientInteraction
+    task.spawn(function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local StarterGui = game:GetService("StarterGui")
+        
+        local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
+        local RE = ReplicatedStorage:WaitForChild("RE", 5)
 
-    -- 📌 1. ส่ง Event เปิดเมนูและเลือก Sled ก่อน
-    EventTelemetry:FireServer("uiInteraction", {
-        buttonName = "VehicleHudButton",
-        inVehicle = false
-    })
-    
-    EventTelemetry:FireServer("filterClick", {
-        name = "Sled",
-        itemType = "Vehicles"
-    })
+        if not Remotes or not RE then return end
 
-    -- 📌 2. สั่ง Server เสกรถออกมา
-    ReplicatedStorage.RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
+        -- 1. Telemetry: จำลองการคลิก UI สั่งเสก
+        pcall(function()
+            Remotes.TelemetryClientInteraction:FireServer("uiInteraction", { buttonName = "VehicleHudButton", inVehicle = false })
+            Remotes.TelemetryClientInteraction:FireServer("filterClick", { name = "Sled", itemType = "Vehicles" })
+        end)
 
-    -- 📌 3. ⚠️ [จุดสำคัญสุด] ต้องรอ 0.4 - 0.5 วินาที ให้ Server โหลด Object รถลงเครื่อง Client ก่อน!
-    task.wait(0.6)
+        -- 2. Delete Old Vehicle: ลบรถคันเก่าออกก่อน
+        pcall(function()
+            if RE:FindFirstChild("1Ca1r") then
+                RE["1Ca1r"]:FireServer("NoMotorVehicleDeleteCar")
+            end
+        end)
 
-    -- 📌 4. พอตัวรถเกิดใน Workspace แล้ว ค่อยสั่งโหลด Panel UI ควบคุมบนหัว
-    ReplicatedStorage.Remotes.LoadPanel:FireServer(
-        "MainGUIHandler",
-        "NoMotorVehicleControl",
-        true
-    )
+        -- ⏳ รอ Server เคลียร์ Instance รถคันเก่า
+        task.wait(0.15)
 
-    -- 📌 5. ซิงค์และตั้งค่าความเร็ว
-    pcall(function()
-        ReplicatedStorage.Remotes.GetNoMotorVehicleSpeed:InvokeServer()
-        ReplicatedStorage.Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
-    end)
+        -- 3. Spawn New Vehicle: สั่ง Server เสกรถคันใหม่
+        pcall(function()
+            if RE:FindFirstChild("1NoMoto1rVehicle1s") then
+                RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
+            end
+        end)
 
-    -- 📌 6. ปิด Emote และส่ง Telemetry ปิดท้าย
-    pcall(function()
-        ReplicatedStorage.Remotes["Emotes:StopSyncableEmote"]:FireServer()
-        ReplicatedStorage.Remotes["ClientProfiling:SendData"]:FireServer({
-            frameTimeStability = { min = 0.0174, p1Low = 0.0174, mean = 0.1306, max = 0.4845, stdDev = 0.1776, p01Low = 0.0174 },
-            identifier = "MainVehicleMenu",
-            memoryStability = { min = 1535.6211, p1Low = 1535.6211, mean = 1546.9508, max = 1573.9414, stdDev = 13.8404, p01Low = 1535.6211 },
-            avgCPURenderTime = 0.0296, avgGPURenderTime = 0.0196, duration = 4.4981, avgTotalMemory = 1546.9508, avgFrameTime = 0.1306
+        -- ⏳ รอ Object เสกขึ้นมาเล็กน้อยก่อนส่ง Signal บอก Client
+        task.wait(0.15)
+
+        -- ⚡ 4. Trigger UI: จุดสำคัญ! หลอก LocalScript ของเกมว่าเราเริ่มขับรถแล้ว (GUI ด้านบนจะขึ้นทันที)
+        pcall(function()
+            if Remotes:FindFirstChild("PlayerStartedDriving") then
+                firesignal(Remotes.PlayerStartedDriving.OnClientEvent)
+            end
+        end)
+
+        -- 5. Speed & State Setup: ตั้งค่าความเร็ว ( Non-Blocking Async )
+        task.spawn(function()
+            pcall(function()
+                if Remotes:FindFirstChild("GetNoMotorVehicleSpeed") then
+                    Remotes.GetNoMotorVehicleSpeed:InvokeServer()
+                end
+            end)
+            
+            pcall(function()
+                if Remotes:FindFirstChild("SetNoMotorVehicleSpeed") then
+                    Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
+                end
+            end)
+
+            pcall(function()
+                if Remotes:FindFirstChild("Emotes:StopSyncableEmote") then
+                    Remotes["Emotes:StopSyncableEmote"]:FireServer()
+                end
+            end)
+        end)
+
+        -- 6. Profiling Telemetry: ส่ง Log ปิดท้าย
+        pcall(function()
+            if Remotes:FindFirstChild("ClientProfiling:SendData") then
+                Remotes["ClientProfiling:SendData"]:FireServer({
+                    frameTimeStability = { min = 0.0174, p1Low = 0.0174, mean = 0.1306, max = 0.4845, stdDev = 0.1776, p01Low = 0.0174 },
+                    identifier = "MainVehicleMenu",
+                    memoryStability = { min = 1535.6211, p1Low = 1535.6211, mean = 1546.9508, max = 1573.9414, stdDev = 13.8404, p01Low = 1535.6211 },
+                    avgCPURenderTime = 0.0296, avgGPURenderTime = 0.0196, duration = 4.4981, avgTotalMemory = 1546.9508, avgFrameTime = 0.1306
+                })
+            end
+        end)
+
+        -- 7. Notification: แจ้งเตือนเสร็จสิ้น
+        StarterGui:SetCore("SendNotification", {
+            Title = "StyleKuki VIP",
+            Text = "🛶 เสกรถสำเร็จ!",
+            Duration = 3
         })
     end)
-
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถและโหลด UI สำเร็จ!",
-        Duration = 3
-    })
 end)
 
 
