@@ -619,70 +619,113 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (Sequence สมบูรณ์แบบ + LoadPanel UI Trigger)
+-- 🚗 ปุ่มเสกรถแพ (Full Native Sequence + Music Reset & Customization)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
+        local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local StarterGui = game:GetService("StarterGui")
-        
+        local LocalPlayer = Players.LocalPlayer
+
         local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
         local RE = ReplicatedStorage:WaitForChild("RE", 5)
 
         if not Remotes or not RE then return end
 
-        -- 1. Telemetry: จำลองการกดเมนูก่อนเสก
+        -- 1. Telemetry Client Interaction
         pcall(function()
             Remotes.TelemetryClientInteraction:FireServer("uiInteraction", { buttonName = "VehicleHudButton", inVehicle = false })
             Remotes.TelemetryClientInteraction:FireServer("filterClick", { name = "Sled", itemType = "Vehicles" })
         end)
 
-        -- 2. Delete Old Vehicle: ลบรอบเก่าออกก่อน
+        -- 2. Clean Up Music & Sounds (สั่งเคลียร์ระบบเสียงและเพลงค้างทั้งหมดแบบเกมปกติ)
+        pcall(function()
+            if RE:FindFirstChild("1Player1sCa1r") then
+                RE["1Player1sCa1r"]:FireServer("VehicleMusicStop", "", nil, true)
+                RE["1Player1sCa1r"]:FireServer("CarMusicStop", "", nil, true)
+                RE["1Player1sCa1r"]:FireServer("MusicStop", "", nil, true)
+            end
+            if RE:FindFirstChild("PlayerToolEvent") then
+                RE.PlayerToolEvent:FireServer("ToolMusicStop", "", nil, true)
+            end
+            if RE:FindFirstChild("Props") then
+                RE.Props:FireServer("PropMusicStop", "", nil, true)
+            end
+            if RE:FindFirstChild("1Hors1eRemot1e") then
+                RE["1Hors1eRemot1e"]:FireServer("HorseMusicStop", "", nil, true)
+            end
+            if RE:FindFirstChild("1Player1sHous1e") then
+                RE["1Player1sHous1e"]:FireServer("PickingHouseMusicStop", "", nil, true)
+            end
+        end)
+
+        -- 3. Delete Old Vehicle (ลบรอบเก่าออก)
         pcall(function()
             if RE:FindFirstChild("1Ca1r") then
                 RE["1Ca1r"]:FireServer("NoMotorVehicleDeleteCar")
             end
         end)
 
-        -- ⏳ รอ Server เคลียร์รถคันเก่าออก
         task.wait(0.15)
 
-        -- 3. Spawn New Vehicle: สั่งเสกรถคันใหม่
+        -- 4. Spawn New Vehicle (เสกรถแพคันใหม่)
         pcall(function()
             if RE:FindFirstChild("1NoMoto1rVehicle1s") then
                 RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
             end
         end)
 
-        -- ⚡ 4. Open Control Panel (LoadPanel): ยิงสั่งเปิด UI หน้าต่างควบคุมทันทีหลังเสก
+        -- 5. Open Control Panel & Sync Client HUD (เปิด UI และซิงค์ HUD ฝั่ง Client)
         pcall(function()
             if Remotes:FindFirstChild("LoadPanel") then
                 Remotes.LoadPanel:FireServer("MainGUIHandler", "NoMotorVehicleControl", true)
             end
-        end)
-
-        -- ⚡ 5. Client Signal Sync: ซิงค์ Signal ฝั่ง Client เพื่อให้ UI ทำงานสมบูรณ์
-        pcall(function()
             if Remotes:FindFirstChild("PlayerStartedDriving") then
                 firesignal(Remotes.PlayerStartedDriving.OnClientEvent)
             end
         end)
 
-        -- 6. Speed & State Setup: ตั้งค่าความเร็ว ( Non-Blocking Background )
+        -- 6. Customize Vehicle & Speed Setup (ตั้งค่าความเร็ว, สีรถ, และลาย/แสงใต้รถ)
         task.spawn(function()
+            task.wait(0.1)
+            
+            -- ตั้งค่าความเร็ว
             pcall(function()
                 if Remotes:FindFirstChild("GetNoMotorVehicleSpeed") then
                     Remotes.GetNoMotorVehicleSpeed:InvokeServer()
                 end
-            end)
-            
-            pcall(function()
                 if Remotes:FindFirstChild("SetNoMotorVehicleSpeed") then
                     Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
                 end
+                if Remotes:FindFirstChild("IncrementNoMotorVehicleSpeed") then
+                    Remotes.IncrementNoMotorVehicleSpeed:InvokeServer()
+                end
             end)
 
+            -- เปลี่ยนสีรถ (อ้างอิงตำแหน่ง Remote จาก PlayerGui)
+            pcall(function()
+                local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+                if playerGui and playerGui:FindFirstChild("MainGUIHandler") then
+                    local colorRemote = playerGui.MainGUIHandler:FindFirstChild("NoMotorVehicleControl")
+                        and playerGui.MainGUIHandler.NoMotorVehicleControl:FindFirstChild("NoMotorColorPicks")
+                        and playerGui.MainGUIHandler.NoMotorVehicleControl.NoMotorColorPicks:FindFirstChild("SetColor")
+                    
+                    if colorRemote then
+                        colorRemote:FireServer(Color3.new(0, 0.25, 1)) -- สีน้ำเงินเข้ม (ปรับ Color3 ได้ตามชอบ)
+                    end
+                end
+            end)
+
+            -- สั่งใส่ Texture / ลาย / แสงใต้รถ
+            pcall(function()
+                if Remotes:FindFirstChild("ApplyWrapToActiveVehicle") then
+                    Remotes.ApplyWrapToActiveVehicle:FireServer("Texture_Cloud")
+                end
+            end)
+
+            -- ปิด Emote
             pcall(function()
                 if Remotes:FindFirstChild("Emotes:StopSyncableEmote") then
                     Remotes["Emotes:StopSyncableEmote"]:FireServer()
@@ -690,7 +733,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end)
         end)
 
-        -- 7. Profiling Telemetry: ส่ง Log ประสิทธิภาพปิดท้าย
+        -- 7. Profiling Telemetry
         pcall(function()
             if Remotes:FindFirstChild("ClientProfiling:SendData") then
                 Remotes["ClientProfiling:SendData"]:FireServer({
@@ -705,7 +748,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
         -- 8. Notification
         StarterGui:SetCore("SendNotification", {
             Title = "StyleKuki VIP",
-            Text = "🛶 เสกรถและเปิด UI สำเร็จ!",
+            Text = "🛶 เสกรถ แต่งสี และตั้งค่าระบบสมบูรณ์!",
             Duration = 3
         })
     end)
