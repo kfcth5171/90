@@ -11,7 +11,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
-local CORRECT_KEY = "~"
+local CORRECT_KEY = "kuytt"
 
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
@@ -619,7 +619,7 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 3. ปุ่มเสกรถแพ (อัปเดต Remote Sequence ตรงเป๊ะตามที่ส่งมา 100%)
+-- 🚗 3. ปุ่มเสกรถแพ (ต่อ Remote เสียง & Remote ลบรถ ตามลำดับที่คุณส่งมาเป๊ะๆ)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Vehicle Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
@@ -680,9 +680,71 @@ RaftCarBtn.MouseButton1Click:Connect(function()
     local Event6 = game:GetService("ReplicatedStorage").Remotes["Emotes:StopSyncableEmote"]
     Event6:FireServer()
 
+    -- ==================== 🎶 REMOTE SOUND & DELETE SEQUENCE (ที่ส่งมาเพิ่ม) ====================
+    local SoundEvent1 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
+    SoundEvent1:FireServer(
+        "VehicleMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent2 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
+    SoundEvent2:FireServer(
+        "CarMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent3 = game:GetService("ReplicatedStorage").RE["1Player1sCa1r"]
+    SoundEvent3:FireServer(
+        "WickedGramophoneMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent4 = game:GetService("ReplicatedStorage").RE.PlayerToolEvent
+    SoundEvent4:FireServer(
+        "ToolMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent5 = game:GetService("ReplicatedStorage").RE.Props
+    SoundEvent5:FireServer(
+        "PropMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent6 = game:GetService("ReplicatedStorage").RE["1Hors1eRemot1e"]
+    SoundEvent6:FireServer(
+        "HorseMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local SoundEvent7 = game:GetService("ReplicatedStorage").RE["1Player1sHous1e"]
+    SoundEvent7:FireServer(
+        "PickingHouseMusicStop",
+        "",
+        nil,
+        true
+    )
+
+    local DeleteEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
+    DeleteEvent:FireServer(
+        "Delete NoMotorVehicle"
+    )
+
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถแพสำเร็จ!",
+        Text = "🛶 เสกรถแพ + รันรีโมทเสียงสำเร็จ!",
         Duration = 4
     })
 end)
