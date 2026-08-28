@@ -11,7 +11,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
-local CORRECT_KEY = "kuytt"
+local CORRECT_KEY = "°"
 
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
@@ -736,12 +736,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
         nil,
         true
     )
-
-    local DeleteEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
-    DeleteEvent:FireServer(
-        "Delete NoMotorVehicle"
-    )
-
+    
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
         Text = "🛶 เสกรถแพ + รันรีโมทเสียงสำเร็จ!",
