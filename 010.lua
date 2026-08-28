@@ -619,7 +619,7 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (Sequence + Trigger Client Drive Signal)
+-- 🚗 ปุ่มเสกรถแพ (Sequence สมบูรณ์แบบ + LoadPanel UI Trigger)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
@@ -632,40 +632,44 @@ RaftCarBtn.MouseButton1Click:Connect(function()
 
         if not Remotes or not RE then return end
 
-        -- 1. Telemetry: จำลองการคลิก UI สั่งเสก
+        -- 1. Telemetry: จำลองการกดเมนูก่อนเสก
         pcall(function()
             Remotes.TelemetryClientInteraction:FireServer("uiInteraction", { buttonName = "VehicleHudButton", inVehicle = false })
             Remotes.TelemetryClientInteraction:FireServer("filterClick", { name = "Sled", itemType = "Vehicles" })
         end)
 
-        -- 2. Delete Old Vehicle: ลบรถคันเก่าออกก่อน
+        -- 2. Delete Old Vehicle: ลบรอบเก่าออกก่อน
         pcall(function()
             if RE:FindFirstChild("1Ca1r") then
                 RE["1Ca1r"]:FireServer("NoMotorVehicleDeleteCar")
             end
         end)
 
-        -- ⏳ รอ Server เคลียร์ Instance รถคันเก่า
+        -- ⏳ รอ Server เคลียร์รถคันเก่าออก
         task.wait(0.15)
 
-        -- 3. Spawn New Vehicle: สั่ง Server เสกรถคันใหม่
+        -- 3. Spawn New Vehicle: สั่งเสกรถคันใหม่
         pcall(function()
             if RE:FindFirstChild("1NoMoto1rVehicle1s") then
                 RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
             end
         end)
 
-        -- ⏳ รอ Object เสกขึ้นมาเล็กน้อยก่อนส่ง Signal บอก Client
-        task.wait(0.15)
+        -- ⚡ 4. Open Control Panel (LoadPanel): ยิงสั่งเปิด UI หน้าต่างควบคุมทันทีหลังเสก
+        pcall(function()
+            if Remotes:FindFirstChild("LoadPanel") then
+                Remotes.LoadPanel:FireServer("MainGUIHandler", "NoMotorVehicleControl", true)
+            end
+        end)
 
-        -- ⚡ 4. Trigger UI: จุดสำคัญ! หลอก LocalScript ของเกมว่าเราเริ่มขับรถแล้ว (GUI ด้านบนจะขึ้นทันที)
+        -- ⚡ 5. Client Signal Sync: ซิงค์ Signal ฝั่ง Client เพื่อให้ UI ทำงานสมบูรณ์
         pcall(function()
             if Remotes:FindFirstChild("PlayerStartedDriving") then
                 firesignal(Remotes.PlayerStartedDriving.OnClientEvent)
             end
         end)
 
-        -- 5. Speed & State Setup: ตั้งค่าความเร็ว ( Non-Blocking Async )
+        -- 6. Speed & State Setup: ตั้งค่าความเร็ว ( Non-Blocking Background )
         task.spawn(function()
             pcall(function()
                 if Remotes:FindFirstChild("GetNoMotorVehicleSpeed") then
@@ -686,7 +690,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end)
         end)
 
-        -- 6. Profiling Telemetry: ส่ง Log ปิดท้าย
+        -- 7. Profiling Telemetry: ส่ง Log ประสิทธิภาพปิดท้าย
         pcall(function()
             if Remotes:FindFirstChild("ClientProfiling:SendData") then
                 Remotes["ClientProfiling:SendData"]:FireServer({
@@ -698,10 +702,10 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 7. Notification: แจ้งเตือนเสร็จสิ้น
+        -- 8. Notification
         StarterGui:SetCore("SendNotification", {
             Title = "StyleKuki VIP",
-            Text = "🛶 เสกรถสำเร็จ!",
+            Text = "🛶 เสกรถและเปิด UI สำเร็จ!",
             Duration = 3
         })
     end)
