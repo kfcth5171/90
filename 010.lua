@@ -11,7 +11,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
-local CORRECT_KEY = "KUKIGANG-191"
+local CORRECT_KEY = "kuytt"
 
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
@@ -591,30 +591,54 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 3. ปุ่มเสก รถสปริงเกมพาส (Spring Gamepass Car)
+-- 3. ปุ่มเสก / ลบ รถสปริงเกมพาส (Spring Gamepass Car)
 local SpringCarBtn, SpringCarGradient, SpringCarBtnStroke = CreateScriptCard(PageTools, "รถสปริงเกมพาส", "Unlock & Spawn Spring Gamepass Car", "เสก", false)
+local isSpringCarSpawned = false
 
 SpringCarBtn.MouseButton1Click:Connect(function()
-    local localUserId = tostring(Players.LocalPlayer.UserId)
-    local Event = game:GetService("ReplicatedStorage").RemoteEvents.ReplicaSetValues
+    local VehicleEvent = game:GetService("ReplicatedStorage").RE["1NoMoto1rVehicle1s"]
     
-    firesignal(Event.OnClientEvent, 
-        1,
-        {
-            localUserId,
-            "profile",
-            "gamepasses"
-        },
-        {
-            ["9066970"] = 1787905177
+    if not isSpringCarSpawned then
+        -- เสกรถสปริง (PogoStick)
+        VehicleEvent:FireServer(
+            "PogoStick",
+            nil,
+            nil
+        )
+        
+        SpringCarBtn.Text = "ลบ"
+        SpringCarGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 50))
         }
-    )
-    
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "StyleKuki VIP",
-        Text = "🏎️ เสกรถสปริงเกมพาสเรียบร้อยแล้ว!",
-        Duration = 4
-    })
+        SpringCarBtnStroke.Color = Color3.fromRGB(255, 100, 150)
+        isSpringCarSpawned = true
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "StyleKuki VIP",
+            Text = "🏎️ เสกรถสปริงสำเร็จแล้ว!",
+            Duration = 4
+        })
+    else
+        -- ลบรถสปริง
+        VehicleEvent:FireServer(
+            "Delete NoMotorVehicle"
+        )
+        
+        SpringCarBtn.Text = "เสก"
+        SpringCarGradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 120, 255))
+        }
+        SpringCarBtnStroke.Color = Color3.fromRGB(150, 240, 255)
+        isSpringCarSpawned = false
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "StyleKuki VIP",
+            Text = "🗑️ ลบรถสปริงสำเร็จแล้ว!",
+            Duration = 4
+        })
+    end
 end)
 
 -- Tab Switch Events (Ultra Smooth Transition)
