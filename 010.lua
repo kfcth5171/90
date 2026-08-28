@@ -619,56 +619,83 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🛶 ปุ่มเสกรถแพ (Auto-Sit System เพื่อบังคับโหลด UI เกม)
-local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft & Auto-Sit UI", "เสก", false)
+-- 🚗 ปุ่มเสกรถแพ (Sequence รวม Remote ครบทุกตัวตามลำดับเกม)
+local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    
-    -- 1. บันทึก Telemetry การกดเลือก Sled
-    pcall(function()
-        ReplicatedStorage.Remotes.TelemetryClientInteraction:FireServer("filterClick", {
+    local EventTelemetry = ReplicatedStorage.Remotes.TelemetryClientInteraction
+
+    -- 1. ยิง Remote เปิด HUD เมนูรถของเกม
+    EventTelemetry:FireServer(
+        "uiInteraction",
+        {
+            buttonName = "VehicleHudButton",
+            inVehicle = false
+        }
+    )
+
+    -- 2. ยิง Remote เลือกหมวดหมู่ Sled (Vehicles)
+    EventTelemetry:FireServer(
+        "filterClick",
+        {
             name = "Sled",
             itemType = "Vehicles"
-        })
-    end)
+        }
+    )
 
-    -- 2. สั่ง Server ให้เสกรถแพ (Sled)
+    -- 3. สั่ง Server เสกรถแพ (Sled) ออกมา
     ReplicatedStorage.RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
 
-    -- 3. โหลด UI Panel ควบคุมฝั่ง Server
+    -- 4. สั่งโหลด UI Panel ควบคุมรถ (แถบไอคอนบนหัว + ปุ่มกากบาท)
+    ReplicatedStorage.Remotes.LoadPanel:FireServer(
+        "MainGUIHandler",
+        "NoMotorVehicleControl",
+        true
+    )
+
+    -- 5. ซิงค์และตั้งค่าความเร็วรถ
     pcall(function()
-        ReplicatedStorage.Remotes.LoadPanel:FireServer("MainGUIHandler", "NoMotorVehicleControl", true)
         ReplicatedStorage.Remotes.GetNoMotorVehicleSpeed:InvokeServer()
         ReplicatedStorage.Remotes.SetNoMotorVehicleSpeed:InvokeServer(25)
     end)
 
-    -- 4. ⚡ [ขั้นตอนสำคัญ] วาร์ปตัวละครเข้าเบาะเพื่อปลุก Client UI ของเกม
-    task.spawn(function()
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        
-        -- วนหาเบาะรถแพที่เพิ่งเสกมาใน Workspace
-        for i = 1, 15 do
-            for _, obj in ipairs(workspace:GetChildren()) do
-                if (obj.Name:find("Sled") or obj.Name:find("Vehicle") or obj:FindFirstChild("VehicleSeat")) then
-                    local seat = obj:FindFirstChildOfClass("VehicleSeat") or obj:FindFirstChild("VehicleSeat", true)
-                    if seat and humanoid then
-                        -- ย้ายตัวไปนั่งเบาะ เพื่อให้ UI เกมทำงานอัตโนมัติ
-                        seat:Sit(humanoid)
-                        break
-                    end
-                end
-            end
-            task.wait(0.1)
-        end
+    -- 6. ส่ง Client Profiling Data (เก็บสถิติประสิทธิภาพเครื่องของเกม)
+    pcall(function()
+        ReplicatedStorage.Remotes["ClientProfiling:SendData"]:FireServer({
+            frameTimeStability = {
+                min = 0.0174,
+                p1Low = 0.0174,
+                mean = 0.1306,
+                max = 0.4845,
+                stdDev = 0.1776,
+                p01Low = 0.0174
+            },
+            identifier = "MainVehicleMenu",
+            memoryStability = {
+                min = 1535.6211,
+                p1Low = 1535.6211,
+                mean = 1546.9508,
+                max = 1573.9414,
+                stdDev = 13.8404,
+                p01Low = 1535.6211
+            },
+            avgCPURenderTime = 0.0296,
+            avgGPURenderTime = 0.0196,
+            duration = 4.4981,
+            avgTotalMemory = 1546.9508,
+            avgFrameTime = 0.1306
+        })
+    end)
+
+    -- 7. ยกเลิกท่า Emote ที่เล่นค้างไว้
+    pcall(function()
+        ReplicatedStorage.Remotes["Emotes:StopSyncableEmote"]:FireServer()
     end)
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "StyleKuki VIP",
-        Text = "🛶 เสกรถและซิงค์ UI เรียบร้อย!",
+        Text = "🛶 เสกรถและโหลด UI ควบคุมสำเร็จ!",
         Duration = 3
     })
 end)
