@@ -619,14 +619,16 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (Perfect Native Sequence)
+-- 🚗 ปุ่มเสกรถแพ (Full Native Sequence + Fix Ownership & Audio Channel Sync)
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
+        local Players = game:GetService("Players")
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local StarterGui = game:GetService("StarterGui")
-        
+        local LocalPlayer = Players.LocalPlayer
+
         local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
         local RE = ReplicatedStorage:WaitForChild("RE", 5)
 
@@ -640,7 +642,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             })
         end)
 
-        -- 2. เคลียร์เพลง/เสียงจากพาหนะเดิมและอุปกรณ์ทั้งหมด
+        -- 2. เคลียร์เพลง/เสียงจากพาหนะเดิมและอุปกรณ์ทั้งหมดที่ผู้เล่นอาจเปิดค้างไว้
         pcall(function()
             if RE:FindFirstChild("1Player1sCa1r") then
                 RE["1Player1sCa1r"]:FireServer("VehicleMusicStop", "", nil, true)
@@ -662,7 +664,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 4. ลบพาหนะเดิมของผู้เล่นออกจากแมพ
+        -- 4. ลบพาหนะเดิมของผู้เล่นออกจากแมพ (ช่วงเปิด Menu Panel)
         pcall(function()
             if RE:FindFirstChild("1Ca1r") then
                 RE["1Ca1r"]:FireServer("NoMotorVehicleDeleteCar")
@@ -685,10 +687,21 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 7. ส่ง Signal แจ้งระบบว่าผู้เล่นเข้าสู่สถานะเริ่มขับ
+        -- ⚡ 7. ส่ง Signal แจ้งระบบว่าผู้เล่นเข้าสู่สถานะเริ่มขับ + ผูก Ownership ฝั่ง Client
         pcall(function()
             if firesignal and Remotes:FindFirstChild("PlayerStartedDriving") then
-                firesignal(Remotes.PlayerStartedDriving.OnClientEvent)
+                -- ส่ง LocalPlayer ไปด้วยเพื่อให้ LocalScript ผูก Audio Channel ว่าเราเป็นคนขับจริง
+                firesignal(Remotes.PlayerStartedDriving.OnClientEvent, LocalPlayer)
+            end
+
+            -- Force ปลูก Attribute ยืนยันเจ้าของรถฝั่ง PlayerGui เพื่อแยก Sound Group ของเราออกจากคนอื่น
+            local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+            if playerGui then
+                local mainGui = playerGui:FindFirstChild("MainGUIHandler") or playerGui:FindFirstChild("MainGUI")
+                if mainGui then
+                    mainGui:SetAttribute("CurrentVehicleOwner", LocalPlayer.Name)
+                    mainGui:SetAttribute("InVehicle", true)
+                end
             end
         end)
 
@@ -708,22 +721,40 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 9. ส่งข้อมูล Profiling/Performance สรุปการเปิดใช้งาน
+        -- 9. ส่งข้อมูล Profiling/Performance สรุปการเปิดใช้งาน Menu Panel กลับไปยัง Server
         pcall(function()
             if Remotes:FindFirstChild("ClientProfiling:SendData") then
                 Remotes["ClientProfiling:SendData"]:FireServer({
-                    frameTimeStability = { min = 0.0174, p1Low = 0.0174, mean = 0.1306, max = 0.4845, stdDev = 0.1776, p01Low = 0.0174 },
+                    frameTimeStability = {
+                        min = 0.0174,
+                        p1Low = 0.0174,
+                        mean = 0.1306,
+                        max = 0.4845,
+                        stdDev = 0.1776,
+                        p01Low = 0.0174
+                    },
                     identifier = "MainVehicleMenu",
-                    memoryStability = { min = 1535.6211, p1Low = 1535.6211, mean = 1546.9508, max = 1573.9414, stdDev = 13.8404, p01Low = 1535.6211 },
-                    avgCPURenderTime = 0.0296, avgGPURenderTime = 0.0196, duration = 4.4981, avgTotalMemory = 1546.9508, avgFrameTime = 0.1306
+                    memoryStability = {
+                        min = 1535.6211,
+                        p1Low = 1535.6211,
+                        mean = 1546.9508,
+                        max = 1573.9414,
+                        stdDev = 13.8404,
+                        p01Low = 1535.6211
+                    },
+                    avgCPURenderTime = 0.0296,
+                    avgGPURenderTime = 0.0196,
+                    duration = 4.4981,
+                    avgTotalMemory = 1546.9508,
+                    avgFrameTime = 0.1306
                 })
             end
         end)
 
-        -- Notification แจ้งเตือน
+        -- Notification แจ้งเตือนเมื่อทำงานเสร็จสิ้น
         StarterGui:SetCore("SendNotification", {
             Title = "StyleKuki VIP",
-            Text = "🛶 เสกรถและซิงค์ระบบสำเร็จ!",
+            Text = "🛶 เสกรถ ซิงค์ UI และตั้งค่าระบบเสียงสมบูรณ์!",
             Duration = 3
         })
     end)
