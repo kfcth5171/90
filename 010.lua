@@ -13,6 +13,13 @@ local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
 local CORRECT_KEY = "°"
 
+-- 🔒 WHITELIST USER IDs FOR BUTTON 1 (AUDIO LOGGER)
+local WhitelistedUserIDs = {
+    [9802544328] = true,
+    [1697390697] = true,
+    [6030349781] = true
+}
+
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
 end)
@@ -139,7 +146,7 @@ local ToggleLED = Instance.new("Frame", ToggleBtnContainer)
 ToggleLED.Size = UDim2.new(1, 0, 1, 0)
 ToggleLED.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ToggleLED.BorderSizePixel = 0
-Instance.new("UICorner", ToggleLED).CornerRadius = UDim.new(0, 8) -- สี่เหลี่ยมมนทรงเหลี่ยม
+Instance.new("UICorner", ToggleLED).CornerRadius = UDim.new(0, 8)
 
 local ToggleLEDGradient = Instance.new("UIGradient", ToggleLED)
 ToggleLEDGradient.Color = ColorSequence.new{
@@ -155,7 +162,7 @@ ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 ToggleBtn.BorderSizePixel = 0
 ToggleBtn.Image = "rbxassetid://" .. ProfileImageId
 ToggleBtn.ScaleType = Enum.ScaleType.Crop
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6) -- สี่เหลี่ยมมน
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
 RunService.RenderStepped:Connect(function()
     LEDGradient.Rotation = (LEDGradient.Rotation + 1.5) % 360
@@ -193,7 +200,6 @@ local function ToggleUI()
     isAnimating = true
     
     if isUIVisible then
-        -- Animation ปิด UI
         local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In)
         local t1 = TweenService:Create(MainContainer, tweenInfo, {
             Size = UDim2.new(0, 0, 0, 0),
@@ -204,7 +210,6 @@ local function ToggleUI()
         MainContainer.Visible = false
         isUIVisible = false
     else
-        -- Animation เปิด UI
         MainContainer.Visible = true
         MainContainer.Size = UDim2.new(0, 0, 0, 0)
         MainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -316,7 +321,7 @@ CloseStroke.Color = Color3.fromRGB(255, 0, 100)
 CloseStroke.Thickness = 1.5
 CloseBtn.MouseButton1Click:Connect(ToggleUI)
 
--- Navigation Sidebar (ขนาดพอดีจอ)
+-- Navigation Sidebar
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0, 120, 1, -55)
 Sidebar.Position = UDim2.new(0, 10, 0, 48)
@@ -382,7 +387,6 @@ local TabCarsStroke = Instance.new("UIStroke", TabCars)
 TabCarsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabCarsStroke.Thickness = 1
 
--- 👁️ เพิ่มหมวดหมู่ที่ 5: ESP
 local TabESP = Instance.new("TextButton", Sidebar)
 TabESP.Size = UDim2.new(1, 0, 0, 26)
 TabESP.Position = UDim2.new(0, 0, 0, 120)
@@ -404,7 +408,7 @@ ContentFrame.Size = UDim2.new(1, -145, 1, -55)
 ContentFrame.Position = UDim2.new(0, 135, 0, 48)
 ContentFrame.BackgroundTransparency = 1
 
--- Tab 1: Games Page (ScrollingFrame)
+-- Tab 1: Games Page
 local PageGame = Instance.new("ScrollingFrame", ContentFrame)
 PageGame.Size = UDim2.new(1, 0, 1, 0)
 PageGame.BackgroundTransparency = 1
@@ -547,7 +551,7 @@ ToolsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function
     PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 8)
 end)
 
--- Tab 4: Cars Page (ScrollingFrame)
+-- Tab 4: Cars Page
 local PageCars = Instance.new("ScrollingFrame", ContentFrame)
 PageCars.Size = UDim2.new(1, 0, 1, 0)
 PageCars.BackgroundTransparency = 1
@@ -564,7 +568,7 @@ CarsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function(
     PageCars.CanvasSize = UDim2.new(0, 0, 0, CarsListLayout.AbsoluteContentSize.Y + 8)
 end)
 
--- 👁️ Tab 5: ESP Page (ScrollingFrame)
+-- Tab 5: ESP Page
 local PageESP = Instance.new("ScrollingFrame", ContentFrame)
 PageESP.Size = UDim2.new(1, 0, 1, 0)
 PageESP.BackgroundTransparency = 1
@@ -687,7 +691,7 @@ FartGunBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🚗 ปุ่มเสกรถแพ (Full Native Sequence + Fix Ownership & Audio Channel Sync)
+-- 🚗 ปุ่มเสกรถแพ
 local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars, "รถแพ", "Spawn Sled Raft Native Sequence", "เสก", false)
 
 RaftCarBtn.MouseButton1Click:Connect(function()
@@ -799,7 +803,7 @@ RaftCarBtn.MouseButton1Click:Connect(function()
 end)
 
 -- =====================================================================
--- 👁️ [ESP SYSTEM IMPLEMENTATION] - 6 SWITCH TOGGLE COMPONENTS
+-- 👁️ [ESP SYSTEM IMPLEMENTATION] - REAL-TIME TRACERS & BOX
 -- =====================================================================
 
 local ESP_State = {
@@ -884,9 +888,16 @@ CreateSwitchCard(PageESP, "1. Box ESP", "มองเห็นกรอบบล
     ESP_State.Box = state
 end)
 
--- 2. Tracer ESP Switch
+-- 2. Tracer ESP Switch (แก้ไขระบบส่งค่าและสร้างเส้น Drawing แท้)
+local Tracers = {}
+
 CreateSwitchCard(PageESP, "2. Tracer Line ESP", "มองเห็นเส้นนำสายตาไปยังตำแหน่งผู้เล่น", function(state)
     ESP_State.Tracer = state
+    if not state then
+        for _, line in pairs(Tracers) do
+            if line then line.Visible = false end
+        end
+    end
 end)
 
 -- 3. Name ESP Switch
@@ -936,7 +947,6 @@ RefreshBtn.Font = Enum.Font.GothamBold
 RefreshBtn.TextSize = 9
 Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
 
--- Frame รายชื่อผู้เล่น
 local DropListFrame = Instance.new("ScrollingFrame", SelectorCard)
 DropListFrame.Size = UDim2.new(1, -20, 0, 80)
 DropListFrame.Position = UDim2.new(0, 10, 1, 2)
@@ -1019,57 +1029,93 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- 2. ESP Drawing Logic
+    -- 2. Real-time ESP Drawing Engine
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= Players.LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local hrp = p.Character.HumanoidRootPart
-            local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+        if p ~= Players.LocalPlayer then
+            local char = p.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
 
-            -- Handle Highlight Box
-            local box = p.Character:FindFirstChild("StyleKuki_Box")
-            if ESP_State.Box then
-                if not box then
-                    box = Instance.new("Highlight")
-                    box.Name = "StyleKuki_Box"
-                    box.FillTransparency = 0.7
-                    box.OutlineColor = Color3.fromRGB(0, 229, 255)
-                    box.Parent = p.Character
-                end
-            elseif box then
-                box:Destroy()
-            end
-
-            -- Handle Name Tag
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local bgui = head:FindFirstChild("StyleKuki_Name")
-                if ESP_State.Name then
-                    if not bgui then
-                        bgui = Instance.new("BillboardGui")
-                        bgui.Name = "StyleKuki_Name"
-                        bgui.Size = UDim2.new(0, 100, 0, 30)
-                        bgui.StudsOffset = Vector3.new(0, 2.5, 0)
-                        bgui.AlwaysOnTop = true
-                        
-                        local txt = Instance.new("TextLabel", bgui)
-                        txt.Size = UDim2.new(1, 0, 1, 0)
-                        txt.BackgroundTransparency = 1
-                        txt.Text = p.DisplayName
-                        txt.TextColor3 = Color3.fromRGB(0, 255, 200)
-                        txt.Font = Enum.Font.GothamBold
-                        txt.TextSize = 10
-                        bgui.Parent = head
+                -- Box ESP
+                local box = char:FindFirstChild("StyleKuki_Box")
+                if ESP_State.Box then
+                    if not box then
+                        box = Instance.new("Highlight")
+                        box.Name = "StyleKuki_Box"
+                        box.FillTransparency = 0.7
+                        box.OutlineColor = Color3.fromRGB(0, 229, 255)
+                        box.Parent = char
                     end
-                elseif bgui then
-                    bgui:Destroy()
+                elseif box then
+                    box:Destroy()
                 end
+
+                -- Name Tag ESP
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local bgui = head:FindFirstChild("StyleKuki_Name")
+                    if ESP_State.Name then
+                        if not bgui then
+                            bgui = Instance.new("BillboardGui")
+                            bgui.Name = "StyleKuki_Name"
+                            bgui.Size = UDim2.new(0, 100, 0, 30)
+                            bgui.StudsOffset = Vector3.new(0, 2.5, 0)
+                            bgui.AlwaysOnTop = true
+                            
+                            local txt = Instance.new("TextLabel", bgui)
+                            txt.Size = UDim2.new(1, 0, 1, 0)
+                            txt.BackgroundTransparency = 1
+                            txt.Text = p.DisplayName
+                            txt.TextColor3 = Color3.fromRGB(0, 255, 200)
+                            txt.Font = Enum.Font.GothamBold
+                            txt.TextSize = 10
+                            bgui.Parent = head
+                        end
+                    elseif bgui then
+                        bgui:Destroy()
+                    end
+                end
+
+                -- Tracer Line ESP (ส่งค่าวาดเส้นจริงๆ)
+                if ESP_State.Tracer then
+                    if Drawing then
+                        if not Tracers[p] then
+                            local line = Drawing.new("Line")
+                            line.Thickness = 1.5
+                            line.Color = Color3.fromRGB(0, 229, 255)
+                            line.Transparency = 1
+                            Tracers[p] = line
+                        end
+                        if onScreen then
+                            Tracers[p].From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                            Tracers[p].To = Vector2.new(vector.X, vector.Y)
+                            Tracers[p].Visible = true
+                        else
+                            Tracers[p].Visible = false
+                        end
+                    end
+                else
+                    if Tracers[p] then
+                        Tracers[p].Visible = false
+                    end
+                end
+            else
+                if Tracers[p] then Tracers[p].Visible = false end
             end
         end
     end
 end)
 
+-- ล้างเส้น Tracer เมื่อผู้เล่นออก
+Players.PlayerRemoving:Connect(function(p)
+    if Tracers[p] then
+        Tracers[p]:Remove()
+        Tracers[p] = nil
+    end
+end)
 
--- Tab Switch Events (Ultra Smooth Transition)
+-- Tab Switch Events
 local function SwitchTab(activePage, activeTab, activeStroke)
     PageGame.Visible = (activePage == PageGame)
     PageInfo.Visible = (activePage == PageInfo)
@@ -1289,6 +1335,96 @@ CheckKeyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== ⚡ DISCORD VERIFICATION POP-UP GUI ====================
+local DiscordVerifyOverlay = Instance.new("Frame", ScreenGui)
+DiscordVerifyOverlay.Name = "DiscordVerifyOverlay"
+DiscordVerifyOverlay.Size = UDim2.new(1, 0, 1, 0)
+DiscordVerifyOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+DiscordVerifyOverlay.BackgroundTransparency = 0.4
+DiscordVerifyOverlay.Visible = false
+DiscordVerifyOverlay.ZIndex = 100
+
+local VerifyCard = Instance.new("Frame", DiscordVerifyOverlay)
+VerifyCard.Size = UDim2.new(0, 340, 0, 220)
+VerifyCard.Position = UDim2.new(0.5, -170, 0.5, -110)
+VerifyCard.BackgroundColor3 = Color3.fromRGB(14, 15, 22)
+VerifyCard.BorderSizePixel = 0
+VerifyCard.ZIndex = 101
+Instance.new("UICorner", VerifyCard).CornerRadius = UDim.new(0, 12)
+
+local VerifyStroke = Instance.new("UIStroke", VerifyCard)
+VerifyStroke.Color = Color3.fromRGB(255, 0, 100)
+VerifyStroke.Thickness = 1.5
+
+local VerifyHeader = Instance.new("TextLabel", VerifyCard)
+VerifyHeader.Size = UDim2.new(1, -20, 0, 24)
+VerifyHeader.Position = UDim2.new(0, 10, 0, 10)
+VerifyHeader.BackgroundTransparency = 1
+VerifyHeader.Text = "⚠️ คุณต้อง VERIFY ยืนยันตัวตนในดิสคอร์ด"
+VerifyHeader.TextColor3 = Color3.fromRGB(255, 70, 100)
+VerifyHeader.Font = Enum.Font.GothamBold
+VerifyHeader.TextSize = 11
+VerifyHeader.ZIndex = 102
+
+local VerifyBodyFrame = Instance.new("Frame", VerifyCard)
+VerifyBodyFrame.Size = UDim2.new(1, -20, 0, 115)
+VerifyBodyFrame.Position = UDim2.new(0, 10, 0, 38)
+VerifyBodyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
+VerifyBodyFrame.ZIndex = 102
+Instance.new("UICorner", VerifyBodyFrame).CornerRadius = UDim.new(0, 8)
+
+local FormText = Instance.new("TextLabel", VerifyBodyFrame)
+FormText.Size = UDim2.new(1, -16, 1, -10)
+FormText.Position = UDim2.new(0, 10, 0, 5)
+FormText.BackgroundTransparency = 1
+FormText.Text = "กรุณากรอกข้อมูลเพื่อขอสิทธิ์การใช้งาน:\n\n• ชื่อเล่น:\n• อายุ:\n• ชื่อในเกม roblox:\n• คุณสมบัติ:"
+FormText.TextColor3 = Color3.fromRGB(220, 225, 240)
+FormText.Font = Enum.Font.GothamMedium
+FormText.TextSize = 10
+FormText.TextXAlignment = Enum.TextXAlignment.Left
+FormText.TextYAlignment = Enum.TextYAlignment.Top
+FormText.ZIndex = 103
+
+local DiscordBtn = Instance.new("TextButton", VerifyCard)
+DiscordBtn.Size = UDim2.new(1, -20, 0, 32)
+DiscordBtn.Position = UDim2.new(0, 10, 1, -42)
+DiscordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+DiscordBtn.Text = "🔗 ไปยัง Discord เพื่อยื่นเรื่อง Verify"
+DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DiscordBtn.Font = Enum.Font.GothamBold
+DiscordBtn.TextSize = 10
+DiscordBtn.ZIndex = 102
+Instance.new("UICorner", DiscordBtn).CornerRadius = UDim.new(0, 8)
+
+local CloseVerifyBtn = Instance.new("TextButton", VerifyCard)
+CloseVerifyBtn.Size = UDim2.new(0, 22, 0, 22)
+CloseVerifyBtn.Position = UDim2.new(1, -26, 0, 6)
+CloseVerifyBtn.BackgroundTransparency = 1
+CloseVerifyBtn.Text = "✕"
+CloseVerifyBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+CloseVerifyBtn.Font = Enum.Font.GothamBold
+CloseVerifyBtn.TextSize = 12
+CloseVerifyBtn.ZIndex = 103
+
+CloseVerifyBtn.MouseButton1Click:Connect(function()
+    DiscordVerifyOverlay.Visible = false
+end)
+
+DiscordBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard("https://discord.gg/BYJ82HCHR")
+    end
+    pcall(function()
+        game:GetService("HttpService")
+    end)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "StyleKuki VIP",
+        Text = "คัดลอกลิงก์ Discord เรียบร้อยแล้ว!",
+        Duration = 4
+    })
+    DiscordVerifyOverlay.Visible = false
+end)
+
 -- ==================== ⚡ COQUETTE HUB STYLE LOADING SYSTEM (1-100% 3D NEON) ====================
 local LoadingOverlay = Instance.new("Frame", MainFrame)
 LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
@@ -1448,8 +1584,14 @@ local function ExecuteWithCoquetteLoading(scriptUrl, scriptName, displayThaiName
     RunScript(scriptUrl, scriptName)
 end
 
+-- 1. ปุ่มรันสคริปต์ดึงเพลง (เช็ค Whitelist UserID 3 คน)
 RunBtn1.MouseButton1Click:Connect(function()
-    ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
+    local myUserId = Players.LocalPlayer.UserId
+    if WhitelistedUserIDs[myUserId] then
+        ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
+    else
+        DiscordVerifyOverlay.Visible = true
+    end
 end)
 
 RunBtn2.MouseButton1Click:Connect(function()
