@@ -1,5 +1,5 @@
 -- =====================================================================
--- [[ HONKUKI AUDIO LOGGER & DUMPER - ULTIMATE 3D VIP EDITION ]] --
+-- [[ HONKUKI AUDIO LOGGER & DUMPER - ULTIMATE 3D VIP EDITION (FIXED STUTTER) ]] --
 -- =====================================================================
 
 -- ระบบป้องกันการ Dump / Hook เบื้องต้น
@@ -36,7 +36,7 @@ local IsListeningRealTime = false
 
 local TAG_NAME = "Honkuki_Active_Runner_Tag"
 
--- 🛡️ Blacklist Protection (ป้องกันไม่ให้ผู้เล่นทั่วไปดึง Object เสียงจาก 3 คนนี้)
+-- 🛡️ Blacklist Protection
 local ProtectedCreatorUsers = {
     ["kfc_punyai"] = true,
     ["Aekshop_34d3c"] = true,
@@ -95,7 +95,6 @@ local function setupPlayerTag(player)
     stroke.Thickness = 1.5
     stroke.Transparency = 0.2
 
-    -- 3D Text Effect Layer (เงาด้านหลัง)
     local shadowLabel = Instance.new("TextLabel", bgFrame)
     shadowLabel.Size = UDim2.new(1, 0, 1, 0)
     shadowLabel.Position = UDim2.new(0, 2, 0, 2)
@@ -106,7 +105,6 @@ local function setupPlayerTag(player)
     shadowLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
     shadowLabel.TextTransparency = 0.3
 
-    -- Main Front Glowing Text Layer
     local tagLabel = Instance.new("TextLabel", bgFrame)
     tagLabel.Size = UDim2.new(1, 0, 1, 0)
     tagLabel.BackgroundTransparency = 1
@@ -376,10 +374,10 @@ local function getPlayerVehicle(player)
     return (vehicle and vehicle:IsA("Model")) and vehicle or nil
 end
 
+-- ⚡ OPTIMIZED SOUND SCANNER (เจาะสแกนเฉพาะจุดเพื่อแก้กระตุก)
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
     
-    -- 🔒 บล็อกการดึงเพลง หากเป้าหมายคือ 3 ผู้สร้างสคริปต์
     if ProtectedCreatorUsers[targetPlayer.Name] then
         return {}
     end
@@ -391,8 +389,8 @@ local function checkPlayerAllSounds(targetPlayer)
     local vehicle = getPlayerVehicle(targetPlayer)
     if vehicle then table.insert(scanTargets, vehicle) end
 
-    -- 🛵 สแกนค้นหาเสียงจากระบบรถ / Scooter พิเศษใน Workspace / ReplicatedStorage / Character
-    for _, obj in ipairs(workspace:GetDescendants()) do
+    -- สแกนเฉพาะ Vehicle/Scooter ใน Workspace โดยไม่ใช้ GetDescendants() ทั้งก้อน
+    for _, obj in ipairs(workspace:GetChildren()) do
         if obj:IsA("Model") and (string.find(string.lower(obj.Name), "scooter") or string.find(string.lower(obj.Name), "vehicle") or string.find(string.lower(obj.Name), "bike")) then
             local ownerVal = obj:FindFirstChild("Owner") or obj:FindFirstChild("Player") or obj:FindFirstChild("VehicleOwner")
             if ownerVal and (ownerVal.Value == targetPlayer or ownerVal.Value == targetPlayer.Name) then
@@ -432,7 +430,7 @@ local function copyToClipboard(text)
     if setclip then setclip(text) end
 end
 
--- ==================== UI BUILDER (3D CYBERPUNK GOLD THEME) ====================
+-- ==================== UI BUILDER ====================
 local GuiParent = CoreGui:FindFirstChild("RobloxGui") or PlayerGui
 if GuiParent:FindFirstChild("HonkukiUltimateAudioGui") then
     GuiParent.HonkukiUltimateAudioGui:Destroy()
@@ -442,7 +440,6 @@ local ScreenGui = Instance.new("ScreenGui", GuiParent)
 ScreenGui.Name = "HonkukiUltimateAudioGui"
 ScreenGui.ResetOnSpawn = false
 
--- 1. Outer Neon Aura Layer
 local AuraGlow = Instance.new("Frame", ScreenGui)
 AuraGlow.Name = "AuraGlow"
 AuraGlow.Size = UDim2.new(0, 544, 0, 264)
@@ -452,7 +449,6 @@ AuraGlow.BackgroundTransparency = 0.7
 AuraGlow.BorderSizePixel = 0
 Instance.new("UICorner", AuraGlow).CornerRadius = UDim.new(0, 18)
 
--- 2. 3D Shadow Layer
 local Shadow3D = Instance.new("Frame", ScreenGui)
 Shadow3D.Size = UDim2.new(0, 530, 0, 250)
 Shadow3D.Position = UDim2.new(0.5, -262, 0.5, -120)
@@ -461,7 +457,6 @@ Shadow3D.BackgroundTransparency = 0.3
 Shadow3D.BorderSizePixel = 0
 Instance.new("UICorner", Shadow3D).CornerRadius = UDim.new(0, 16)
 
--- 3. Outer LED Frame
 local LEDBorder = Instance.new("Frame", ScreenGui)
 LEDBorder.Name = "LEDBorder"
 LEDBorder.Size = UDim2.new(0, 530, 0, 250)
@@ -478,7 +473,6 @@ LEDGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 170, 0))
 }
 
--- 4. Main Window (Glassmorphism)
 local MainFrame = Instance.new("Frame", LEDBorder)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(1, -6, 1, -6)
@@ -488,7 +482,6 @@ MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
 
--- Star Particles
 local ParticleCanvas = Instance.new("Frame", MainFrame)
 ParticleCanvas.Size = UDim2.new(1, 0, 1, 0)
 ParticleCanvas.BackgroundTransparency = 1
@@ -521,7 +514,6 @@ RunService.RenderStepped:Connect(function()
     AuraGlow.BackgroundTransparency = 0.6 + ((math.sin(tick() * 3) + 1) / 2 * 0.2)
 end)
 
--- Drag System
 local function makeDraggable(frame, handle)
     local dragging, dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
@@ -548,7 +540,6 @@ local function makeDraggable(frame, handle)
 end
 makeDraggable(LEDBorder, MainFrame)
 
--- Top Bar Header
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 40)
 TopBar.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
@@ -564,7 +555,6 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Tag Toggle Switch
 local TagToggleSwitch = Instance.new("TextButton", TopBar)
 TagToggleSwitch.Size = UDim2.new(0, 95, 0, 26)
 TagToggleSwitch.Position = UDim2.new(1, -140, 0.5, -13)
@@ -582,7 +572,6 @@ TagToggleSwitch.MouseButton1Click:Connect(function()
     for _, p in ipairs(Players:GetPlayers()) do pcall(function() setupPlayerTag(p) end) end
 end)
 
--- Close Button
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 26, 0, 26)
 CloseBtn.Position = UDim2.new(1, -36, 0.5, -13)
@@ -593,7 +582,6 @@ CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 12
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
--- Left Player List Frame
 local ListScroll = Instance.new("ScrollingFrame", MainFrame)
 ListScroll.Size = UDim2.new(0.44, 0, 0.65, 0)
 ListScroll.Position = UDim2.new(0.03, 0, 0.20, 0)
@@ -606,7 +594,6 @@ Instance.new("UICorner", ListScroll).CornerRadius = UDim.new(0, 10)
 local Layout = Instance.new("UIListLayout", ListScroll)
 Layout.Padding = UDim.new(0, 6)
 
--- Right Control Panel Frame
 local ButtonsContainer = Instance.new("Frame", MainFrame)
 ButtonsContainer.Size = UDim2.new(0.48, 0, 0.65, 0)
 ButtonsContainer.Position = UDim2.new(0.49, 0, 0.20, 0)
@@ -615,7 +602,6 @@ ButtonsContainer.BackgroundTransparency = 1
 local BLayout = Instance.new("UIListLayout", ButtonsContainer)
 BLayout.Padding = UDim.new(0, 6)
 
--- Helper Button Creator
 local function create3DButton(parent, text, color)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(1, 0, 0, 28)
@@ -639,7 +625,6 @@ local ListenToggleBtn = create3DButton(ButtonsContainer, "🎧 ฟังเพ�
 local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะ RAW เรียลไทม์", Color3.fromRGB(40, 45, 60))
 local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID เจาะสด Real-time", Color3.fromRGB(40, 45, 60))
 
--- Status Bar
 StatusLabel = Instance.new("TextLabel", MainFrame)
 StatusLabel.Size = UDim2.new(0.94, 0, 0, 22)
 StatusLabel.Position = UDim2.new(0.03, 0, 0.88, 0)
@@ -650,7 +635,6 @@ StatusLabel.Font = Enum.Font.GothamMedium
 StatusLabel.TextSize = 10
 Instance.new("UICorner", StatusLabel).CornerRadius = UDim.new(0, 6)
 
--- Floating Open/Close Toggle Button (3D Glowing Pill)
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Name = "HonkukiToggleButton"
 ToggleBtn.Size = UDim2.new(0, 120, 0, 36)
@@ -668,7 +652,7 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK VIEWER UI (INFINITE SCROLL) ====================
+-- ==================== SECONDARY JUNK VIEWER UI ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
 JunkFrame.Size = UDim2.new(1, 0, 1, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
@@ -721,7 +705,7 @@ JunkBackBtn.Size = UDim2.new(0.43, 0, 0, 26)
 JunkBackBtn.Position = UDim2.new(0.53, 0, 0.86, 0)
 JunkBackBtn.ZIndex = 12
 
--- ==================== ULTRA SMOOTH UI ANIMATIONS ====================
+-- ==================== ANIMATIONS & LOGIC ====================
 local function toggleUI(state)
     if state then
         LEDBorder.Visible = true
@@ -767,7 +751,6 @@ end
 CloseBtn.MouseButton1Click:Connect(function() toggleUI(false) end)
 ToggleBtn.MouseButton1Click:Connect(function() toggleUI(not LEDBorder.Visible) end)
 
--- ==================== REFRESH & AUDIO LOGIC ====================
 local function stopLocalListeningSound()
     if ListeningLocalSound then
         ListeningLocalSound:Stop()
@@ -779,7 +762,6 @@ local function stopLocalListeningSound()
     ListenToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
 end
 
--- ระบบฟังเพลงส่วนตัว (ระดับเสียง 80% เล่นตั้งแต่ต้นเพลง)
 ListenToggleBtn.MouseButton1Click:Connect(function()
     if IsListeningRealTime then
         stopLocalListeningSound()
@@ -797,8 +779,8 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
 
             ListeningLocalSound = Instance.new("Sound")
             ListeningLocalSound.SoundId = targetSound.SoundId
-            ListeningLocalSound.Volume = 0.8 -- ความดังประมาณ 80% ชัดเจนฝั่งเครื่องเรา
-            ListeningLocalSound.TimePosition = 0 -- เล่นตั้งแต่เริ่มต้นเพลง
+            ListeningLocalSound.Volume = 0.8
+            ListeningLocalSound.TimePosition = 0
             ListeningLocalSound.Looped = targetSound.Looped
             ListeningLocalSound.Parent = PlayerGui
             ListeningLocalSound:Play()
@@ -867,11 +849,8 @@ local function updateJunkViewerLive()
     end
 
     JunkTextLabel.Text = outputText
-    
-    -- คำนวณความสูงแบบไดนามิกแบบไม่มีวันสุดจอ (Infinite Vertical Height Limit)
-    local textBounds = TextService:GetTextSize(outputText, 10, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 20, 10000000))
-    JunkTextLabel.Size = UDim2.new(1, -12, 0, textBounds.Y + 20)
-    JunkScroll.CanvasSize = UDim2.new(0, 0, 0, textBounds.Y + 40)
+    -- ⚡ ปรับเป็น AutomaticSize Direct ใช้ Engine คำนวณเพื่อตัดปัญหาอาการกระตุก
+    JunkTextLabel.Size = UDim2.new(1, -12, 0, 0)
 end
 
 local function refreshPlayers()
@@ -999,12 +978,18 @@ end)
 
 JunkBackBtn.MouseButton1Click:Connect(function() JunkFrame.Visible = false end)
 
--- Smooth Auto Refresh Loop
+-- ⚡ SMOOTH BACKGROUND THREAD (กระจายโหลด ป้องกันอาการลูปชนกันจนเฟรมดรอป)
 task.spawn(function()
     while true do
-        task.wait(3.5)
+        task.wait(4)
         markSelfAsRunner()
-        for _, p in ipairs(Players:GetPlayers()) do pcall(function() setupPlayerTag(p) end) end
+        
+        -- กระจายภาระเช็ก Tag ทีละเฟรม
+        for _, p in ipairs(Players:GetPlayers()) do
+            pcall(function() setupPlayerTag(p) end)
+            task.wait()
+        end
+        
         if MainFrame.Visible then
             pcall(function()
                 refreshPlayers()
