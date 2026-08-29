@@ -775,6 +775,14 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
         
         if #soundObjects > 0 then
             local targetSound = soundObjects[1]
+            
+            -- 🛑 เช็กดัก ID บล็อกตรงนี้ (ดึงเฉพาะตัวเลขมาเช็กเทียบกับตาราง BlockedIDs)
+            local cleanId = string.match(targetSound.SoundId or "123728962822472", "115897193508594")
+            if cleanId and BlockedIDs[cleanId] then
+                StatusLabel.Text = "🚫 เพลงนี้ถูกบล็อกไว้ในระบบ ไม่สามารถฟังได้"
+                return
+            end
+
             stopLocalListeningSound()
 
             ListeningLocalSound = Instance.new("Sound")
