@@ -42,11 +42,11 @@ ScreenGui.Name = "StyleKukiVIPLoader"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = GuiParent
 
--- 📦 MainContainer
+-- 📦 MainContainer (ปรับขนาดกระทัดรัดพอดีจอโทรศัพท์ 480x280)
 local MainContainer = Instance.new("Frame")
 MainContainer.Name = "MainContainer"
-MainContainer.Size = UDim2.new(0, 570, 0, 360)
-MainContainer.Position = UDim2.new(0.5, -285, 0.5, -180)
+MainContainer.Size = UDim2.new(0, 480, 0, 280)
+MainContainer.Position = UDim2.new(0.5, -240, 0.5, -140)
 MainContainer.BackgroundTransparency = 1
 MainContainer.Parent = ScreenGui
 
@@ -127,10 +127,10 @@ for i = 1, 20 do
     end)
 end
 
--- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM
+-- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM (ทรงสี่เหลี่ยมตามสั่ง)
 local ToggleBtnContainer = Instance.new("Frame", ScreenGui)
 ToggleBtnContainer.Name = "ToggleBtnContainer"
-ToggleBtnContainer.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtnContainer.Size = UDim2.new(0, 42, 0, 42)
 ToggleBtnContainer.Position = UDim2.new(0.02, 0, 0.2, 0)
 ToggleBtnContainer.BackgroundTransparency = 1
 ToggleBtnContainer.Visible = true
@@ -139,7 +139,7 @@ local ToggleLED = Instance.new("Frame", ToggleBtnContainer)
 ToggleLED.Size = UDim2.new(1, 0, 1, 0)
 ToggleLED.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ToggleLED.BorderSizePixel = 0
-Instance.new("UICorner", ToggleLED).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", ToggleLED).CornerRadius = UDim.new(0, 8) -- สี่เหลี่ยมมนทรงเหลี่ยม
 
 local ToggleLEDGradient = Instance.new("UIGradient", ToggleLED)
 ToggleLEDGradient.Color = ColorSequence.new{
@@ -155,7 +155,7 @@ ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 ToggleBtn.BorderSizePixel = 0
 ToggleBtn.Image = "rbxassetid://" .. ProfileImageId
 ToggleBtn.ScaleType = Enum.ScaleType.Crop
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6) -- สี่เหลี่ยมมน
 
 RunService.RenderStepped:Connect(function()
     LEDGradient.Rotation = (LEDGradient.Rotation + 1.5) % 360
@@ -184,9 +184,44 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    MainContainer.Visible = not MainContainer.Visible
-end)
+-- ⚡ ULTRA SMOOTH TOGGLE ANIMATION SYSTEM
+local isUIVisible = true
+local isAnimating = false
+
+local function ToggleUI()
+    if isAnimating then return end
+    isAnimating = true
+    
+    if isUIVisible then
+        -- Animation ปิด UI
+        local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+        local t1 = TweenService:Create(MainContainer, tweenInfo, {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        })
+        t1:Play()
+        t1.Completed:Wait()
+        MainContainer.Visible = false
+        isUIVisible = false
+    else
+        -- Animation เปิด UI
+        MainContainer.Visible = true
+        MainContainer.Size = UDim2.new(0, 0, 0, 0)
+        MainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
+        
+        local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local t1 = TweenService:Create(MainContainer, tweenInfo, {
+            Size = UDim2.new(0, 480, 0, 280),
+            Position = UDim2.new(0.5, -240, 0.5, -140)
+        })
+        t1:Play()
+        t1.Completed:Wait()
+        isUIVisible = true
+    end
+    isAnimating = false
+end
+
+ToggleBtn.MouseButton1Click:Connect(ToggleUI)
 
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -213,11 +248,11 @@ end)
 
 -- Header Bar Component
 local IconHolder = Instance.new("Frame", MainFrame)
-IconHolder.Size = UDim2.new(0, 42, 0, 42)
-IconHolder.Position = UDim2.new(0, 14, 0, 12)
+IconHolder.Size = UDim2.new(0, 34, 0, 34)
+IconHolder.Position = UDim2.new(0, 10, 0, 8)
 IconHolder.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
 IconHolder.BorderSizePixel = 0
-Instance.new("UICorner", IconHolder).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", IconHolder).CornerRadius = UDim.new(0, 8)
 
 local IconImage = Instance.new("ImageLabel", IconHolder)
 IconImage.Size = UDim2.new(1, -4, 1, -4)
@@ -226,15 +261,15 @@ IconImage.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 IconImage.BorderSizePixel = 0
 IconImage.Image = "rbxassetid://" .. ProfileImageId
 IconImage.ScaleType = Enum.ScaleType.Crop
-Instance.new("UICorner", IconImage).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", IconImage).CornerRadius = UDim.new(0, 6)
 
 local TitleLabel = Instance.new("TextLabel", MainFrame)
-TitleLabel.Size = UDim2.new(0, 200, 0, 42)
-TitleLabel.Position = UDim2.new(0, 64, 0, 12)
+TitleLabel.Size = UDim2.new(0, 150, 0, 34)
+TitleLabel.Position = UDim2.new(0, 50, 0, 8)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "StyleKuki Activate"
+TitleLabel.Text = "StyleKuki VIP"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 17
+TitleLabel.TextSize = 14
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -245,11 +280,11 @@ TitleGradient.Color = ColorSequence.new{
 }
 
 local TopMapBanner = Instance.new("Frame", MainFrame)
-TopMapBanner.Size = UDim2.new(0, 210, 0, 32)
-TopMapBanner.Position = UDim2.new(0.5, -105, 0, 17)
+TopMapBanner.Size = UDim2.new(0, 170, 0, 26)
+TopMapBanner.Position = UDim2.new(0.5, -85, 0, 12)
 TopMapBanner.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
 TopMapBanner.BorderSizePixel = 0
-Instance.new("UICorner", TopMapBanner).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", TopMapBanner).CornerRadius = UDim.new(0, 6)
 
 local BannerStroke = Instance.new("UIStroke", TopMapBanner)
 BannerStroke.Color = Color3.fromRGB(0, 229, 255)
@@ -257,166 +292,182 @@ BannerStroke.Thickness = 1
 BannerStroke.Transparency = 0.6
 
 local TopMapText = Instance.new("TextLabel", TopMapBanner)
-TopMapText.Size = UDim2.new(1, -12, 1, 0)
-TopMapText.Position = UDim2.new(0, 6, 0, 0)
+TopMapText.Size = UDim2.new(1, -10, 1, 0)
+TopMapText.Position = UDim2.new(0, 5, 0, 0)
 TopMapText.BackgroundTransparency = 1
 TopMapText.Text = "📍 " .. CurrentGameName
 TopMapText.TextColor3 = Color3.fromRGB(240, 240, 255)
-TopMapText.TextSize = 11
+TopMapText.TextSize = 10
 TopMapText.Font = Enum.Font.GothamMedium
 TopMapText.TextTruncate = Enum.TextTruncate.AtEnd
 
 local CloseBtn = Instance.new("TextButton", MainFrame)
-CloseBtn.Size = UDim2.new(0, 32, 0, 32)
-CloseBtn.Position = UDim2.new(1, -44, 0, 14)
+CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+CloseBtn.Position = UDim2.new(1, -34, 0, 12)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 CloseBtn.Text = "✕"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 14
+CloseBtn.TextSize = 12
 CloseBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 local CloseStroke = Instance.new("UIStroke", CloseBtn)
 CloseStroke.Color = Color3.fromRGB(255, 0, 100)
 CloseStroke.Thickness = 1.5
-CloseBtn.MouseButton1Click:Connect(function() MainContainer.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(ToggleUI)
 
--- Navigation Sidebar
+-- Navigation Sidebar (ขนาดพอดีจอ)
 local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0, 145, 1, -80)
-Sidebar.Position = UDim2.new(0, 14, 0, 68)
+Sidebar.Size = UDim2.new(0, 120, 1, -55)
+Sidebar.Position = UDim2.new(0, 10, 0, 48)
 Sidebar.BackgroundTransparency = 1
 
 local TabGame = Instance.new("TextButton", Sidebar)
-TabGame.Size = UDim2.new(1, 0, 0, 32)
+TabGame.Size = UDim2.new(1, 0, 0, 26)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
-TabGame.Text = "   🎮   GAMES"
+TabGame.Text = "  🎮  GAMES"
 TabGame.TextColor3 = Color3.fromRGB(0, 229, 255)
 TabGame.Font = Enum.Font.GothamBold
-TabGame.TextSize = 11
+TabGame.TextSize = 10
 TabGame.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", TabGame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", TabGame).CornerRadius = UDim.new(0, 6)
 
 local TabGameStroke = Instance.new("UIStroke", TabGame)
 TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
 
 local TabInfo = Instance.new("TextButton", Sidebar)
-TabInfo.Size = UDim2.new(1, 0, 0, 32)
-TabInfo.Position = UDim2.new(0, 0, 0, 36)
+TabInfo.Size = UDim2.new(1, 0, 0, 26)
+TabInfo.Position = UDim2.new(0, 0, 0, 30)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
-TabInfo.Text = "   📊   STATUS"
+TabInfo.Text = "  📊  STATUS"
 TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabInfo.Font = Enum.Font.GothamBold
-TabInfo.TextSize = 11
+TabInfo.TextSize = 10
 TabInfo.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", TabInfo).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", TabInfo).CornerRadius = UDim.new(0, 6)
 
 local TabInfoStroke = Instance.new("UIStroke", TabInfo)
 TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
 
 local TabTools = Instance.new("TextButton", Sidebar)
-TabTools.Size = UDim2.new(1, 0, 0, 32)
-TabTools.Position = UDim2.new(0, 0, 0, 72)
+TabTools.Size = UDim2.new(1, 0, 0, 26)
+TabTools.Position = UDim2.new(0, 0, 0, 60)
 TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
-TabTools.Text = "   🛠️   Tools🔥"
+TabTools.Text = "  🛠️  TOOLS🔥"
 TabTools.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabTools.Font = Enum.Font.GothamBold
-TabTools.TextSize = 11
+TabTools.TextSize = 10
 TabTools.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 6)
 
 local TabToolsStroke = Instance.new("UIStroke", TabTools)
 TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabToolsStroke.Thickness = 1
 
 local TabCars = Instance.new("TextButton", Sidebar)
-TabCars.Size = UDim2.new(1, 0, 0, 32)
-TabCars.Position = UDim2.new(0, 0, 0, 108)
+TabCars.Size = UDim2.new(1, 0, 0, 26)
+TabCars.Position = UDim2.new(0, 0, 0, 90)
 TabCars.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
-TabCars.Text = "   🚗   CARS"
+TabCars.Text = "  🚗  CARS"
 TabCars.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabCars.Font = Enum.Font.GothamBold
-TabCars.TextSize = 11
+TabCars.TextSize = 10
 TabCars.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", TabCars).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", TabCars).CornerRadius = UDim.new(0, 6)
 
 local TabCarsStroke = Instance.new("UIStroke", TabCars)
 TabCarsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabCarsStroke.Thickness = 1
 
+-- 👁️ เพิ่มหมวดหมู่ที่ 5: ESP
+local TabESP = Instance.new("TextButton", Sidebar)
+TabESP.Size = UDim2.new(1, 0, 0, 26)
+TabESP.Position = UDim2.new(0, 0, 0, 120)
+TabESP.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+TabESP.Text = "  👁️  ESP"
+TabESP.TextColor3 = Color3.fromRGB(120, 125, 140)
+TabESP.Font = Enum.Font.GothamBold
+TabESP.TextSize = 10
+TabESP.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", TabESP).CornerRadius = UDim.new(0, 6)
+
+local TabESPStroke = Instance.new("UIStroke", TabESP)
+TabESPStroke.Color = Color3.fromRGB(40, 45, 60)
+TabESPStroke.Thickness = 1
+
 -- Main Content Frame
 local ContentFrame = Instance.new("Frame", MainFrame)
-ContentFrame.Size = UDim2.new(1, -185, 1, -80)
-ContentFrame.Position = UDim2.new(0, 170, 0, 68)
+ContentFrame.Size = UDim2.new(1, -145, 1, -55)
+ContentFrame.Position = UDim2.new(0, 135, 0, 48)
 ContentFrame.BackgroundTransparency = 1
 
 -- Tab 1: Games Page (ScrollingFrame)
 local PageGame = Instance.new("ScrollingFrame", ContentFrame)
 PageGame.Size = UDim2.new(1, 0, 1, 0)
 PageGame.BackgroundTransparency = 1
-PageGame.ScrollBarThickness = 4
+PageGame.ScrollBarThickness = 3
 PageGame.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
 PageGame.BorderSizePixel = 0
 PageGame.Visible = true
 
 local PageListLayout = Instance.new("UIListLayout", PageGame)
 PageListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-PageListLayout.Padding = UDim.new(0, 10)
+PageListLayout.Padding = UDim.new(0, 8)
 
 PageListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PageGame.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 10)
+    PageGame.CanvasSize = UDim2.new(0, 0, 0, PageListLayout.AbsoluteContentSize.Y + 8)
 end)
 
 local function CreateScriptCard(parent, title, subtitle, btnText, isSpecialGradient)
     local Card = Instance.new("Frame", parent)
-    Card.Size = UDim2.new(1, -10, 0, 75)
+    Card.Size = UDim2.new(1, -8, 0, 55)
     Card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
     Card.BorderSizePixel = 0
-    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 8)
 
     local Stroke = Instance.new("UIStroke", Card)
     Stroke.Color = Color3.fromRGB(35, 40, 55)
     Stroke.Thickness = 1
 
     local Title = Instance.new("TextLabel", Card)
-    Title.Size = UDim2.new(1, -130, 0, 25)
-    Title.Position = UDim2.new(0, 16, 0, 14)
+    Title.Size = UDim2.new(1, -100, 0, 20)
+    Title.Position = UDim2.new(0, 10, 0, 8)
     Title.BackgroundTransparency = 1
     Title.Text = title
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 13
+    Title.TextSize = 11
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
     local Sub = Instance.new("TextLabel", Card)
-    Sub.Size = UDim2.new(1, -130, 0, 18)
-    Sub.Position = UDim2.new(0, 16, 0, 39)
+    Sub.Size = UDim2.new(1, -100, 0, 16)
+    Sub.Position = UDim2.new(0, 10, 0, 28)
     Sub.BackgroundTransparency = 1
     Sub.Text = subtitle
     Sub.TextColor3 = isSpecialGradient and Color3.fromRGB(255, 0, 200) or Color3.fromRGB(0, 229, 255)
     Sub.Font = Enum.Font.Gotham
-    Sub.TextSize = 11
+    Sub.TextSize = 9
     Sub.TextXAlignment = Enum.TextXAlignment.Left
 
     local RunBtn = Instance.new("TextButton", Card)
-    RunBtn.Size = UDim2.new(0, 100, 0, 38)
-    RunBtn.Position = UDim2.new(1, -114, 0.5, -19)
+    RunBtn.Size = UDim2.new(0, 75, 0, 28)
+    RunBtn.Position = UDim2.new(1, -83, 0.5, -14)
     RunBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
     RunBtn.Text = btnText or "EXECUTE"
     RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     RunBtn.Font = Enum.Font.GothamBold
-    RunBtn.TextSize = 11
-    Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 10)
+    RunBtn.TextSize = 9
+    Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 6)
 
     local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     RunBtn.MouseEnter:Connect(function()
-        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 104, 0, 40), Position = UDim2.new(1, -116, 0.5, -20)}):Play()
+        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 78, 0, 30), Position = UDim2.new(1, -85, 0.5, -15)}):Play()
     end)
     RunBtn.MouseLeave:Connect(function()
-        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 100, 0, 38), Position = UDim2.new(1, -114, 0.5, -19)}):Play()
+        TweenService:Create(RunBtn, tweenInfo, {Size = UDim2.new(0, 75, 0, 28), Position = UDim2.new(1, -83, 0.5, -14)}):Play()
     end)
 
     local Gradient = Instance.new("UIGradient", RunBtn)
@@ -451,66 +502,83 @@ PageInfo.BackgroundTransparency = 1
 PageInfo.Visible = false
 
 local StatusCard = Instance.new("Frame", PageInfo)
-StatusCard.Size = UDim2.new(1, 0, 0, 90)
+StatusCard.Size = UDim2.new(1, -8, 0, 75)
 StatusCard.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
-Instance.new("UICorner", StatusCard).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", StatusCard).CornerRadius = UDim.new(0, 8)
 
 local StatusCardStroke = Instance.new("UIStroke", StatusCard)
 StatusCardStroke.Color = Color3.fromRGB(35, 40, 55)
 StatusCardStroke.Thickness = 1
 
 local MapLabel = Instance.new("TextLabel", StatusCard)
-MapLabel.Size = UDim2.new(1, -20, 0, 25)
-MapLabel.Position = UDim2.new(0, 16, 0, 16)
+MapLabel.Size = UDim2.new(1, -20, 0, 20)
+MapLabel.Position = UDim2.new(0, 12, 0, 12)
 MapLabel.BackgroundTransparency = 1
 MapLabel.Text = "Current Game: " .. CurrentGameName
 MapLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 MapLabel.Font = Enum.Font.GothamBold
-MapLabel.TextSize = 13
+MapLabel.TextSize = 11
 MapLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local PlaceIdLabel = Instance.new("TextLabel", StatusCard)
-PlaceIdLabel.Size = UDim2.new(1, -20, 0, 20)
-PlaceIdLabel.Position = UDim2.new(0, 16, 0, 46)
+PlaceIdLabel.Size = UDim2.new(1, -20, 0, 18)
+PlaceIdLabel.Position = UDim2.new(0, 12, 0, 38)
 PlaceIdLabel.BackgroundTransparency = 1
 PlaceIdLabel.Text = "Place ID: " .. tostring(PlaceId) .. " (System Ready)"
 PlaceIdLabel.TextColor3 = Color3.fromRGB(0, 255, 170)
 PlaceIdLabel.Font = Enum.Font.Gotham
-PlaceIdLabel.TextSize = 11
+PlaceIdLabel.TextSize = 10
 PlaceIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Tab 3: Tools Page
 local PageTools = Instance.new("ScrollingFrame", ContentFrame)
 PageTools.Size = UDim2.new(1, 0, 1, 0)
 PageTools.BackgroundTransparency = 1
-PageTools.ScrollBarThickness = 4
+PageTools.ScrollBarThickness = 3
 PageTools.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
 PageTools.BorderSizePixel = 0
 PageTools.Visible = false
 
 local ToolsListLayout = Instance.new("UIListLayout", PageTools)
 ToolsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ToolsListLayout.Padding = UDim.new(0, 10)
+ToolsListLayout.Padding = UDim.new(0, 8)
 
 ToolsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 10)
+    PageTools.CanvasSize = UDim2.new(0, 0, 0, ToolsListLayout.AbsoluteContentSize.Y + 8)
 end)
 
 -- Tab 4: Cars Page (ScrollingFrame)
 local PageCars = Instance.new("ScrollingFrame", ContentFrame)
 PageCars.Size = UDim2.new(1, 0, 1, 0)
 PageCars.BackgroundTransparency = 1
-PageCars.ScrollBarThickness = 4
+PageCars.ScrollBarThickness = 3
 PageCars.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
 PageCars.BorderSizePixel = 0
 PageCars.Visible = false
 
 local CarsListLayout = Instance.new("UIListLayout", PageCars)
 CarsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-CarsListLayout.Padding = UDim.new(0, 10)
+CarsListLayout.Padding = UDim.new(0, 8)
 
 CarsListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    PageCars.CanvasSize = UDim2.new(0, 0, 0, CarsListLayout.AbsoluteContentSize.Y + 10)
+    PageCars.CanvasSize = UDim2.new(0, 0, 0, CarsListLayout.AbsoluteContentSize.Y + 8)
+end)
+
+-- 👁️ Tab 5: ESP Page (ScrollingFrame)
+local PageESP = Instance.new("ScrollingFrame", ContentFrame)
+PageESP.Size = UDim2.new(1, 0, 1, 0)
+PageESP.BackgroundTransparency = 1
+PageESP.ScrollBarThickness = 3
+PageESP.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageESP.BorderSizePixel = 0
+PageESP.Visible = false
+
+local ESPListLayout = Instance.new("UIListLayout", PageESP)
+ESPListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ESPListLayout.Padding = UDim.new(0, 8)
+
+ESPListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageESP.CanvasSize = UDim2.new(0, 0, 0, ESPListLayout.AbsoluteContentSize.Y + 8)
 end)
 
 local function GetNil(Name, DebugId)
@@ -634,7 +702,6 @@ RaftCarBtn.MouseButton1Click:Connect(function()
 
         if not Remotes or not RE then return end
 
-        -- 1. บันทึก Telemetry การคลิกเลือกเมนู Vehicles (UI Log)
         pcall(function()
             Remotes.TelemetryClientInteraction:FireServer("filterClick", {
                 name = "Sled",
@@ -642,7 +709,6 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             })
         end)
 
-        -- 2. เคลียร์เพลง/เสียงจากพาหนะเดิมและอุปกรณ์ทั้งหมดที่ผู้เล่นอาจเปิดค้างไว้
         pcall(function()
             if RE:FindFirstChild("1Player1sCa1r") then
                 RE["1Player1sCa1r"]:FireServer("VehicleMusicStop", "", nil, true)
@@ -657,14 +723,12 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             if Remotes:FindFirstChild("Emotes:StopSyncableEmote") then Remotes["Emotes:StopSyncableEmote"]:FireServer() end
         end)
 
-        -- 3. สั่งหยุดสถานะการขับพาหนะเดิม (ถ้ามี)
         pcall(function()
             if firesignal and Remotes:FindFirstChild("PlayerStoppedDriving") then
                 firesignal(Remotes.PlayerStoppedDriving.OnClientEvent)
             end
         end)
 
-        -- 4. ลบพาหนะเดิมของผู้เล่นออกจากแมพ (ช่วงเปิด Menu Panel)
         pcall(function()
             if RE:FindFirstChild("1Ca1r") then
                 RE["1Ca1r"]:FireServer("NoMotorVehicleDeleteCar")
@@ -673,28 +737,23 @@ RaftCarBtn.MouseButton1Click:Connect(function()
 
         task.wait(0.1)
 
-        -- 5. ส่ง Request เสกพาหนะใหม่ (Sled)
         pcall(function()
             if RE:FindFirstChild("1NoMoto1rVehicle1s") then
                 RE["1NoMoto1rVehicle1s"]:FireServer("Sled", nil, nil)
             end
         end)
 
-        -- 6. โหลด GUI สำหรับแผงควบคุมพาหนะไร้เครื่องยนต์
         pcall(function()
             if Remotes:FindFirstChild("LoadPanel") then
                 Remotes.LoadPanel:FireServer("MainGUIHandler", "NoMotorVehicleControl", true)
             end
         end)
 
-        -- ⚡ 7. ส่ง Signal แจ้งระบบว่าผู้เล่นเข้าสู่สถานะเริ่มขับ + ผูก Ownership ฝั่ง Client
         pcall(function()
             if firesignal and Remotes:FindFirstChild("PlayerStartedDriving") then
-                -- ส่ง LocalPlayer ไปด้วยเพื่อให้ LocalScript ผูก Audio Channel ว่าเราเป็นคนขับจริง
                 firesignal(Remotes.PlayerStartedDriving.OnClientEvent, LocalPlayer)
             end
 
-            -- Force ปลูก Attribute ยืนยันเจ้าของรถฝั่ง PlayerGui เพื่อแยก Sound Group ของเราออกจากคนอื่น
             local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
             if playerGui then
                 local mainGui = playerGui:FindFirstChild("MainGUIHandler") or playerGui:FindFirstChild("MainGUI")
@@ -705,7 +764,6 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 8. เช็คและกำหนดค่าความเร็วพาหนะ (Set & Sync Speed)
         pcall(function()
             if Remotes:FindFirstChild("GetNoMotorVehicleSpeed") then Remotes.GetNoMotorVehicleSpeed:InvokeServer() end
             if Remotes:FindFirstChild("SetNoMotorVehicleSpeed") then Remotes.SetNoMotorVehicleSpeed:InvokeServer(25) end
@@ -721,43 +779,293 @@ RaftCarBtn.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- 9. ส่งข้อมูล Profiling/Performance สรุปการเปิดใช้งาน Menu Panel กลับไปยัง Server
         pcall(function()
             if Remotes:FindFirstChild("ClientProfiling:SendData") then
                 Remotes["ClientProfiling:SendData"]:FireServer({
-                    frameTimeStability = {
-                        min = 0.0174,
-                        p1Low = 0.0174,
-                        mean = 0.1306,
-                        max = 0.4845,
-                        stdDev = 0.1776,
-                        p01Low = 0.0174
-                    },
+                    frameTimeStability = { min = 0.0174, p1Low = 0.0174, mean = 0.1306, max = 0.4845, stdDev = 0.1776, p01Low = 0.0174 },
                     identifier = "MainVehicleMenu",
-                    memoryStability = {
-                        min = 1535.6211,
-                        p1Low = 1535.6211,
-                        mean = 1546.9508,
-                        max = 1573.9414,
-                        stdDev = 13.8404,
-                        p01Low = 1535.6211
-                    },
-                    avgCPURenderTime = 0.0296,
-                    avgGPURenderTime = 0.0196,
-                    duration = 4.4981,
-                    avgTotalMemory = 1546.9508,
-                    avgFrameTime = 0.1306
+                    memoryStability = { min = 1535.6211, p1Low = 1535.6211, mean = 1546.9508, max = 1573.9414, stdDev = 13.8404, p01Low = 1535.6211 },
+                    avgCPURenderTime = 0.0296, avgGPURenderTime = 0.0196, duration = 4.4981, avgTotalMemory = 1546.9508, avgFrameTime = 0.1306
                 })
             end
         end)
 
-        -- Notification แจ้งเตือนเมื่อทำงานเสร็จสิ้น
         StarterGui:SetCore("SendNotification", {
             Title = "StyleKuki VIP",
             Text = "🛶 เสกรถ ซิงค์ UI และตั้งค่าระบบเสียงสมบูรณ์!",
             Duration = 3
         })
     end)
+end)
+
+-- =====================================================================
+-- 👁️ [ESP SYSTEM IMPLEMENTATION] - 6 SWITCH TOGGLE COMPONENTS
+-- =====================================================================
+
+local ESP_State = {
+    Box = false,
+    Tracer = false,
+    Name = false,
+    SelectedPlayer = nil,
+    Spectate = false,
+    TPLoop = false
+}
+
+-- Helper Function สร้าง Switch Toggle
+local function CreateSwitchCard(parent, title, subtitle, onToggleCallback)
+    local Card = Instance.new("Frame", parent)
+    Card.Size = UDim2.new(1, -8, 0, 50)
+    Card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+    Card.BorderSizePixel = 0
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 8)
+
+    local Stroke = Instance.new("UIStroke", Card)
+    Stroke.Color = Color3.fromRGB(35, 40, 55)
+    Stroke.Thickness = 1
+
+    local Title = Instance.new("TextLabel", Card)
+    Title.Size = UDim2.new(1, -90, 0, 18)
+    Title.Position = UDim2.new(0, 10, 0, 8)
+    Title.BackgroundTransparency = 1
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 10
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Sub = Instance.new("TextLabel", Card)
+    Sub.Size = UDim2.new(1, -90, 0, 14)
+    Sub.Position = UDim2.new(0, 10, 0, 26)
+    Sub.BackgroundTransparency = 1
+    Sub.Text = subtitle
+    Sub.TextColor3 = Color3.fromRGB(0, 229, 255)
+    Sub.Font = Enum.Font.Gotham
+    Sub.TextSize = 8
+    Sub.TextXAlignment = Enum.TextXAlignment.Left
+
+    local SwitchBackground = Instance.new("Frame", Card)
+    SwitchBackground.Size = UDim2.new(0, 42, 0, 22)
+    SwitchBackground.Position = UDim2.new(1, -52, 0.5, -11)
+    SwitchBackground.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
+    SwitchBackground.BorderSizePixel = 0
+    Instance.new("UICorner", SwitchBackground).CornerRadius = UDim.new(1, 0)
+
+    local SwitchKnob = Instance.new("Frame", SwitchBackground)
+    SwitchKnob.Size = UDim2.new(0, 16, 0, 16)
+    SwitchKnob.Position = UDim2.new(0, 3, 0.5, -8)
+    SwitchKnob.BackgroundColor3 = Color3.fromRGB(180, 185, 200)
+    SwitchKnob.BorderSizePixel = 0
+    Instance.new("UICorner", SwitchKnob).CornerRadius = UDim.new(1, 0)
+
+    local ClickBtn = Instance.new("TextButton", SwitchBackground)
+    ClickBtn.Size = UDim2.new(1, 0, 1, 0)
+    ClickBtn.BackgroundTransparency = 1
+    ClickBtn.Text = ""
+
+    local state = false
+    ClickBtn.MouseButton1Click:Connect(function()
+        state = not state
+        local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        if state then
+            TweenService:Create(SwitchBackground, tweenInfo, {BackgroundColor3 = Color3.fromRGB(0, 229, 255)}):Play()
+            TweenService:Create(SwitchKnob, tweenInfo, {Position = UDim2.new(1, -19, 0.5, -8), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+        else
+            TweenService:Create(SwitchBackground, tweenInfo, {BackgroundColor3 = Color3.fromRGB(35, 40, 50)}):Play()
+            TweenService:Create(SwitchKnob, tweenInfo, {Position = UDim2.new(0, 3, 0.5, -8), BackgroundColor3 = Color3.fromRGB(180, 185, 200)}):Play()
+        end
+        onToggleCallback(state)
+    end)
+
+    return Card
+end
+
+-- 1. Box ESP Switch
+CreateSwitchCard(PageESP, "1. Box ESP", "มองเห็นกรอบบล็อกผู้เล่นทุกคนแบบ Real-time", function(state)
+    ESP_State.Box = state
+end)
+
+-- 2. Tracer ESP Switch
+CreateSwitchCard(PageESP, "2. Tracer Line ESP", "มองเห็นเส้นนำสายตาไปยังตำแหน่งผู้เล่น", function(state)
+    ESP_State.Tracer = state
+end)
+
+-- 3. Name ESP Switch
+CreateSwitchCard(PageESP, "3. Name Tag ESP", "แสดงรายชื่อผู้เล่นลอยอยู่บนหัว", function(state)
+    ESP_State.Name = state
+end)
+
+-- 4. Player Selector Dropdown Card
+local SelectorCard = Instance.new("Frame", PageESP)
+SelectorCard.Size = UDim2.new(1, -8, 0, 65)
+SelectorCard.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+SelectorCard.BorderSizePixel = 0
+Instance.new("UICorner", SelectorCard).CornerRadius = UDim.new(0, 8)
+
+local SelectorStroke = Instance.new("UIStroke", SelectorCard)
+SelectorStroke.Color = Color3.fromRGB(35, 40, 55)
+SelectorStroke.Thickness = 1
+
+local SelectorTitle = Instance.new("TextLabel", SelectorCard)
+SelectorTitle.Size = UDim2.new(1, -10, 0, 16)
+SelectorTitle.Position = UDim2.new(0, 10, 0, 6)
+SelectorTitle.BackgroundTransparency = 1
+SelectorTitle.Text = "4. Select Player Target"
+SelectorTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectorTitle.Font = Enum.Font.GothamBold
+SelectorTitle.TextSize = 10
+SelectorTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local DropdownBtn = Instance.new("TextButton", SelectorCard)
+DropdownBtn.Size = UDim2.new(1, -75, 0, 28)
+DropdownBtn.Position = UDim2.new(0, 10, 0, 28)
+DropdownBtn.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+DropdownBtn.Text = "  เลือกผู้เล่น..."
+DropdownBtn.TextColor3 = Color3.fromRGB(0, 229, 255)
+DropdownBtn.Font = Enum.Font.Gotham
+DropdownBtn.TextSize = 9
+DropdownBtn.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", DropdownBtn).CornerRadius = UDim.new(0, 6)
+
+local RefreshBtn = Instance.new("TextButton", SelectorCard)
+RefreshBtn.Size = UDim2.new(0, 50, 0, 28)
+RefreshBtn.Position = UDim2.new(1, -60, 0, 28)
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
+RefreshBtn.Text = "รีเฟรช"
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.TextSize = 9
+Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
+
+-- Frame รายชื่อผู้เล่น
+local DropListFrame = Instance.new("ScrollingFrame", SelectorCard)
+DropListFrame.Size = UDim2.new(1, -20, 0, 80)
+DropListFrame.Position = UDim2.new(0, 10, 1, 2)
+DropListFrame.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+DropListFrame.Visible = false
+DropListFrame.ZIndex = 50
+DropListFrame.ScrollBarThickness = 2
+Instance.new("UICorner", DropListFrame).CornerRadius = UDim.new(0, 6)
+
+local DropListLayout = Instance.new("UIListLayout", DropListFrame)
+DropListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function UpdatePlayerList()
+    for _, child in ipairs(DropListFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= Players.LocalPlayer then
+            local pBtn = Instance.new("TextButton", DropListFrame)
+            pBtn.Size = UDim2.new(1, 0, 0, 22)
+            pBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+            pBtn.Text = "  " .. p.DisplayName .. " (@" .. p.Name .. ")"
+            pBtn.TextColor3 = Color3.fromRGB(200, 205, 220)
+            pBtn.Font = Enum.Font.Gotham
+            pBtn.TextSize = 8
+            pBtn.TextXAlignment = Enum.TextXAlignment.Left
+            pBtn.ZIndex = 51
+
+            pBtn.MouseButton1Click:Connect(function()
+                ESP_State.SelectedPlayer = p
+                DropdownBtn.Text = "  " .. p.DisplayName
+                DropListFrame.Visible = false
+            end)
+        end
+    end
+    DropListFrame.CanvasSize = UDim2.new(0, 0, 0, DropListLayout.AbsoluteContentSize.Y)
+end
+
+DropdownBtn.MouseButton1Click:Connect(function()
+    DropListFrame.Visible = not DropListFrame.Visible
+    if DropListFrame.Visible then UpdatePlayerList() end
+end)
+
+RefreshBtn.MouseButton1Click:Connect(function()
+    ESP_State.SelectedPlayer = nil
+    DropdownBtn.Text = "  เลือกผู้เล่น..."
+    UpdatePlayerList()
+end)
+
+-- 5. Spectator Switch
+CreateSwitchCard(PageESP, "5. Spectate Target", "ส่องมุมมองกล้องผู้เล่นที่เลือกแบบ Real-time", function(state)
+    ESP_State.Spectate = state
+    local Camera = workspace.CurrentCamera
+    if state and ESP_State.SelectedPlayer and ESP_State.SelectedPlayer.Character then
+        local targetHum = ESP_State.SelectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if targetHum then Camera.CameraSubject = targetHum end
+    else
+        if Players.LocalPlayer.Character then
+            local myHum = Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if myHum then Camera.CameraSubject = myHum end
+        end
+    end
+end)
+
+-- 6. TP Loop Switch
+CreateSwitchCard(PageESP, "6. TP Loop Target", "วาร์ปติดตัวผู้เล่นที่เลือกแบบถี่ๆ Real-time", function(state)
+    ESP_State.TPLoop = state
+end)
+
+-- Loop การทำงานของ ESP & TP Loop (Real-time Engine)
+local Camera = workspace.CurrentCamera
+
+RunService.RenderStepped:Connect(function()
+    -- 1. TP Loop Logic
+    if ESP_State.TPLoop and ESP_State.SelectedPlayer and ESP_State.SelectedPlayer.Character then
+        local myChar = Players.LocalPlayer.Character
+        local targetChar = ESP_State.SelectedPlayer.Character
+        if myChar and targetChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar:FindFirstChild("HumanoidRootPart") then
+            myChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
+        end
+    end
+
+    -- 2. ESP Drawing Logic
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= Players.LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = p.Character.HumanoidRootPart
+            local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+
+            -- Handle Highlight Box
+            local box = p.Character:FindFirstChild("StyleKuki_Box")
+            if ESP_State.Box then
+                if not box then
+                    box = Instance.new("Highlight")
+                    box.Name = "StyleKuki_Box"
+                    box.FillTransparency = 0.7
+                    box.OutlineColor = Color3.fromRGB(0, 229, 255)
+                    box.Parent = p.Character
+                end
+            elseif box then
+                box:Destroy()
+            end
+
+            -- Handle Name Tag
+            local head = p.Character:FindFirstChild("Head")
+            if head then
+                local bgui = head:FindFirstChild("StyleKuki_Name")
+                if ESP_State.Name then
+                    if not bgui then
+                        bgui = Instance.new("BillboardGui")
+                        bgui.Name = "StyleKuki_Name"
+                        bgui.Size = UDim2.new(0, 100, 0, 30)
+                        bgui.StudsOffset = Vector3.new(0, 2.5, 0)
+                        bgui.AlwaysOnTop = true
+                        
+                        local txt = Instance.new("TextLabel", bgui)
+                        txt.Size = UDim2.new(1, 0, 1, 0)
+                        txt.BackgroundTransparency = 1
+                        txt.Text = p.DisplayName
+                        txt.TextColor3 = Color3.fromRGB(0, 255, 200)
+                        txt.Font = Enum.Font.GothamBold
+                        txt.TextSize = 10
+                        bgui.Parent = head
+                    end
+                elseif bgui then
+                    bgui:Destroy()
+                end
+            end
+        end
+    end
 end)
 
 
@@ -767,12 +1075,14 @@ local function SwitchTab(activePage, activeTab, activeStroke)
     PageInfo.Visible = (activePage == PageInfo)
     PageTools.Visible = (activePage == PageTools)
     PageCars.Visible = (activePage == PageCars)
+    PageESP.Visible  = (activePage == PageESP)
 
     local tabs = {
         {TabGame, TabGameStroke}, 
         {TabInfo, TabInfoStroke}, 
         {TabTools, TabToolsStroke},
-        {TabCars, TabCarsStroke}
+        {TabCars, TabCarsStroke},
+        {TabESP, TabESPStroke}
     }
     for _, item in ipairs(tabs) do
         local btn, stroke = item[1], item[2]
@@ -790,6 +1100,7 @@ TabGame.MouseButton1Click:Connect(function() SwitchTab(PageGame, TabGame, TabGam
 TabInfo.MouseButton1Click:Connect(function() SwitchTab(PageInfo, TabInfo, TabInfoStroke) end)
 TabTools.MouseButton1Click:Connect(function() SwitchTab(PageTools, TabTools, TabToolsStroke) end)
 TabCars.MouseButton1Click:Connect(function() SwitchTab(PageCars, TabCars, TabCarsStroke) end)
+TabESP.MouseButton1Click:Connect(function() SwitchTab(PageESP, TabESP, TabESPStroke) end)
 
 -- 🔑 KEY SYSTEM OVERLAY
 local KeyOverlay = Instance.new("Frame", MainFrame)
@@ -801,22 +1112,22 @@ KeyOverlay.ZIndex = 30
 Instance.new("UICorner", KeyOverlay).CornerRadius = UDim.new(0, 14)
 
 local CompactKeyCard = Instance.new("Frame", KeyOverlay)
-CompactKeyCard.Size = UDim2.new(0, 440, 0, 230)
-CompactKeyCard.Position = UDim2.new(0.5, -220, 0.5, -115)
+CompactKeyCard.Size = UDim2.new(0, 360, 0, 190)
+CompactKeyCard.Position = UDim2.new(0.5, -180, 0.5, -95)
 CompactKeyCard.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
 CompactKeyCard.ZIndex = 31
-Instance.new("UICorner", CompactKeyCard).CornerRadius = UDim.new(0, 16)
+Instance.new("UICorner", CompactKeyCard).CornerRadius = UDim.new(0, 12)
 
 local CompactCardStroke = Instance.new("UIStroke", CompactKeyCard)
 CompactCardStroke.Color = Color3.fromRGB(40, 45, 60)
 CompactCardStroke.Thickness = 1.5
 
 local KeyBadge = Instance.new("Frame", CompactKeyCard)
-KeyBadge.Size = UDim2.new(0, 42, 0, 22)
-KeyBadge.Position = UDim2.new(0, 140, 0, 22)
+KeyBadge.Size = UDim2.new(0, 36, 0, 18)
+KeyBadge.Position = UDim2.new(0, 110, 0, 18)
 KeyBadge.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
 KeyBadge.ZIndex = 32
-Instance.new("UICorner", KeyBadge).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", KeyBadge).CornerRadius = UDim.new(0, 4)
 
 local KeyBadgeText = Instance.new("TextLabel", KeyBadge)
 KeyBadgeText.Size = UDim2.new(1, 0, 1, 0)
@@ -824,75 +1135,75 @@ KeyBadgeText.BackgroundTransparency = 1
 KeyBadgeText.Text = "KEY"
 KeyBadgeText.TextColor3 = Color3.fromRGB(200, 205, 220)
 KeyBadgeText.Font = Enum.Font.GothamBold
-KeyBadgeText.TextSize = 10
+KeyBadgeText.TextSize = 8
 KeyBadgeText.ZIndex = 33
 
 local PopupTitle = Instance.new("TextLabel", CompactKeyCard)
-PopupTitle.Size = UDim2.new(0, 200, 0, 25)
-PopupTitle.Position = UDim2.new(0, 190, 0, 20)
+PopupTitle.Size = UDim2.new(0, 160, 0, 20)
+PopupTitle.Position = UDim2.new(0, 150, 0, 16)
 PopupTitle.BackgroundTransparency = 1
 PopupTitle.Text = "StyleKuki VIP"
 PopupTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 PopupTitle.Font = Enum.Font.GothamBold
-PopupTitle.TextSize = 16
+PopupTitle.TextSize = 13
 PopupTitle.TextXAlignment = Enum.TextXAlignment.Left
 PopupTitle.ZIndex = 32
 
 local CircleFrame = Instance.new("Frame", CompactKeyCard)
-CircleFrame.Size = UDim2.new(0, 95, 0, 95)
-CircleFrame.Position = UDim2.new(0, 25, 0, 25)
+CircleFrame.Size = UDim2.new(0, 75, 0, 75)
+CircleFrame.Position = UDim2.new(0, 20, 0, 20)
 CircleFrame.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
 CircleFrame.ZIndex = 32
 Instance.new("UICorner", CircleFrame).CornerRadius = UDim.new(1, 0)
 
 local CircleStroke = Instance.new("UIStroke", CircleFrame)
 CircleStroke.Color = Color3.fromRGB(0, 229, 255)
-CircleStroke.Thickness = 3.5
+CircleStroke.Thickness = 3
 
 local PercentText = Instance.new("TextLabel", CircleFrame)
-PercentText.Size = UDim2.new(1, 0, 0, 30)
+PercentText.Size = UDim2.new(1, 0, 0, 24)
 PercentText.Position = UDim2.new(0, 0, 0.28, 0)
 PercentText.BackgroundTransparency = 1
 PercentText.Text = "LOCK"
 PercentText.TextColor3 = Color3.fromRGB(255, 255, 255)
 PercentText.Font = Enum.Font.GothamBold
-PercentText.TextSize = 15
+PercentText.TextSize = 12
 PercentText.ZIndex = 33
 
 local StatusSubText = Instance.new("TextLabel", CircleFrame)
-StatusSubText.Size = UDim2.new(1, 0, 0, 15)
+StatusSubText.Size = UDim2.new(1, 0, 0, 12)
 StatusSubText.Position = UDim2.new(0, 0, 0.60, 0)
 StatusSubText.BackgroundTransparency = 1
 StatusSubText.Text = "VERIFYING"
 StatusSubText.TextColor3 = Color3.fromRGB(120, 125, 140)
 StatusSubText.Font = Enum.Font.GothamMedium
-StatusSubText.TextSize = 8
+StatusSubText.TextSize = 7
 StatusSubText.ZIndex = 33
 
 local KeySub = Instance.new("TextLabel", CompactKeyCard)
-KeySub.Size = UDim2.new(0, 260, 0, 20)
-KeySub.Position = UDim2.new(0, 140, 0, 52)
+KeySub.Size = UDim2.new(0, 200, 0, 16)
+KeySub.Position = UDim2.new(0, 110, 0, 42)
 KeySub.BackgroundTransparency = 1
-KeySub.Text = "Please enter key to unlock access..."
+KeySub.Text = "Please enter key..."
 KeySub.TextColor3 = Color3.fromRGB(140, 145, 160)
 KeySub.Font = Enum.Font.Gotham
-KeySub.TextSize = 11
+KeySub.TextSize = 9
 KeySub.TextXAlignment = Enum.TextXAlignment.Left
 KeySub.ZIndex = 32
 
 local KeyInputBox = Instance.new("TextBox", CompactKeyCard)
-KeyInputBox.Size = UDim2.new(0, 275, 0, 32)
-KeyInputBox.Position = UDim2.new(0, 140, 0, 80)
+KeyInputBox.Size = UDim2.new(0, 230, 0, 26)
+KeyInputBox.Position = UDim2.new(0, 110, 0, 65)
 KeyInputBox.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 KeyInputBox.Text = ""
 KeyInputBox.PlaceholderText = "Enter Access Key..."
 KeyInputBox.PlaceholderColor3 = Color3.fromRGB(80, 85, 100)
 KeyInputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 KeyInputBox.Font = Enum.Font.GothamMedium
-KeyInputBox.TextSize = 11
+KeyInputBox.TextSize = 9
 KeyInputBox.ClearTextOnFocus = false
 KeyInputBox.ZIndex = 32
-Instance.new("UICorner", KeyInputBox).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", KeyInputBox).CornerRadius = UDim.new(0, 6)
 
 local KeyInputStroke = Instance.new("UIStroke", KeyInputBox)
 KeyInputStroke.Color = Color3.fromRGB(0, 229, 255)
@@ -900,15 +1211,15 @@ KeyInputStroke.Thickness = 1
 KeyInputStroke.Transparency = 0.5
 
 local CheckKeyBtn = Instance.new("TextButton", CompactKeyCard)
-CheckKeyBtn.Size = UDim2.new(0, 275, 0, 32)
-CheckKeyBtn.Position = UDim2.new(0, 140, 0, 120)
+CheckKeyBtn.Size = UDim2.new(0, 230, 0, 26)
+CheckKeyBtn.Position = UDim2.new(0, 110, 0, 98)
 CheckKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
 CheckKeyBtn.Text = "UNLOCK SYSTEM"
 CheckKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CheckKeyBtn.Font = Enum.Font.GothamBold
-CheckKeyBtn.TextSize = 11
+CheckKeyBtn.TextSize = 9
 CheckKeyBtn.ZIndex = 32
-Instance.new("UICorner", CheckKeyBtn).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", CheckKeyBtn).CornerRadius = UDim.new(0, 6)
 
 local CheckBtnGradient = Instance.new("UIGradient", CheckKeyBtn)
 CheckBtnGradient.Color = ColorSequence.new{
@@ -917,8 +1228,8 @@ CheckBtnGradient.Color = ColorSequence.new{
 }
 
 local VisContainer = Instance.new("Frame", CompactKeyCard)
-VisContainer.Size = UDim2.new(0, 390, 0, 25)
-VisContainer.Position = UDim2.new(0, 25, 0, 180)
+VisContainer.Size = UDim2.new(0, 320, 0, 20)
+VisContainer.Position = UDim2.new(0, 20, 0, 145)
 VisContainer.BackgroundTransparency = 1
 VisContainer.ZIndex = 32
 
@@ -926,11 +1237,11 @@ local VisLayout = Instance.new("UIListLayout", VisContainer)
 VisLayout.FillDirection = Enum.FillDirection.Horizontal
 VisLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 VisLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-VisLayout.Padding = UDim.new(0, 4)
+VisLayout.Padding = UDim.new(0, 3)
 
 for i = 1, 24 do
     local Bar = Instance.new("Frame", VisContainer)
-    Bar.Size = UDim2.new(0, 3, 0, math.random(6, 20))
+    Bar.Size = UDim2.new(0, 3, 0, math.random(4, 16))
     Bar.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
     Bar.BorderSizePixel = 0
     Bar.ZIndex = 33
@@ -939,7 +1250,7 @@ for i = 1, 24 do
     task.spawn(function()
         while Bar and Bar.Parent do
             TweenService:Create(Bar, TweenInfo.new(0.2), {
-                Size = UDim2.new(0, 3, 0, math.random(4, 22))
+                Size = UDim2.new(0, 3, 0, math.random(3, 18))
             }):Play()
             task.wait(0.18)
         end
@@ -988,58 +1299,53 @@ LoadingOverlay.ZIndex = 40
 Instance.new("UICorner", LoadingOverlay).CornerRadius = UDim.new(0, 14)
 
 local LoadCard = Instance.new("Frame", LoadingOverlay)
-LoadCard.Size = UDim2.new(0, 440, 0, 230)
-LoadCard.Position = UDim2.new(0.5, -220, 0.5, -115)
+LoadCard.Size = UDim2.new(0, 360, 0, 190)
+LoadCard.Position = UDim2.new(0.5, -180, 0.5, -95)
 LoadCard.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
 LoadCard.ZIndex = 41
-Instance.new("UICorner", LoadCard).CornerRadius = UDim.new(0, 16)
+Instance.new("UICorner", LoadCard).CornerRadius = UDim.new(0, 12)
 
 local LoadCardStroke = Instance.new("UIStroke", LoadCard)
 LoadCardStroke.Color = Color3.fromRGB(0, 229, 255)
 LoadCardStroke.Thickness = 1.5
 
 local LoadCircleFrame = Instance.new("Frame", LoadCard)
-LoadCircleFrame.Size = UDim2.new(0, 95, 0, 95)
-LoadCircleFrame.Position = UDim2.new(0, 25, 0, 25)
+LoadCircleFrame.Size = UDim2.new(0, 75, 0, 75)
+LoadCircleFrame.Position = UDim2.new(0, 20, 0, 20)
 LoadCircleFrame.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
 LoadCircleFrame.ZIndex = 42
 Instance.new("UICorner", LoadCircleFrame).CornerRadius = UDim.new(1, 0)
 
 local LoadCircleStroke = Instance.new("UIStroke", LoadCircleFrame)
 LoadCircleStroke.Color = Color3.fromRGB(0, 229, 255)
-LoadCircleStroke.Thickness = 4
-
-local LoadCircle3DShadow = Instance.new("UIStroke", LoadCircleFrame)
-LoadCircle3DShadow.Color = Color3.fromRGB(255, 0, 200)
-LoadCircle3DShadow.Thickness = 1.5
-LoadCircle3DShadow.Transparency = 0.3
+LoadCircleStroke.Thickness = 3
 
 local LoadPercentText = Instance.new("TextLabel", LoadCircleFrame)
-LoadPercentText.Size = UDim2.new(1, 0, 0, 30)
+LoadPercentText.Size = UDim2.new(1, 0, 0, 24)
 LoadPercentText.Position = UDim2.new(0, 0, 0.28, 0)
 LoadPercentText.BackgroundTransparency = 1
 LoadPercentText.Text = "0%"
 LoadPercentText.TextColor3 = Color3.fromRGB(255, 255, 255)
 LoadPercentText.Font = Enum.Font.GothamBold
-LoadPercentText.TextSize = 16
+LoadPercentText.TextSize = 12
 LoadPercentText.ZIndex = 43
 
 local LoadSubText = Instance.new("TextLabel", LoadCircleFrame)
-LoadSubText.Size = UDim2.new(1, 0, 0, 15)
+LoadSubText.Size = UDim2.new(1, 0, 0, 12)
 LoadSubText.Position = UDim2.new(0, 0, 0.60, 0)
 LoadSubText.BackgroundTransparency = 1
 LoadSubText.Text = "CARREGANDO"
 LoadSubText.TextColor3 = Color3.fromRGB(0, 229, 255)
 LoadSubText.Font = Enum.Font.GothamMedium
-LoadSubText.TextSize = 7
+LoadSubText.TextSize = 6
 LoadSubText.ZIndex = 43
 
 local LoadBadge = Instance.new("Frame", LoadCard)
-LoadBadge.Size = UDim2.new(0, 42, 0, 22)
-LoadBadge.Position = UDim2.new(0, 140, 0, 22)
+LoadBadge.Size = UDim2.new(0, 36, 0, 18)
+LoadBadge.Position = UDim2.new(0, 110, 0, 18)
 LoadBadge.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
 LoadBadge.ZIndex = 42
-Instance.new("UICorner", LoadBadge).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", LoadBadge).CornerRadius = UDim.new(0, 4)
 
 local LoadBadgeText = Instance.new("TextLabel", LoadBadge)
 LoadBadgeText.Size = UDim2.new(1, 0, 1, 0)
@@ -1047,46 +1353,46 @@ LoadBadgeText.BackgroundTransparency = 1
 LoadBadgeText.Text = "RUN"
 LoadBadgeText.TextColor3 = Color3.fromRGB(0, 229, 255)
 LoadBadgeText.Font = Enum.Font.GothamBold
-LoadBadgeText.TextSize = 10
+LoadBadgeText.TextSize = 8
 LoadBadgeText.ZIndex = 43
 
 local RunningScriptName = Instance.new("TextLabel", LoadCard)
-RunningScriptName.Size = UDim2.new(0, 240, 0, 25)
-RunningScriptName.Position = UDim2.new(0, 190, 0, 20)
+RunningScriptName.Size = UDim2.new(0, 200, 0, 20)
+RunningScriptName.Position = UDim2.new(0, 150, 0, 16)
 RunningScriptName.BackgroundTransparency = 1
 RunningScriptName.Text = "Script Name"
 RunningScriptName.TextColor3 = Color3.fromRGB(255, 255, 255)
 RunningScriptName.Font = Enum.Font.GothamBold
-RunningScriptName.TextSize = 13
+RunningScriptName.TextSize = 10
 RunningScriptName.TextXAlignment = Enum.TextXAlignment.Left
 RunningScriptName.TextTruncate = Enum.TextTruncate.AtEnd
 RunningScriptName.ZIndex = 42
 
 local SubStatusLabel = Instance.new("TextLabel", LoadCard)
-SubStatusLabel.Size = UDim2.new(0, 260, 0, 20)
-SubStatusLabel.Position = UDim2.new(0, 140, 0, 50)
+SubStatusLabel.Size = UDim2.new(0, 200, 0, 16)
+SubStatusLabel.Position = UDim2.new(0, 110, 0, 40)
 SubStatusLabel.BackgroundTransparency = 1
 SubStatusLabel.Text = "Aguardando o hub carregar..."
 SubStatusLabel.TextColor3 = Color3.fromRGB(140, 145, 160)
 SubStatusLabel.Font = Enum.Font.Gotham
-SubStatusLabel.TextSize = 11
+SubStatusLabel.TextSize = 9
 SubStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 SubStatusLabel.ZIndex = 42
 
 local LoadTrack = Instance.new("Frame", LoadCard)
-LoadTrack.Size = UDim2.new(0, 275, 0, 10)
-LoadTrack.Position = UDim2.new(0, 140, 0, 85)
+LoadTrack.Size = UDim2.new(0, 230, 0, 8)
+LoadTrack.Position = UDim2.new(0, 110, 0, 68)
 LoadTrack.BackgroundColor3 = Color3.fromRGB(22, 25, 36)
 LoadTrack.BorderSizePixel = 0
 LoadTrack.ZIndex = 42
-Instance.new("UICorner", LoadTrack).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", LoadTrack).CornerRadius = UDim.new(0, 4)
 
 local LoadFill = Instance.new("Frame", LoadTrack)
 LoadFill.Size = UDim2.new(0, 0, 1, 0)
 LoadFill.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
 LoadFill.BorderSizePixel = 0
 LoadFill.ZIndex = 43
-Instance.new("UICorner", LoadFill).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", LoadFill).CornerRadius = UDim.new(0, 4)
 
 local LoadFillGradient = Instance.new("UIGradient", LoadFill)
 LoadFillGradient.Color = ColorSequence.new{
@@ -1096,8 +1402,8 @@ LoadFillGradient.Color = ColorSequence.new{
 }
 
 local LoadVisContainer = Instance.new("Frame", LoadCard)
-LoadVisContainer.Size = UDim2.new(0, 390, 0, 25)
-LoadVisContainer.Position = UDim2.new(0, 25, 0, 175)
+LoadVisContainer.Size = UDim2.new(0, 320, 0, 20)
+LoadVisContainer.Position = UDim2.new(0, 20, 0, 140)
 LoadVisContainer.BackgroundTransparency = 1
 LoadVisContainer.ZIndex = 42
 
@@ -1105,11 +1411,11 @@ local LoadVisLayout = Instance.new("UIListLayout", LoadVisContainer)
 LoadVisLayout.FillDirection = Enum.FillDirection.Horizontal
 LoadVisLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 LoadVisLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-LoadVisLayout.Padding = UDim.new(0, 4)
+LoadVisLayout.Padding = UDim.new(0, 3)
 
 for i = 1, 24 do
     local Bar = Instance.new("Frame", LoadVisContainer)
-    Bar.Size = UDim2.new(0, 3, 0, math.random(6, 20))
+    Bar.Size = UDim2.new(0, 3, 0, math.random(4, 16))
     Bar.BackgroundColor3 = Color3.fromRGB(0, 229, 255)
     Bar.BorderSizePixel = 0
     Bar.ZIndex = 43
@@ -1118,7 +1424,7 @@ for i = 1, 24 do
     task.spawn(function()
         while Bar and Bar.Parent do
             TweenService:Create(Bar, TweenInfo.new(0.18), {
-                Size = UDim2.new(0, 3, 0, math.random(4, 22))
+                Size = UDim2.new(0, 3, 0, math.random(3, 18))
             }):Play()
             task.wait(0.16)
         end
