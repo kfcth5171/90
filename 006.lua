@@ -131,13 +131,14 @@ end
 
 -- ==================== REMOTE COMBO & BLOCKED IDS ====================
 local SpecificRE = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Ca1r")
+local ScooterRE = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1NoMoto1rVehicle1s")
 
 local function ForcePlayMusicCombo(musicId)
     if not musicId or musicId == "" then return false end
     local re = ReplicatedStorage:FindFirstChild("RE")
     if not re then return false end
     
-    local success1, success2, success3 = false, false, false
+    local success1, success2, success3, success4 = false, false, false, false
     local toolEvent = re:FindFirstChild("PlayerToolEvent")
     if toolEvent then
         local args1 = { "ToolMusicText", tostring(musicId), "", [4] = true }
@@ -157,7 +158,11 @@ local function ForcePlayMusicCombo(musicId)
         pcall(function() SpecificRE:FireServer("ToolMusicText", tostring(musicId), "", true) end)
     end
 
-    return success1 or success2 or success3
+    if ScooterRE then
+        success4 = pcall(function() ScooterRE:FireServer("PickingScooterMusicText", tostring(musicId), nil, true) end)
+    end
+
+    return success1 or success2 or success3 or success4
 end
 
 local BlockedIDs = {
@@ -385,6 +390,16 @@ local function checkPlayerAllSounds(targetPlayer)
     if backpack then table.insert(scanTargets, backpack) end
     local vehicle = getPlayerVehicle(targetPlayer)
     if vehicle then table.insert(scanTargets, vehicle) end
+
+    -- 🛵 สแกนค้นหาเสียงจากระบบรถ / Scooter พิเศษใน Workspace / ReplicatedStorage / Character
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and (string.find(string.lower(obj.Name), "scooter") or string.find(string.lower(obj.Name), "vehicle") or string.find(string.lower(obj.Name), "bike")) then
+            local ownerVal = obj:FindFirstChild("Owner") or obj:FindFirstChild("Player") or obj:FindFirstChild("VehicleOwner")
+            if ownerVal and (ownerVal.Value == targetPlayer or ownerVal.Value == targetPlayer.Name) then
+                table.insert(scanTargets, obj)
+            end
+        end
+    end
 
     local validSounds = {}
     local soundMap = {}
@@ -653,7 +668,7 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK VIEWER UI ====================
+-- ==================== SECONDARY JUNK VIEWER UI (INFINITE SCROLL) ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
 JunkFrame.Size = UDim2.new(1, 0, 1, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
@@ -676,14 +691,16 @@ local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
 JunkScroll.Size = UDim2.new(0.92, 0, 0.68, 0)
 JunkScroll.Position = UDim2.new(0.04, 0, 0.16, 0)
 JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
-JunkScroll.ScrollBarThickness = 4
+JunkScroll.ScrollBarThickness = 6
 JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
 JunkScroll.ZIndex = 11
+JunkScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+JunkScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
 local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
-JunkTextLabel.Size = UDim2.new(1, -10, 0, 0)
-JunkTextLabel.Position = UDim2.new(0, 5, 0, 5)
+JunkTextLabel.Size = UDim2.new(1, -12, 0, 0)
+JunkTextLabel.Position = UDim2.new(0, 6, 0, 6)
 JunkTextLabel.BackgroundTransparency = 1
 JunkTextLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
 JunkTextLabel.Font = Enum.Font.Code
@@ -691,6 +708,7 @@ JunkTextLabel.TextSize = 10
 JunkTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 JunkTextLabel.TextYAlignment = Enum.TextYAlignment.Top
 JunkTextLabel.TextWrapped = true
+JunkTextLabel.AutomaticSize = Enum.AutomaticSize.Y
 JunkTextLabel.ZIndex = 12
 
 local JunkCopyBtn = create3DButton(JunkFrame, "📋 คัดลอกข้อมูล", Color3.fromRGB(0, 160, 100))
@@ -849,9 +867,11 @@ local function updateJunkViewerLive()
     end
 
     JunkTextLabel.Text = outputText
-    local textBounds = TextService:GetTextSize(outputText, 10, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 15, 10000))
-    JunkTextLabel.Size = UDim2.new(1, -10, 0, textBounds.Y + 20)
-    JunkScroll.CanvasSize = UDim2.new(0, 0, 0, textBounds.Y + 30)
+    
+    -- คำนวณความสูงแบบไดนามิกแบบไม่มีวันสุดจอ (Infinite Vertical Height Limit)
+    local textBounds = TextService:GetTextSize(outputText, 10, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 20, 10000000))
+    JunkTextLabel.Size = UDim2.new(1, -12, 0, textBounds.Y + 20)
+    JunkScroll.CanvasSize = UDim2.new(0, 0, 0, textBounds.Y + 40)
 end
 
 local function refreshPlayers()
