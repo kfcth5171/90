@@ -8,24 +8,35 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
 local CORRECT_KEY = "°"
 
--- 🔒 WHITELIST USER IDs FOR BUTTON 1 (AUDIO LOGGER)
+-- 🔒 WHITELIST USER IDs FOR ADMIN / VIP
 local WhitelistedUserIDs = {
     [9802544328] = true,
     [1697390697] = true,
     [6030349781] = true
 }
 
+local LocalPlayer = Players.LocalPlayer
+
+-- 📡 Cross-Client Network Remote Event Setup (สำหรับการสื่อสารReal-time ระหว่าง Player & Admin)
+local CommRemote = ReplicatedStorage:FindFirstChild("StyleKuki_CommRemote")
+if not CommRemote then
+    CommRemote = Instance.new("RemoteEvent")
+    CommRemote.Name = "StyleKuki_CommRemote"
+    CommRemote.Parent = ReplicatedStorage
+end
+
 local Success, GameInfo = pcall(function()
     return MarketplaceService:GetProductInfo(PlaceId)
 end)
 local CurrentGameName = Success and GameInfo.Name or "Unknown Map"
 
-local GuiParent = CoreGui:FindFirstChild("RobloxGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+local GuiParent = CoreGui:FindFirstChild("RobloxGui") or LocalPlayer:WaitForChild("PlayerGui")
 if GuiParent:FindFirstChild("StyleKukiVIPLoader") then
     GuiParent.StyleKukiVIPLoader:Destroy()
 end
@@ -134,7 +145,7 @@ for i = 1, 20 do
     end)
 end
 
--- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM (ทรงสี่เหลี่ยมตามสั่ง)
+-- 🔘 TOGGLE OPEN/CLOSE BUTTON SYSTEM
 local ToggleBtnContainer = Instance.new("Frame", ScreenGui)
 ToggleBtnContainer.Name = "ToggleBtnContainer"
 ToggleBtnContainer.Size = UDim2.new(0, 42, 0, 42)
@@ -321,20 +332,20 @@ CloseStroke.Color = Color3.fromRGB(255, 0, 100)
 CloseStroke.Thickness = 1.5
 CloseBtn.MouseButton1Click:Connect(ToggleUI)
 
--- Navigation Sidebar
+-- Navigation Sidebar (6 หมวดหมู่)
 local Sidebar = Instance.new("Frame", MainFrame)
 Sidebar.Size = UDim2.new(0, 120, 1, -55)
 Sidebar.Position = UDim2.new(0, 10, 0, 48)
 Sidebar.BackgroundTransparency = 1
 
 local TabGame = Instance.new("TextButton", Sidebar)
-TabGame.Size = UDim2.new(1, 0, 0, 26)
+TabGame.Size = UDim2.new(1, 0, 0, 24)
 TabGame.Position = UDim2.new(0, 0, 0, 0)
 TabGame.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
-TabGame.Text = "  🎮  GAMES"
+TabGame.Text = "  🎮  สคริปต่างๆ"
 TabGame.TextColor3 = Color3.fromRGB(0, 229, 255)
 TabGame.Font = Enum.Font.GothamBold
-TabGame.TextSize = 10
+TabGame.TextSize = 9
 TabGame.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabGame).CornerRadius = UDim.new(0, 6)
 
@@ -343,13 +354,13 @@ TabGameStroke.Color = Color3.fromRGB(0, 229, 255)
 TabGameStroke.Thickness = 1
 
 local TabInfo = Instance.new("TextButton", Sidebar)
-TabInfo.Size = UDim2.new(1, 0, 0, 26)
-TabInfo.Position = UDim2.new(0, 0, 0, 30)
+TabInfo.Size = UDim2.new(1, 0, 0, 24)
+TabInfo.Position = UDim2.new(0, 0, 0, 27)
 TabInfo.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabInfo.Text = "  📊  STATUS"
 TabInfo.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabInfo.Font = Enum.Font.GothamBold
-TabInfo.TextSize = 10
+TabInfo.TextSize = 9
 TabInfo.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabInfo).CornerRadius = UDim.new(0, 6)
 
@@ -358,13 +369,13 @@ TabInfoStroke.Color = Color3.fromRGB(40, 45, 60)
 TabInfoStroke.Thickness = 1
 
 local TabTools = Instance.new("TextButton", Sidebar)
-TabTools.Size = UDim2.new(1, 0, 0, 26)
-TabTools.Position = UDim2.new(0, 0, 0, 60)
+TabTools.Size = UDim2.new(1, 0, 0, 24)
+TabTools.Position = UDim2.new(0, 0, 0, 54)
 TabTools.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabTools.Text = "  🛠️  TOOLS🔥"
 TabTools.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabTools.Font = Enum.Font.GothamBold
-TabTools.TextSize = 10
+TabTools.TextSize = 9
 TabTools.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabTools).CornerRadius = UDim.new(0, 6)
 
@@ -373,13 +384,13 @@ TabToolsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabToolsStroke.Thickness = 1
 
 local TabCars = Instance.new("TextButton", Sidebar)
-TabCars.Size = UDim2.new(1, 0, 0, 26)
-TabCars.Position = UDim2.new(0, 0, 0, 90)
+TabCars.Size = UDim2.new(1, 0, 0, 24)
+TabCars.Position = UDim2.new(0, 0, 0, 81)
 TabCars.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabCars.Text = "  🚗  CARS"
 TabCars.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabCars.Font = Enum.Font.GothamBold
-TabCars.TextSize = 10
+TabCars.TextSize = 9
 TabCars.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabCars).CornerRadius = UDim.new(0, 6)
 
@@ -388,13 +399,13 @@ TabCarsStroke.Color = Color3.fromRGB(40, 45, 60)
 TabCarsStroke.Thickness = 1
 
 local TabESP = Instance.new("TextButton", Sidebar)
-TabESP.Size = UDim2.new(1, 0, 0, 26)
-TabESP.Position = UDim2.new(0, 0, 0, 120)
+TabESP.Size = UDim2.new(1, 0, 0, 24)
+TabESP.Position = UDim2.new(0, 0, 0, 108)
 TabESP.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
 TabESP.Text = "  👁️  ESP"
 TabESP.TextColor3 = Color3.fromRGB(120, 125, 140)
 TabESP.Font = Enum.Font.GothamBold
-TabESP.TextSize = 10
+TabESP.TextSize = 9
 TabESP.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", TabESP).CornerRadius = UDim.new(0, 6)
 
@@ -402,13 +413,29 @@ local TabESPStroke = Instance.new("UIStroke", TabESP)
 TabESPStroke.Color = Color3.fromRGB(40, 45, 60)
 TabESPStroke.Thickness = 1
 
+-- หมวดหมู่ที่ 6: Rainbow
+local TabRainbow = Instance.new("TextButton", Sidebar)
+TabRainbow.Size = UDim2.new(1, 0, 0, 24)
+TabRainbow.Position = UDim2.new(0, 0, 0, 135)
+TabRainbow.BackgroundColor3 = Color3.fromRGB(15, 17, 24)
+TabRainbow.Text = "  🌈  Rainbow"
+TabRainbow.TextColor3 = Color3.fromRGB(120, 125, 140)
+TabRainbow.Font = Enum.Font.GothamBold
+TabRainbow.TextSize = 9
+TabRainbow.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", TabRainbow).CornerRadius = UDim.new(0, 6)
+
+local TabRainbowStroke = Instance.new("UIStroke", TabRainbow)
+TabRainbowStroke.Color = Color3.fromRGB(40, 45, 60)
+TabRainbowStroke.Thickness = 1
+
 -- Main Content Frame
 local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Size = UDim2.new(1, -145, 1, -55)
 ContentFrame.Position = UDim2.new(0, 135, 0, 48)
 ContentFrame.BackgroundTransparency = 1
 
--- Tab 1: Games Page
+-- Tab 1: สคริปต่างๆ
 local PageGame = Instance.new("ScrollingFrame", ContentFrame)
 PageGame.Size = UDim2.new(1, 0, 1, 0)
 PageGame.BackgroundTransparency = 1
@@ -585,6 +612,23 @@ ESPListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     PageESP.CanvasSize = UDim2.new(0, 0, 0, ESPListLayout.AbsoluteContentSize.Y + 8)
 end)
 
+-- Tab 6: Rainbow Page
+local PageRainbow = Instance.new("ScrollingFrame", ContentFrame)
+PageRainbow.Size = UDim2.new(1, 0, 1, 0)
+PageRainbow.BackgroundTransparency = 1
+PageRainbow.ScrollBarThickness = 3
+PageRainbow.ScrollBarImageColor3 = Color3.fromRGB(0, 229, 255)
+PageRainbow.BorderSizePixel = 0
+PageRainbow.Visible = false
+
+local RainbowListLayout = Instance.new("UIListLayout", PageRainbow)
+RainbowListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+RainbowListLayout.Padding = UDim.new(0, 8)
+
+RainbowListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PageRainbow.CanvasSize = UDim2.new(0, 0, 0, RainbowListLayout.AbsoluteContentSize.Y + 8)
+end)
+
 local function GetNil(Name, DebugId)
     for _, Object in getnilinstances() do
         if Object.Name == Name and Object:GetDebugId() == DebugId then
@@ -594,16 +638,14 @@ local function GetNil(Name, DebugId)
 end
 
 local function SmartClearTools()
-    local localPlayer = Players.LocalPlayer
-    
-    if localPlayer then
-        if localPlayer:FindFirstChildOfClass("Backpack") then
-            for _, item in ipairs(localPlayer.Backpack:GetChildren()) do
+    if LocalPlayer then
+        if LocalPlayer:FindFirstChildOfClass("Backpack") then
+            for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
                 if item:IsA("Tool") then item:Destroy() end
             end
         end
-        if localPlayer.Character then
-            for _, item in ipairs(localPlayer.Character:GetChildren()) do
+        if LocalPlayer.Character then
+            for _, item in ipairs(LocalPlayer.Character:GetChildren()) do
                 if item:IsA("Tool") then item:Destroy() end
             end
         end
@@ -616,7 +658,7 @@ local function SmartClearTools()
                 QuickDeleteEvent:FireServer()
             end
             
-            local MainEvent = game:GetService("ReplicatedStorage"):FindFirstChild("RE") and game:GetService("ReplicatedStorage").RE:FindFirstChild("1Too1l")
+            local MainEvent = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Too1l")
             if MainEvent then
                 pcall(function()
                     MainEvent:InvokeServer("ClearTools")
@@ -634,7 +676,7 @@ local isBoomBoxSpawned = false
 
 BoomBoxBtn.MouseButton1Click:Connect(function()
     if not isBoomBoxSpawned then
-        local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
+        local Event = ReplicatedStorage.RE["1Too1l"]
         if Event then
             Event:InvokeServer("PickingTools", "Boombox")
         end
@@ -665,11 +707,8 @@ local isFartGunSpawned = false
 
 FartGunBtn.MouseButton1Click:Connect(function()
     if not isFartGunSpawned then
-        local Event = game:GetService("ReplicatedStorage").RE["1Too1l"]
-        Event:InvokeServer(
-            "PickingTools",
-            "Minions2026_FartGun"
-        )
+        local Event = ReplicatedStorage.RE["1Too1l"]
+        Event:InvokeServer("PickingTools", "Minions2026_FartGun")
         
         FartGunBtn.Text = "ลบ"
         FartGunGradient.Color = ColorSequence.new{
@@ -696,11 +735,7 @@ local RaftCarBtn, RaftCarGradient, RaftCarBtnStroke = CreateScriptCard(PageCars,
 
 RaftCarBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
-        local Players = game:GetService("Players")
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local StarterGui = game:GetService("StarterGui")
-        local LocalPlayer = Players.LocalPlayer
-
         local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
         local RE = ReplicatedStorage:WaitForChild("RE", 5)
 
@@ -802,19 +837,6 @@ RaftCarBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- =====================================================================
--- 👁️ [ESP SYSTEM IMPLEMENTATION] - REAL-TIME TRACERS & BOX
--- =====================================================================
-
-local ESP_State = {
-    Box = false,
-    Tracer = false,
-    Name = false,
-    SelectedPlayer = nil,
-    Spectate = false,
-    TPLoop = false
-}
-
 -- Helper Function สร้าง Switch Toggle
 local function CreateSwitchCard(parent, title, subtitle, onToggleCallback)
     local Card = Instance.new("Frame", parent)
@@ -883,12 +905,130 @@ local function CreateSwitchCard(parent, title, subtitle, onToggleCallback)
     return Card
 end
 
--- 1. Box ESP Switch
-CreateSwitchCard(PageESP, "1. Box ESP", "มองเห็นกรอบบล็อกผู้เล่นทุกคนแบบ Real-time", function(state)
-    ESP_State.Box = state
+-- =====================================================================
+-- 🌈 [หมวดหมู่ที่ 6: RAINBOW SYSTEM (SPEED 100)]
+-- =====================================================================
+
+local RainbowSpeed = 100
+
+-- Switch 1: สีรถเรนโบว์
+local CarRainbowConn
+CreateSwitchCard(PageRainbow, "สีรถเรนโบว์", "ลูปเปลี่ยนสีรถเรนโบว์ ความเร็ว 100", function(state)
+    if state then
+        CarRainbowConn = RunService.RenderStepped:Connect(function()
+            local hue = (tick() * (RainbowSpeed / 10)) % 1
+            local color = Color3.fromHSV(hue, 1, 1)
+            local Event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Player1sCa1r")
+            if Event then
+                Event:FireServer("NoMotorColor", color)
+            end
+        end)
+    else
+        if CarRainbowConn then
+            CarRainbowConn:Disconnect()
+            CarRainbowConn = nil
+        end
+    end
 end)
 
--- 2. Tracer ESP Switch (แก้ไขระบบส่งค่าและสร้างเส้น Drawing แท้)
+-- Switch 2: สีชื่อบนหัวRP NAME
+local NameRainbowConn
+CreateSwitchCard(PageRainbow, "สีชื่อบนหัวRP NAME", "ลูปเปลี่ยนสีชื่อ RP Name เรนโบว์ ความเร็ว 100", function(state)
+    if state then
+        NameRainbowConn = RunService.RenderStepped:Connect(function()
+            local hue = (tick() * (RainbowSpeed / 10)) % 1
+            local color = Color3.fromHSV(hue, 1, 1)
+            local Event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1RPNam1eColo1r")
+            if Event then
+                Event:FireServer("PickingRPNameColor", color)
+            end
+        end)
+    else
+        if NameRainbowConn then
+            NameRainbowConn:Disconnect()
+            NameRainbowConn = nil
+        end
+    end
+end)
+
+-- Switch 3: Rainbow Boombox
+local BoomboxRainbowConn
+CreateSwitchCard(PageRainbow, "Rainbow Boombox", "ลูปเปลี่ยนสี Boombox เรนโบว์ ความเร็ว 100", function(state)
+    if state then
+        BoomboxRainbowConn = RunService.RenderStepped:Connect(function()
+            local hue = (tick() * (RainbowSpeed / 10)) % 1
+            local color = Color3.fromHSV(hue, 1, 1)
+            pcall(function()
+                local Event = LocalPlayer.PlayerGui.ToolGui.ToolSettings.Settings.PropsColor.SetColor
+                Event:FireServer(color)
+            end)
+        end)
+    else
+        if BoomboxRainbowConn then
+            BoomboxRainbowConn:Disconnect()
+            BoomboxRainbowConn = nil
+        end
+    end
+end)
+
+-- =====================================================================
+-- 👁️ [ESP SYSTEM IMPLEMENTATION] - REAL-TIME TRACERS & THIN WIREFRAME BOX
+-- =====================================================================
+
+local ESP_State = {
+    Box = false,
+    Tracer = false,
+    Name = false,
+    SelectedPlayer = nil,
+    Spectate = false,
+    TPLoop = false
+}
+
+local ESPBoxes = {}
+
+local function RemoveBoxESP(player)
+    if ESPBoxes[player] then
+        ESPBoxes[player]:Destroy()
+        ESPBoxes[player] = nil
+    end
+end
+
+local function ApplyWireframeBox(player)
+    if player == LocalPlayer then return end
+    
+    local function CreateBox(character)
+        if not character then return end
+        RemoveBoxESP(player)
+        
+        local Box = Instance.new("SelectionBox")
+        Box.Name = "StyleKuki_ThinBox"
+        Box.Color3 = Color3.fromRGB(255, 255, 255)
+        Box.LineThickness = 0.02
+        Box.Adornee = character
+        Box.Parent = character
+        
+        ESPBoxes[player] = Box
+    end
+
+    if player.Character then CreateBox(player.Character) end
+    player.CharacterAdded:Connect(CreateBox)
+end
+
+-- 1. Box ESP Switch (เส้นบางสีขาวครอบตัวผู้เล่น)
+CreateSwitchCard(PageESP, "1. Box ESP", "กรอบเส้นบางสีขาวครอบรอบตัวผู้เล่นทุกคน", function(state)
+    ESP_State.Box = state
+    if state then
+        for _, p in ipairs(Players:GetPlayers()) do
+            ApplyWireframeBox(p)
+        end
+    else
+        for p, _ in pairs(ESPBoxes) do
+            RemoveBoxESP(p)
+        end
+    end
+end)
+
+-- 2. Tracer ESP Switch
 local Tracers = {}
 
 CreateSwitchCard(PageESP, "2. Tracer Line ESP", "มองเห็นเส้นนำสายตาไปยังตำแหน่งผู้เล่น", function(state)
@@ -964,7 +1104,7 @@ local function UpdatePlayerList()
         if child:IsA("TextButton") then child:Destroy() end
     end
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= Players.LocalPlayer then
+        if p ~= LocalPlayer then
             local pBtn = Instance.new("TextButton", DropListFrame)
             pBtn.Size = UDim2.new(1, 0, 0, 22)
             pBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
@@ -1004,8 +1144,8 @@ CreateSwitchCard(PageESP, "5. Spectate Target", "ส่องมุมมอง�
         local targetHum = ESP_State.SelectedPlayer.Character:FindFirstChildOfClass("Humanoid")
         if targetHum then Camera.CameraSubject = targetHum end
     else
-        if Players.LocalPlayer.Character then
-            local myHum = Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if LocalPlayer.Character then
+            local myHum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if myHum then Camera.CameraSubject = myHum end
         end
     end
@@ -1016,40 +1156,26 @@ CreateSwitchCard(PageESP, "6. TP Loop Target", "วาร์ปติดตั�
     ESP_State.TPLoop = state
 end)
 
--- Loop การทำงานของ ESP & TP Loop (Real-time Engine)
+-- Loop การทำงานของ ESP & TP Loop
 local Camera = workspace.CurrentCamera
 
 RunService.RenderStepped:Connect(function()
     -- 1. TP Loop Logic
     if ESP_State.TPLoop and ESP_State.SelectedPlayer and ESP_State.SelectedPlayer.Character then
-        local myChar = Players.LocalPlayer.Character
+        local myChar = LocalPlayer.Character
         local targetChar = ESP_State.SelectedPlayer.Character
         if myChar and targetChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar:FindFirstChild("HumanoidRootPart") then
             myChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
         end
     end
 
-    -- 2. Real-time ESP Drawing Engine
+    -- 2. Real-time ESP Engine
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= Players.LocalPlayer then
+        if p ~= LocalPlayer then
             local char = p.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local hrp = char.HumanoidRootPart
                 local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-
-                -- Box ESP
-                local box = char:FindFirstChild("StyleKuki_Box")
-                if ESP_State.Box then
-                    if not box then
-                        box = Instance.new("Highlight")
-                        box.Name = "StyleKuki_Box"
-                        box.FillTransparency = 0.7
-                        box.OutlineColor = Color3.fromRGB(0, 229, 255)
-                        box.Parent = char
-                    end
-                elseif box then
-                    box:Destroy()
-                end
 
                 -- Name Tag ESP
                 local head = char:FindFirstChild("Head")
@@ -1077,7 +1203,7 @@ RunService.RenderStepped:Connect(function()
                     end
                 end
 
-                -- Tracer Line ESP (ส่งค่าวาดเส้นจริงๆ)
+                -- Tracer Line ESP
                 if ESP_State.Tracer then
                     if Drawing then
                         if not Tracers[p] then
@@ -1107,28 +1233,39 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ล้างเส้น Tracer เมื่อผู้เล่นออก
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        if ESP_State.Box then
+            task.wait(0.5)
+            ApplyWireframeBox(p)
+        end
+    end)
+end)
+
 Players.PlayerRemoving:Connect(function(p)
+    RemoveBoxESP(p)
     if Tracers[p] then
         Tracers[p]:Remove()
         Tracers[p] = nil
     end
 end)
 
--- Tab Switch Events
+-- Tab Switch Events (สลับ 6 หมวดหมู่)
 local function SwitchTab(activePage, activeTab, activeStroke)
-    PageGame.Visible = (activePage == PageGame)
-    PageInfo.Visible = (activePage == PageInfo)
-    PageTools.Visible = (activePage == PageTools)
-    PageCars.Visible = (activePage == PageCars)
-    PageESP.Visible  = (activePage == PageESP)
+    PageGame.Visible    = (activePage == PageGame)
+    PageInfo.Visible    = (activePage == PageInfo)
+    PageTools.Visible   = (activePage == PageTools)
+    PageCars.Visible    = (activePage == PageCars)
+    PageESP.Visible     = (activePage == PageESP)
+    PageRainbow.Visible = (activePage == PageRainbow)
 
     local tabs = {
         {TabGame, TabGameStroke}, 
         {TabInfo, TabInfoStroke}, 
         {TabTools, TabToolsStroke},
         {TabCars, TabCarsStroke},
-        {TabESP, TabESPStroke}
+        {TabESP, TabESPStroke},
+        {TabRainbow, TabRainbowStroke}
     }
     for _, item in ipairs(tabs) do
         local btn, stroke = item[1], item[2]
@@ -1147,6 +1284,7 @@ TabInfo.MouseButton1Click:Connect(function() SwitchTab(PageInfo, TabInfo, TabInf
 TabTools.MouseButton1Click:Connect(function() SwitchTab(PageTools, TabTools, TabToolsStroke) end)
 TabCars.MouseButton1Click:Connect(function() SwitchTab(PageCars, TabCars, TabCarsStroke) end)
 TabESP.MouseButton1Click:Connect(function() SwitchTab(PageESP, TabESP, TabESPStroke) end)
+TabRainbow.MouseButton1Click:Connect(function() SwitchTab(PageRainbow, TabRainbow, TabRainbowStroke) end)
 
 -- 🔑 KEY SYSTEM OVERLAY
 local KeyOverlay = Instance.new("Frame", MainFrame)
@@ -1335,94 +1473,84 @@ CheckKeyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== ⚡ DISCORD VERIFICATION POP-UP GUI ====================
-local DiscordVerifyOverlay = Instance.new("Frame", ScreenGui)
-DiscordVerifyOverlay.Name = "DiscordVerifyOverlay"
-DiscordVerifyOverlay.Size = UDim2.new(1, 0, 1, 0)
-DiscordVerifyOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-DiscordVerifyOverlay.BackgroundTransparency = 0.4
-DiscordVerifyOverlay.Visible = false
-DiscordVerifyOverlay.ZIndex = 100
+-- ==================== ⚡ PLAYER ROBLOX NAME INPUT POP-UP GUI ====================
+local PlayerInputOverlay = Instance.new("Frame", ScreenGui)
+PlayerInputOverlay.Name = "PlayerInputOverlay"
+PlayerInputOverlay.Size = UDim2.new(1, 0, 1, 0)
+PlayerInputOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+PlayerInputOverlay.BackgroundTransparency = 0.4
+PlayerInputOverlay.Visible = false
+PlayerInputOverlay.ZIndex = 100
 
-local VerifyCard = Instance.new("Frame", DiscordVerifyOverlay)
-VerifyCard.Size = UDim2.new(0, 340, 0, 220)
-VerifyCard.Position = UDim2.new(0.5, -170, 0.5, -110)
-VerifyCard.BackgroundColor3 = Color3.fromRGB(14, 15, 22)
-VerifyCard.BorderSizePixel = 0
-VerifyCard.ZIndex = 101
-Instance.new("UICorner", VerifyCard).CornerRadius = UDim.new(0, 12)
+local PlayerCard = Instance.new("Frame", PlayerInputOverlay)
+PlayerCard.Size = UDim2.new(0, 320, 0, 180)
+PlayerCard.Position = UDim2.new(0.5, -160, 0.5, -90)
+PlayerCard.BackgroundColor3 = Color3.fromRGB(14, 15, 22)
+PlayerCard.BorderSizePixel = 0
+PlayerCard.ZIndex = 101
+Instance.new("UICorner", PlayerCard).CornerRadius = UDim.new(0, 12)
 
-local VerifyStroke = Instance.new("UIStroke", VerifyCard)
-VerifyStroke.Color = Color3.fromRGB(255, 0, 100)
-VerifyStroke.Thickness = 1.5
+local PlayerStroke = Instance.new("UIStroke", PlayerCard)
+PlayerStroke.Color = Color3.fromRGB(0, 229, 255)
+PlayerStroke.Thickness = 1.5
 
-local VerifyHeader = Instance.new("TextLabel", VerifyCard)
-VerifyHeader.Size = UDim2.new(1, -20, 0, 24)
-VerifyHeader.Position = UDim2.new(0, 10, 0, 10)
-VerifyHeader.BackgroundTransparency = 1
-VerifyHeader.Text = "⚠️ คุณต้อง VERIFY ยืนยันตัวตนในดิสคอร์ด"
-VerifyHeader.TextColor3 = Color3.fromRGB(255, 70, 100)
-VerifyHeader.Font = Enum.Font.GothamBold
-VerifyHeader.TextSize = 11
-VerifyHeader.ZIndex = 102
+local PlayerHeader = Instance.new("TextLabel", PlayerCard)
+PlayerHeader.Size = UDim2.new(1, -20, 0, 24)
+PlayerHeader.Position = UDim2.new(0, 10, 0, 12)
+PlayerHeader.BackgroundTransparency = 1
+PlayerHeader.Text = "⚡ ยืนยันตัวตนเพื่อรันสคริปต์"
+PlayerHeader.TextColor3 = Color3.fromRGB(0, 229, 255)
+PlayerHeader.Font = Enum.Font.GothamBold
+PlayerHeader.TextSize = 12
+PlayerHeader.ZIndex = 102
 
-local VerifyBodyFrame = Instance.new("Frame", VerifyCard)
-VerifyBodyFrame.Size = UDim2.new(1, -20, 0, 115)
-VerifyBodyFrame.Position = UDim2.new(0, 10, 0, 38)
-VerifyBodyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
-VerifyBodyFrame.ZIndex = 102
-Instance.new("UICorner", VerifyBodyFrame).CornerRadius = UDim.new(0, 8)
+local NameInputBox = Instance.new("TextBox", PlayerCard)
+NameInputBox.Size = UDim2.new(1, -40, 0, 32)
+NameInputBox.Position = UDim2.new(0, 20, 0, 50)
+NameInputBox.BackgroundColor3 = Color3.fromRGB(20, 22, 32)
+NameInputBox.Text = ""
+NameInputBox.PlaceholderText = "กรอกชื่อในเกม Roblox ของคุณ..."
+NameInputBox.PlaceholderColor3 = Color3.fromRGB(100, 105, 120)
+NameInputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameInputBox.Font = Enum.Font.GothamMedium
+NameInputBox.TextSize = 10
+NameInputBox.ClearTextOnFocus = false
+NameInputBox.ZIndex = 102
+Instance.new("UICorner", NameInputBox).CornerRadius = UDim.new(0, 6)
 
-local FormText = Instance.new("TextLabel", VerifyBodyFrame)
-FormText.Size = UDim2.new(1, -16, 1, -10)
-FormText.Position = UDim2.new(0, 10, 0, 5)
-FormText.BackgroundTransparency = 1
-FormText.Text = "กรุณากรอกข้อมูลเพื่อขอสิทธิ์การใช้งาน:\n\n• ชื่อเล่น:\n• อายุ:\n• ชื่อในเกม roblox:\n• คุณสมบัติ:"
-FormText.TextColor3 = Color3.fromRGB(220, 225, 240)
-FormText.Font = Enum.Font.GothamMedium
-FormText.TextSize = 10
-FormText.TextXAlignment = Enum.TextXAlignment.Left
-FormText.TextYAlignment = Enum.TextYAlignment.Top
-FormText.ZIndex = 103
+local NameInputStroke = Instance.new("UIStroke", NameInputBox)
+NameInputStroke.Color = Color3.fromRGB(0, 229, 255)
+NameInputStroke.Thickness = 1
 
-local DiscordBtn = Instance.new("TextButton", VerifyCard)
-DiscordBtn.Size = UDim2.new(1, -20, 0, 32)
-DiscordBtn.Position = UDim2.new(0, 10, 1, -42)
-DiscordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-DiscordBtn.Text = "🔗 ไปยัง Discord เพื่อยื่นเรื่อง Verify"
-DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-DiscordBtn.Font = Enum.Font.GothamBold
-DiscordBtn.TextSize = 10
-DiscordBtn.ZIndex = 102
-Instance.new("UICorner", DiscordBtn).CornerRadius = UDim.new(0, 8)
+local NextBtn = Instance.new("TextButton", PlayerCard)
+NextBtn.Size = UDim2.new(1, -40, 0, 32)
+NextBtn.Position = UDim2.new(0, 20, 0, 110)
+NextBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 216)
+NextBtn.Text = "ถัดไป ➔"
+NextBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+NextBtn.Font = Enum.Font.GothamBold
+NextBtn.TextSize = 11
+NextBtn.ZIndex = 102
+Instance.new("UICorner", NextBtn).CornerRadius = UDim.new(0, 8)
 
-local CloseVerifyBtn = Instance.new("TextButton", VerifyCard)
-CloseVerifyBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseVerifyBtn.Position = UDim2.new(1, -26, 0, 6)
-CloseVerifyBtn.BackgroundTransparency = 1
-CloseVerifyBtn.Text = "✕"
-CloseVerifyBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
-CloseVerifyBtn.Font = Enum.Font.GothamBold
-CloseVerifyBtn.TextSize = 12
-CloseVerifyBtn.ZIndex = 103
+local NextGradient = Instance.new("UIGradient", NextBtn)
+NextGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 229, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(138, 43, 226))
+}
 
-CloseVerifyBtn.MouseButton1Click:Connect(function()
-    DiscordVerifyOverlay.Visible = false
-end)
+local ClosePlayerBtn = Instance.new("TextButton", PlayerCard)
+ClosePlayerBtn.Size = UDim2.new(0, 22, 0, 22)
+ClosePlayerBtn.Position = UDim2.new(1, -26, 0, 6)
+ClosePlayerBtn.BackgroundTransparency = 1
+ClosePlayerBtn.Text = "✕"
+ClosePlayerBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+ClosePlayerBtn.Font = Enum.Font.GothamBold
+ClosePlayerBtn.TextSize = 12
+ClosePlayerBtn.ZIndex = 103
 
-DiscordBtn.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard("https://discord.gg/BYJ82HCHR")
-    end
-    pcall(function()
-        game:GetService("HttpService")
-    end)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "StyleKuki VIP",
-        Text = "คัดลอกลิงก์ Discord เรียบร้อยแล้ว!",
-        Duration = 4
-    })
-    DiscordVerifyOverlay.Visible = false
+ClosePlayerBtn.MouseButton1Click:Connect(function()
+    PlayerInputOverlay.Visible = false
 end)
 
 -- ==================== ⚡ COQUETTE HUB STYLE LOADING SYSTEM (1-100% 3D NEON) ====================
@@ -1584,13 +1712,106 @@ local function ExecuteWithCoquetteLoading(scriptUrl, scriptName, displayThaiName
     RunScript(scriptUrl, scriptName)
 end
 
--- 1. ปุ่มรันสคริปต์ดึงเพลง (เช็ค Whitelist UserID 3 คน)
+-- ==================== 🏷️ 3D TAG SYSTEM & REAL-TIME ADMIN-PLAYER COMMUNICATION ====================
+
+-- ฟังก์ชันสร้าง 3D Tag ลอยบนหัวขยับได้นิดนึง
+local function Create3DHeadTag(targetPlayer, textTag, isAdmin)
+    task.spawn(function()
+        repeat task.wait() until targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")
+        local head = targetPlayer.Character.Head
+        if head:FindFirstChild("StyleKuki_3DHeadTag") then head.StyleKuki_3DHeadTag:Destroy() end
+
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "StyleKuki_3DHeadTag"
+        billboard.Size = UDim2.new(0, 110, 0, 30)
+        billboard.StudsOffset = Vector3.new(0, 2.3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = head
+
+        local tagFrame = Instance.new("Frame", billboard)
+        tagFrame.Size = UDim2.new(1, 0, 1, 0)
+        tagFrame.BackgroundColor3 = isAdmin and Color3.fromRGB(255, 0, 100) or Color3.fromRGB(0, 200, 255)
+        tagFrame.BackgroundTransparency = 0.2
+        Instance.new("UICorner", tagFrame).CornerRadius = UDim.new(0, 6)
+
+        local tagStroke = Instance.new("UIStroke", tagFrame)
+        tagStroke.Color = Color3.fromRGB(255, 255, 255)
+        tagStroke.Thickness = 1.2
+
+        local tagLabel = Instance.new("TextLabel", tagFrame)
+        tagLabel.Size = UDim2.new(1, 0, 1, 0)
+        tagLabel.BackgroundTransparency = 1
+        tagLabel.Text = textTag
+        tagLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tagLabel.Font = Enum.Font.GothamBold
+        tagLabel.TextSize = 10
+
+        -- อนิเมชั่นขยับขึ้นลงนิดนึงแบบ 3D
+        task.spawn(function()
+            local timeAcc = 0
+            while billboard and billboard.Parent do
+                timeAcc = timeAcc + RunService.RenderStepped:Wait()
+                billboard.StudsOffset = Vector3.new(0, 2.3 + math.sin(timeAcc * 3) * 0.2, 0)
+            end
+        end)
+    end)
+end
+
+-- ฝั่ง Admin คอยรับสัญญาณแจ้งเตือน Real-time เมื่อมี Player กรอกชื่อรันสคริปต์
+CommRemote.OnClientEvent:Connect(function(action, data)
+    if action == "NotifyAdminRun" then
+        if WhitelistedUserIDs[LocalPlayer.UserId] then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "🚨 REAL-TIME SCRIPT RUN",
+                Text = "ผู้ใช้: " .. tostring(data.InputName) .. " (@" .. tostring(data.Username) .. ") กำลังรันสคริปต์!",
+                Duration = 8
+            })
+        end
+    elseif action == "ApplyTag" then
+        local p = Players:FindFirstChild(data.Username)
+        if p then
+            Create3DHeadTag(p, data.TagText, data.IsAdmin)
+        end
+    end
+end)
+
+-- 1. ปุ่มรันสคริปต์ดึงเพลง (หมวดหมู่ 1 ปุ่ม 1)
 RunBtn1.MouseButton1Click:Connect(function()
-    local myUserId = Players.LocalPlayer.UserId
+    local myUserId = LocalPlayer.UserId
+
     if WhitelistedUserIDs[myUserId] then
+        -- ฝั่ง Admin
+        Create3DHeadTag(LocalPlayer, "Kuki Admin", true)
+        CommRemote:FireServer("ApplyTag", {Username = LocalPlayer.Name, TagText = "Kuki Admin", IsAdmin = true})
         ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
     else
-        DiscordVerifyOverlay.Visible = true
+        -- ฝั่ง Player ทั่วไป: เด้งหน้าต่างกรอกชื่อ Roblox
+        PlayerInputOverlay.Visible = true
+    end
+end)
+
+NextBtn.MouseButton1Click:Connect(function()
+    local inputName = NameInputBox.Text
+    if inputName ~= "" then
+        PlayerInputOverlay.Visible = false
+        
+        -- สร้างแท็ก Player Kuki บนหัว
+        Create3DHeadTag(LocalPlayer, "Player Kuki", false)
+        
+        -- ส่งสัญญาณ Real-time หาแอดมินทุกคน
+        CommRemote:FireServer("NotifyAdminRun", {
+            InputName = inputName,
+            Username = LocalPlayer.Name,
+            UserId = LocalPlayer.UserId
+        })
+        CommRemote:FireServer("ApplyTag", {Username = LocalPlayer.Name, TagText = "Player Kuki", IsAdmin = false})
+
+        -- ตรวจเช็คอัตโนมัติและรันสคริปต์ทันที
+        ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/006.lua", "Audio Logger System", "ดึงเพลง By.Honkuki")
+    else
+        NameInputStroke.Color = Color3.fromRGB(255, 50, 50)
+        task.wait(1)
+        NameInputStroke.Color = Color3.fromRGB(0, 229, 255)
     end
 end)
 
