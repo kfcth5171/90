@@ -379,11 +379,11 @@ local function getPlayerVehicle(player)
     return (vehicle and vehicle:IsA("Model")) and vehicle or nil
 end
 
--- ⚡ OPTIMIZED SOUND SCANNER (รองรับ Sled, Vehicle, Scooter และเงื่อนไข Admin)
+-- ⚡ OPTIMIZED SOUND SCANNER (เจาะจงเฉพาะเสียงที่ส่งจากผู้เล่น / รถ Sled / สิทธิ์ Admin)
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
     
-    -- เงื่อนไข Admin: ผู้เล่นทั่วไปดึง Admin ไม่ได้ แต่ Admin ดึงกันเองได้
+    -- เงื่อนไข Admin 3 คน: คนทั่วไปดึง Admin ไม่ได้ แต่ Admin ดึงกันเองได้
     if isAdmin(targetPlayer) and not isAdmin(LocalPlayer) then
         return {}
     end
@@ -395,7 +395,7 @@ local function checkPlayerAllSounds(targetPlayer)
     local vehicle = getPlayerVehicle(targetPlayer)
     if vehicle then table.insert(scanTargets, vehicle) end
 
-    -- สแกนยานพาหนะ / รถอีเวนต์ Sled ใน Workspace
+    -- สแกนเฉพาะยานพาหนะ / รถอีเวนต์ Sled ใน Workspace ที่ผู้เล่นคนนี้เป็นเจ้าของ/นั่งอยู่
     for _, obj in ipairs(workspace:GetChildren()) do
         if obj:IsA("Model") then
             local lowerName = string.lower(obj.Name)
@@ -403,7 +403,6 @@ local function checkPlayerAllSounds(targetPlayer)
                 local ownerVal = obj:FindFirstChild("Owner") or obj:FindFirstChild("Player") or obj:FindFirstChild("VehicleOwner")
                 local isOwner = ownerVal and (ownerVal.Value == targetPlayer or ownerVal.Value == targetPlayer.Name)
                 
-                -- เช็กคนนั่งถ้าหา Value Owner ไม่เจอ
                 if not isOwner then
                     for _, child in ipairs(obj:GetDescendants()) do
                         if child:IsA("VehicleSeat") or child:IsA("Seat") then
@@ -424,7 +423,7 @@ local function checkPlayerAllSounds(targetPlayer)
 
     local validSounds = {}
     local soundMap = {}
-    local NameBlacklist = { ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, ["jumping"] = true, ["landing"] = true, ["running"] = true }
+    local NameBlacklist = { ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, ["jumping"] = true, ["landing"] = true, ["running"] = true, ["water"] = true, ["footstep"] = true }
 
     for _, folder in ipairs(scanTargets) do
         local success, descendants = pcall(function() return folder:GetDescendants() end)
@@ -785,7 +784,7 @@ local function stopLocalListeningSound()
     ListenToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
 end
 
--- 🎧 ระบบปุ่มฟัง: ดึงเสียงจากคนที่เปิดใน Map ตรงๆ โดยไม่สนใจระยะทางและไม่แคร์ ID เสียงแมพ
+-- 🎧 ปุ่มฟังเพลง: ดึงออบเจกต์เสียงโดยตรง ไม่สนใจระยะทาง แม้หลุดระยะแมพไปแล้วก็ฟังได้
 ListenToggleBtn.MouseButton1Click:Connect(function()
     if IsListeningRealTime then
         stopLocalListeningSound()
@@ -801,7 +800,6 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
             local targetSound = soundObjects[1]
             stopLocalListeningSound()
 
-            -- สร้าง Sound ส่วนตัวฝั่ง Local Player เพื่อข้ามการจำกัดระยะทาง (Spatial Distance/RollOff)
             ListeningLocalSound = Instance.new("Sound")
             ListeningLocalSound.SoundId = targetSound.SoundId
             ListeningLocalSound.Volume = 0.8
