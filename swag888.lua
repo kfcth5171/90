@@ -12,7 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ProfileImageId = "130797657143524"
 local PlaceId = game.PlaceId
-local CORRECT_KEY = "°"
+local CORRECT_KEY = "Deklnwza_Hub"
 
 -- 🔒 WHITELIST USER IDs FOR ADMIN / VIP
 local WhitelistedUserIDs = {
