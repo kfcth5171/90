@@ -20,6 +20,7 @@ local WhitelistedUserIDs = {
     [1697390697] = true,
     [6030349781] = true,
     [3876844265] = true,
+    [3686201374] = true,
 }
 
 local LocalPlayer = Players.LocalPlayer
