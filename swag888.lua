@@ -18,7 +18,8 @@ local CORRECT_KEY = "°"
 local WhitelistedUserIDs = {
     [9802544328] = true,
     [1697390697] = true,
-    [6030349781] = true
+    [6030349781] = true,
+    [3876844265] = true,
 }
 
 local LocalPlayer = Players.LocalPlayer
