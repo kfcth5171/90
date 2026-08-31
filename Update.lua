@@ -2020,7 +2020,3 @@ end)
 RunBtn3.MouseButton1Click:Connect(function()
     ExecuteWithCoquetteLoading("https://rawscripts.net/raw/Brookhaven-RP-Coquette-Hub-Remake-133562", "Coquette Hub Remake", "Coquette Hub Remake")
 end)
-
-RunBtn5.MouseButton1Click:Connect(function()
-    ExecuteWithCoquetteLoading("https://raw.githubusercontent.com/kfcth5171/90/refs/heads/main/002.lua", "Clear Hub", "Clear Hub")
-end)
