@@ -1,5 +1,5 @@
 -- =====================================================================
--- [[ HONKUKI AUDIO LOGGER & DUMPER - ULTIMATE 3D VIP EDITION (FIXED STUTTER) ]] --
+-- [[ HONKUKI AUDIO LOGGER & DUMPER - ULTIMATE 3D VIP EDITION ]] --
 -- =====================================================================
 
 -- ระบบป้องกันการ Dump / Hook เบื้องต้น
@@ -379,7 +379,7 @@ local function getPlayerVehicle(player)
     return (vehicle and vehicle:IsA("Model")) and vehicle or nil
 end
 
--- ⚡ OPTIMIZED SOUND SCANNER
+-- ⚡ SOUND SCANNER (เพิ่มการยกเว้นตามสั่ง)
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
     
@@ -421,19 +421,43 @@ local function checkPlayerAllSounds(targetPlayer)
 
     local validSounds = {}
     local soundMap = {}
-    local NameBlacklist = { ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, ["jumping"] = true, ["landing"] = true, ["running"] = true, ["water"] = true, ["footstep"] = true }
+    
+    -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ
+    local NameBlacklist = { 
+        ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, 
+        ["jumping"] = true, ["landing"] = true, ["running"] = true, 
+        ["water"] = true, ["footstep"] = true,
+        ["fart1"] = true, ["climbing"] = true
+    }
 
     for _, folder in ipairs(scanTargets) do
         local success, descendants = pcall(function() return folder:GetDescendants() end)
         if success and descendants then
             for _, obj in ipairs(descendants) do
                 if obj:IsA("Sound") and obj.SoundId ~= "" then
+                    local objNameLower = string.lower(obj.Name)
+                    local fullNameLower = string.lower(obj:GetFullName())
+                    local soundIdLower = string.lower(obj.SoundId)
+
                     local isBlacklisted = false
+
+                    -- เช็คชื่อทั่วไป
                     for blockedName, _ in pairs(NameBlacklist) do
-                        if string.find(string.lower(obj.Name), blockedName) then
-                            isBlacklisted = true; break
+                        if string.find(objNameLower, blockedName) then
+                            isBlacklisted = true
+                            break
                         end
                     end
+
+                    -- เช็คเคสเจาะจงตามสั่ง
+                    if not isBlacklisted then
+                        if string.find(fullNameLower, "minions2026_fartgun") or
+                           string.find(fullNameLower, "nomotorvehiclemodel.middle.sound") or
+                           string.find(soundIdLower, "action_footsteps_plastic") then
+                            isBlacklisted = true
+                        end
+                    end
+
                     if not isBlacklisted and not soundMap[obj.SoundId] then
                         soundMap[obj.SoundId] = true
                         table.insert(validSounds, obj)
@@ -672,17 +696,18 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK & LOG VIEWER UI ====================
+-- ==================== SECONDARY JUNK & LOG VIEWER UI (ขยายเต็มหน้าต่างตามสั่ง) ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
-JunkFrame.Size = UDim2.new(1, 0, 1, 0)
+JunkFrame.Size = UDim2.new(1, 0, 1, 0) -- ขยายเต็ม MainFrame เหมาะกับจอโทรศัพท์
+JunkFrame.Position = UDim2.new(0, 0, 0, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
 JunkFrame.Visible = false
 JunkFrame.ZIndex = 10
 Instance.new("UICorner", JunkFrame).CornerRadius = UDim.new(0, 14)
 
 local JunkTitle = Instance.new("TextLabel", JunkFrame)
-JunkTitle.Size = UDim2.new(0.7, 0, 0, 35)
-JunkTitle.Position = UDim2.new(0, 15, 0, 5)
+JunkTitle.Size = UDim2.new(0.9, 0, 0, 30)
+JunkTitle.Position = UDim2.new(0, 15, 0, 6)
 JunkTitle.BackgroundTransparency = 1
 JunkTitle.Text = "RAW JUNK VIEWER"
 JunkTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
@@ -692,38 +717,32 @@ JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
 JunkTitle.ZIndex = 11
 
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
-JunkScroll.Size = UDim2.new(0.92, 0, 0.68, 0)
-JunkScroll.Position = UDim2.new(0.04, 0, 0.16, 0)
+JunkScroll.Size = UDim2.new(0.94, 0, 0.72, 0) -- ปรับช่องอ่านข้อความให้ใหญ่ขึ้น
+JunkScroll.Position = UDim2.new(0.03, 0, 0.13, 0)
 JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
 JunkScroll.ScrollBarThickness = 6
 JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
 JunkScroll.ZIndex = 11
-JunkScroll.ScrollingDirection = Enum.ScrollingDirection.XY
-JunkScroll.AutomaticCanvasSize = Enum.AutomaticSize.XY
+JunkScroll.ScrollingDirection = Enum.ScrollingDirection.Y
 JunkScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
-local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
-JunkTextLabel.Size = UDim2.new(1, -12, 1, -12)
-JunkTextLabel.Position = UDim2.new(0, 6, 0, 6)
-JunkTextLabel.BackgroundTransparency = 1
-JunkTextLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
-JunkTextLabel.Font = Enum.Font.Code
-JunkTextLabel.TextSize = 10
-JunkTextLabel.TextXAlignment = Enum.TextXAlignment.Left
-JunkTextLabel.TextYAlignment = Enum.TextYAlignment.Top
-JunkTextLabel.TextWrapped = false
-JunkTextLabel.AutomaticSize = Enum.AutomaticSize.XY
-JunkTextLabel.ZIndex = 12
+local JunkListLayout = Instance.new("UIListLayout", JunkScroll)
+JunkListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+JunkListLayout.Padding = UDim.new(0, 4)
+
+JunkListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    JunkScroll.CanvasSize = UDim2.new(0, 0, 0, JunkListLayout.AbsoluteContentSize.Y + 10)
+end)
 
 local JunkCopyBtn = create3DButton(JunkFrame, "📋 คัดลอกข้อมูล", Color3.fromRGB(0, 160, 100))
-JunkCopyBtn.Size = UDim2.new(0.43, 0, 0, 26)
-JunkCopyBtn.Position = UDim2.new(0.04, 0, 0.86, 0)
+JunkCopyBtn.Size = UDim2.new(0.45, 0, 0, 28)
+JunkCopyBtn.Position = UDim2.new(0.03, 0, 0.87, 0)
 JunkCopyBtn.ZIndex = 12
 
 local JunkBackBtn = create3DButton(JunkFrame, "⬅️ ย้อนกลับ", Color3.fromRGB(200, 50, 60))
-JunkBackBtn.Size = UDim2.new(0.53, 0, 0.86, 0)
-JunkBackBtn.Position = UDim2.new(0.53, 0, 0.86, 0)
+JunkBackBtn.Size = UDim2.new(0.45, 0, 0, 28)
+JunkBackBtn.Position = UDim2.new(0.52, 0, 0.87, 0)
 JunkBackBtn.ZIndex = 12
 
 -- ==================== ANIMATIONS & LOGIC ====================
@@ -818,29 +837,38 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🛠️ แก้ไขจุดนี้: ปรับระบบประมวลผล Viewer ให้ไม่อยู่ใน Infinite Recursion และป้องกันอาการค้าง 100%
-local lastUpdatedText = ""
+-- 🛠️ ปรับแก้ระบบแสดงผล Chunking ป้องกันข้อความโดนตัดทิ้ง 100%
+local lastFullStringForCopy = ""
+
 local function updateJunkViewerLive()
     if not JunkFrame.Visible or not CurrentSelectedPlayer then return end
     local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
     if not targetPlayer then return end
 
     local soundObjects = checkPlayerAllSounds(targetPlayer)
-    local outputText = ""
+    
+    -- ล้าง UI ข้อมูลเก่าออกก่อน
+    for _, child in ipairs(JunkScroll:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child:Destroy()
+        end
+    end
+
+    local textChunks = {}
 
     if CurrentViewMode == 1 then
-        JunkTitle.Text = "RAW JUNK VIEWER (แสดงขยะดิบทั้งหมด)"
+        JunkTitle.Text = "RAW JUNK VIEWER (แสดงขยะดิบเต็มระบบ)"
         if #soundObjects == 0 then
-            outputText = "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้"
+            table.insert(textChunks, "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้")
         else
             for i, obj in ipairs(soundObjects) do
-                outputText = outputText .. string.format("[%d] ออบเจกต์: %s\nRAW DATA: %s\n\n", i, obj:GetFullName(), tostring(obj.SoundId))
+                table.insert(textChunks, string.format("[%d] ออบเจกต์: %s\nRAW DATA: %s\n", i, obj:GetFullName(), tostring(obj.SoundId)))
             end
         end
     elseif CurrentViewMode == 2 then
-        JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดทั้งหมด)"
+        JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดเต็มระบบ)"
         if #soundObjects == 0 then
-            outputText = "❌ ไม่พบค่าเพลงของผู้เล่นนี้"
+            table.insert(textChunks, "❌ ไม่พบค่าเพลงของผู้เล่นนี้")
         else
             local finalIds, seenIds = {}, {}
             for _, soundObj in ipairs(soundObjects) do
@@ -861,19 +889,32 @@ local function updateJunkViewerLive()
                 end
             end
             if #finalIds == 0 then
-                outputText = "❌ ไม่พบ ID เพลงจริงอยู่ข้างใน"
+                table.insert(textChunks, "❌ ไม่พบ ID เพลงจริงอยู่ข้างใน")
             else
-                outputText = "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---\n\n"
+                table.insert(textChunks, "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---")
                 for idx, id in ipairs(finalIds) do
-                    outputText = outputText .. string.format("[%d] ID เจาะได้: %s\n", idx, id)
+                    table.insert(textChunks, string.format("[%d] ID เจาะได้: %s", idx, id))
                 end
             end
         end
     end
 
-    if lastUpdatedText ~= outputText then
-        lastUpdatedText = outputText
-        JunkTextLabel.Text = outputText
+    lastFullStringForCopy = table.concat(textChunks, "\n")
+
+    -- สร้าง TextLabel ย่อยๆ เพื่อป้องกันลิมิตตัวอักษรของ Roblox สั่งตัดทิ้ง
+    for _, chunk in ipairs(textChunks) do
+        local label = Instance.new("TextLabel", JunkScroll)
+        label.Size = UDim2.new(1, -10, 0, 0)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.fromRGB(200, 220, 255)
+        label.Font = Enum.Font.Code
+        label.TextSize = 10
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextYAlignment = Enum.TextYAlignment.Top
+        label.TextWrapped = true
+        label.AutomaticSize = Enum.AutomaticSize.Y
+        label.Text = chunk
+        label.ZIndex = 12
     end
 end
 
@@ -997,7 +1038,10 @@ ViewInstantBtn.MouseButton1Click:Connect(function()
 end)
 
 JunkCopyBtn.MouseButton1Click:Connect(function()
-    if JunkTextLabel.Text ~= "" then copyToClipboard(JunkTextLabel.Text) end
+    if lastFullStringForCopy ~= "" then 
+        copyToClipboard(lastFullStringForCopy)
+        StatusLabel.Text = "📋 คัดลอกข้อมูลลง คลิปบอร์ด แล้ว!"
+    end
 end)
 
 JunkBackBtn.MouseButton1Click:Connect(function() JunkFrame.Visible = false end)
