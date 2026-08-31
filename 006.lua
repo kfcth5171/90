@@ -422,12 +422,13 @@ local function checkPlayerAllSounds(targetPlayer)
     local validSounds = {}
     local soundMap = {}
     
-    -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ
+        -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ (เพิ่ม swimming และ splash เข้าไปตรงนี้)
     local NameBlacklist = { 
         ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, 
         ["jumping"] = true, ["landing"] = true, ["running"] = true, 
         ["water"] = true, ["footstep"] = true,
-        ["fart1"] = true, ["climbing"] = true
+        ["fart1"] = true, ["climbing"] = true,
+        ["swimming"] = true, ["splash"] = true -- 👈 เพิ่ม 2 คำนี้เข้าไปได้เลยครับ
     }
 
     for _, folder in ipairs(scanTargets) do
