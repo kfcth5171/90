@@ -169,7 +169,7 @@ local function ForcePlayMusicCombo(musicId)
 end
 
 local BlockedIDs = {
-     ["54410081542"] = true, ["70999314371231"] = true,
+    ["54410081542"] = true, ["70999314371231"] = true,
     ["71352236"] = true, ["76500780055460"] = true,
     ["78515442941510"] = true, ["90533928572341"] = true,
     ["99721399503975"] = true,
@@ -379,11 +379,10 @@ local function getPlayerVehicle(player)
     return (vehicle and vehicle:IsA("Model")) and vehicle or nil
 end
 
--- ⚡ OPTIMIZED SOUND SCANNER (เจาะจงเฉพาะเสียงที่ส่งจากผู้เล่น / รถ Sled / สิทธิ์ Admin)
+-- ⚡ OPTIMIZED SOUND SCANNER
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
     
-    -- เงื่อนไข Admin 3 คน: คนทั่วไปดึง Admin ไม่ได้ แต่ Admin ดึงกันเองได้
     if isAdmin(targetPlayer) and not isAdmin(LocalPlayer) then
         return {}
     end
@@ -395,7 +394,6 @@ local function checkPlayerAllSounds(targetPlayer)
     local vehicle = getPlayerVehicle(targetPlayer)
     if vehicle then table.insert(scanTargets, vehicle) end
 
-    -- สแกนเฉพาะยานพาหนะ / รถอีเวนต์ Sled ใน Workspace ที่ผู้เล่นคนนี้เป็นเจ้าของ/นั่งอยู่
     for _, obj in ipairs(workspace:GetChildren()) do
         if obj:IsA("Model") then
             local lowerName = string.lower(obj.Name)
@@ -674,7 +672,7 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK & LOG VIEWER UI (FIXED UNLIMITED SCROLL & NO TEXT TRUNCATE) ====================
+-- ==================== SECONDARY JUNK & LOG VIEWER UI ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
 JunkFrame.Size = UDim2.new(1, 0, 1, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
@@ -693,7 +691,6 @@ JunkTitle.TextSize = 12
 JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
 JunkTitle.ZIndex = 11
 
--- 🔍 ปรับปรุง ScrollingFrame ให้เลื่อนอิสระ 2 ทิศทาง (XY) ขยาย Canvas อัตโนมัติ ไม่จำกัดความยาว
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
 JunkScroll.Size = UDim2.new(0.92, 0, 0.68, 0)
 JunkScroll.Position = UDim2.new(0.04, 0, 0.16, 0)
@@ -706,7 +703,6 @@ JunkScroll.AutomaticCanvasSize = Enum.AutomaticSize.XY
 JunkScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
--- 🔍 ปรับ TextLabel ไม่ให้ตัดข้อความทิ้ง (TextWrapped = false + AutomaticSize = XY) ไม่ว่าขยะจะยัดมายาวแค่ไหนก็ตาม
 local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
 JunkTextLabel.Size = UDim2.new(1, -12, 1, -12)
 JunkTextLabel.Position = UDim2.new(0, 6, 0, 6)
@@ -726,7 +722,7 @@ JunkCopyBtn.Position = UDim2.new(0.04, 0, 0.86, 0)
 JunkCopyBtn.ZIndex = 12
 
 local JunkBackBtn = create3DButton(JunkFrame, "⬅️ ย้อนกลับ", Color3.fromRGB(200, 50, 60))
-JunkBackBtn.Size = UDim2.new(0.43, 0, 0, 26)
+JunkBackBtn.Size = UDim2.new(0.53, 0, 0.86, 0)
 JunkBackBtn.Position = UDim2.new(0.53, 0, 0.86, 0)
 JunkBackBtn.ZIndex = 12
 
@@ -787,7 +783,6 @@ local function stopLocalListeningSound()
     ListenToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
 end
 
--- 🎧 ปุ่มฟังเพลง: ดึงออบเจกต์เสียงโดยตรง ไม่สนใจระยะทาง แม้หลุดระยะแมพไปแล้วก็ฟังได้
 ListenToggleBtn.MouseButton1Click:Connect(function()
     if IsListeningRealTime then
         stopLocalListeningSound()
@@ -823,6 +818,8 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- 🛠️ แก้ไขจุดนี้: ปรับระบบประมวลผล Viewer ให้ไม่อยู่ใน Infinite Recursion และป้องกันอาการค้าง 100%
+local lastUpdatedText = ""
 local function updateJunkViewerLive()
     if not JunkFrame.Visible or not CurrentSelectedPlayer then return end
     local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
@@ -874,8 +871,10 @@ local function updateJunkViewerLive()
         end
     end
 
-    JunkTextLabel.Text = outputText
-    updateJunkViewerLive()
+    if lastUpdatedText ~= outputText then
+        lastUpdatedText = outputText
+        JunkTextLabel.Text = outputText
+    end
 end
 
 local function refreshPlayers()
@@ -1006,7 +1005,7 @@ JunkBackBtn.MouseButton1Click:Connect(function() JunkFrame.Visible = false end)
 -- ⚡ SMOOTH BACKGROUND THREAD
 task.spawn(function()
     while true do
-        task.wait(4)
+        task.wait(2)
         markSelfAsRunner()
         
         for _, p in ipairs(Players:GetPlayers()) do
