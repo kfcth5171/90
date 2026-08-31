@@ -169,7 +169,7 @@ local function ForcePlayMusicCombo(musicId)
 end
 
 local BlockedIDs = {
-    ["54410081542"] = true, ["70999314371231"] = true,
+     ["54410081542"] = true, ["70999314371231"] = true,
     ["71352236"] = true, ["76500780055460"] = true,
     ["78515442941510"] = true, ["90533928572341"] = true,
     ["99721399503975"] = true,
@@ -204,7 +204,7 @@ local BlockedIDs = {
     ["938627541052"] = true, ["8719452861439"] = true, ["153682974105"] = true,
     ["9417285603187"] = true, ["72849156380"] = true, ["1865942713084"] = true,
     ["92541768309"] = true, ["1174926580315"] = true, ["84617295306"] = true,
-     ["1938571462098"] = true, ["56714928306"] = true, ["1692847513894"] = true,
+    ["1938571462098"] = true, ["56714928306"] = true, ["1692847513894"] = true,
     ["85142976031"] = true, ["9741638259047"] = true, ["24819573608"] = true,
     ["1780564921835"] = true, ["659274185609"] = true, ["841679520841"] = true,
     ["1295841760392"] = true, ["571486925071"] = true, ["1985271640958"] = true,
@@ -261,7 +261,7 @@ local BlockedIDs = {
     ["0083056197503510"] = true, ["00104007943345258"] = true,
     ["00138058631419886"] = true, ["0082791323516669"] = true,
     ["00122209668269742"] = true,
-     ["00651180925541685"] = true,
+    ["00651180925541685"] = true,
     ["0052315987524169"] = true,
     ["00123568751245557"] = true,
     ["00965488877651295"] = true,
@@ -674,7 +674,7 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK VIEWER UI ====================
+-- ==================== SECONDARY JUNK & LOG VIEWER UI (FIXED UNLIMITED SCROLL & NO TEXT TRUNCATE) ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
 JunkFrame.Size = UDim2.new(1, 0, 1, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
@@ -693,6 +693,7 @@ JunkTitle.TextSize = 12
 JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
 JunkTitle.ZIndex = 11
 
+-- 🔍 ปรับปรุง ScrollingFrame ให้เลื่อนอิสระ 2 ทิศทาง (XY) ขยาย Canvas อัตโนมัติ ไม่จำกัดความยาว
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
 JunkScroll.Size = UDim2.new(0.92, 0, 0.68, 0)
 JunkScroll.Position = UDim2.new(0.04, 0, 0.16, 0)
@@ -700,12 +701,14 @@ JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
 JunkScroll.ScrollBarThickness = 6
 JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
 JunkScroll.ZIndex = 11
-JunkScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+JunkScroll.ScrollingDirection = Enum.ScrollingDirection.XY
+JunkScroll.AutomaticCanvasSize = Enum.AutomaticSize.XY
 JunkScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
+-- 🔍 ปรับ TextLabel ไม่ให้ตัดข้อความทิ้ง (TextWrapped = false + AutomaticSize = XY) ไม่ว่าขยะจะยัดมายาวแค่ไหนก็ตาม
 local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
-JunkTextLabel.Size = UDim2.new(1, -12, 0, 0)
+JunkTextLabel.Size = UDim2.new(1, -12, 1, -12)
 JunkTextLabel.Position = UDim2.new(0, 6, 0, 6)
 JunkTextLabel.BackgroundTransparency = 1
 JunkTextLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
@@ -713,8 +716,8 @@ JunkTextLabel.Font = Enum.Font.Code
 JunkTextLabel.TextSize = 10
 JunkTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 JunkTextLabel.TextYAlignment = Enum.TextYAlignment.Top
-JunkTextLabel.TextWrapped = true
-JunkTextLabel.AutomaticSize = Enum.AutomaticSize.Y
+JunkTextLabel.TextWrapped = false
+JunkTextLabel.AutomaticSize = Enum.AutomaticSize.XY
 JunkTextLabel.ZIndex = 12
 
 local JunkCopyBtn = create3DButton(JunkFrame, "📋 คัดลอกข้อมูล", Color3.fromRGB(0, 160, 100))
@@ -872,7 +875,7 @@ local function updateJunkViewerLive()
     end
 
     JunkTextLabel.Text = outputText
-    JunkTextLabel.Size = UDim2.new(1, -12, 0, 0)
+    updateJunkViewerLive()
 end
 
 local function refreshPlayers()
