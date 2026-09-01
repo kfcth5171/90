@@ -422,7 +422,7 @@ local function checkPlayerAllSounds(targetPlayer)
     local validSounds = {}
     local soundMap = {}
     
-        -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ (เพิ่ม swimming และ splash เข้าไปตรงนี้)
+       -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ (เพิ่ม swimming และ splash เข้าไปตรงนี้)
     local NameBlacklist = { 
         ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, 
         ["jumping"] = true, ["landing"] = true, ["running"] = true, 
@@ -838,7 +838,7 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🛠️ ปรับแก้ระบบแสดงผล Chunking ป้องกันข้อความโดนตัดทิ้ง 100%
+-- 🛠️ ปรับแก้ระบบแสดงผล Chunking รองรับ 1,000,000+ ตัวอักษร ไม่โดน Roblox ตัดทิ้ง 100%
 local lastFullStringForCopy = ""
 
 local function updateJunkViewerLive()
@@ -855,21 +855,23 @@ local function updateJunkViewerLive()
         end
     end
 
-    local textChunks = {}
+    local fullRawText = ""
 
     if CurrentViewMode == 1 then
         JunkTitle.Text = "RAW JUNK VIEWER (แสดงขยะดิบเต็มระบบ)"
         if #soundObjects == 0 then
-            table.insert(textChunks, "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้")
+            fullRawText = "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้"
         else
+            local chunks = {}
             for i, obj in ipairs(soundObjects) do
-                table.insert(textChunks, string.format("[%d] ออบเจกต์: %s\nRAW DATA: %s\n", i, obj:GetFullName(), tostring(obj.SoundId)))
+                table.insert(chunks, string.format("[%d] ออบเจกต์: %s\nRAW DATA: %s\n", i, obj:GetFullName(), tostring(obj.SoundId)))
             end
+            fullRawText = table.concat(chunks, "\n")
         end
     elseif CurrentViewMode == 2 then
         JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดเต็มระบบ)"
         if #soundObjects == 0 then
-            table.insert(textChunks, "❌ ไม่พบค่าเพลงของผู้เล่นนี้")
+            fullRawText = "❌ ไม่พบค่าเพลงของผู้เล่นนี้"
         else
             local finalIds, seenIds = {}, {}
             for _, soundObj in ipairs(soundObjects) do
@@ -890,33 +892,49 @@ local function updateJunkViewerLive()
                 end
             end
             if #finalIds == 0 then
-                table.insert(textChunks, "❌ ไม่พบ ID เพลงจริงอยู่ข้างใน")
+                fullRawText = "❌ ไม่พบ ID เพลงจริงอยู่ข้างใน"
             else
-                table.insert(textChunks, "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---")
+                local chunks = { "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---" }
                 for idx, id in ipairs(finalIds) do
-                    table.insert(textChunks, string.format("[%d] ID เจาะได้: %s", idx, id))
+                    table.insert(chunks, string.format("[%d] ID เจาะได้: %s", idx, id))
                 end
+                fullRawText = table.concat(chunks, "\n")
             end
         end
     end
 
-    lastFullStringForCopy = table.concat(textChunks, "\n")
+    lastFullStringForCopy = fullRawText
 
-    -- สร้าง TextLabel ย่อยๆ เพื่อป้องกันลิมิตตัวอักษรของ Roblox สั่งตัดทิ้ง
-    for _, chunk in ipairs(textChunks) do
-        local label = Instance.new("TextLabel", JunkScroll)
-        label.Size = UDim2.new(1, -10, 0, 0)
-        label.BackgroundTransparency = 1
-        label.TextColor3 = Color3.fromRGB(200, 220, 255)
-        label.Font = Enum.Font.Code
-        label.TextSize = 10
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.TextYAlignment = Enum.TextYAlignment.Top
-        label.TextWrapped = true
-        label.AutomaticSize = Enum.AutomaticSize.Y
-        label.Text = chunk
-        label.ZIndex = 12
-    end
+    -- ⚡ Chunking Engine: หั่นข้อความยาวเป็นบล็อกเล็กๆ บล็อกละ 200 ตัวอักษร เพื่อทะลุขีดจำกัด 1,000,000+ ตัวอักษร
+    local CHUNK_SIZE = 200
+    local textLength = #fullRawText
+
+    if textLength == 0 then return end
+
+    task.spawn(function()
+        for i = 1, textLength, CHUNK_SIZE do
+            if not JunkFrame.Visible then break end -- หยุดการสร้าง UI หากปิดหน้าต่าง
+            
+            local chunkText = string.sub(fullRawText, i, i + CHUNK_SIZE - 1)
+            local label = Instance.new("TextLabel", JunkScroll)
+            label.Size = UDim2.new(1, -10, 0, 0)
+            label.BackgroundTransparency = 1
+            label.TextColor3 = Color3.fromRGB(200, 220, 255)
+            label.Font = Enum.Font.Code
+            label.TextSize = 10
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.TextYAlignment = Enum.TextYAlignment.Top
+            label.TextWrapped = true
+            label.AutomaticSize = Enum.AutomaticSize.Y
+            label.Text = chunkText
+            label.ZIndex = 12
+            
+            -- พัก Thread ทุกๆ 50 บล็อก เพื่อป้องกันเกมค้าง (Lag Spike) เมื่อเจอข้อความยาวล้านตัวอักษร
+            if (i / CHUNK_SIZE) % 50 == 0 then
+                task.wait()
+            end
+        end
+    end)
 end
 
 local function refreshPlayers()
@@ -1067,4 +1085,4 @@ task.spawn(function()
     end
 end)
 
-refreshPlayers()
+refreshPlayers()tion
