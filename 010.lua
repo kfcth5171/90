@@ -2,111 +2,32 @@
 -- [[ STYLEKUKI VIP LOADER & KEY SYSTEM - CYBERPUNK 3D EDITION ]] --
 -- =====================================================================
 
---[[
-    ONE-FILE SECURITY ARCHITECTURE
-
-    Server:
-      - ตรวจสอบคำขอจาก Client
-      - ตรวจสอบสิทธิ์
-      - ตรวจสอบข้อมูลสำคัญ
-      - ตัดสินใจทั้งหมด
-
-    Client:
-      - ทำ UI / input
-      - ตรวจ integrity ได้บางส่วน
-      - ห้ามถือ secret หรือ logic สำคัญ
-]]
-
-local RunService = game:GetService("RunService")
-
-if RunService:IsServer() then
-    -- =========================
-    -- SERVER SECURITY
-    -- =========================
-
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local Remote = ReplicatedStorage:FindFirstChild("SecureRequest")
-
-    if not Remote then
-        Remote = Instance.new("RemoteEvent")
-        Remote.Name = "SecureRequest"
-        Remote.Parent = ReplicatedStorage
+-- 1. ฟังก์ชันสำหรับตรวจจับการ Hook
+local function verifyLoadstring()
+    -- ตรวจสอบว่า loadstring ใน getgenv ถูกเปลี่ยนแปลงหรือไม่
+    if getgenv and getgenv().loadstring ~= nil and getgenv().loadstring ~= loadstring then
+        return false, "SecurityError: Anti-Hook triggered (loadstring environment has been modified)."
     end
 
-    Remote.OnServerEvent:Connect(function(player, action, data)
-        -- ตรวจชนิดข้อมูลก่อนเสมอ
-        if typeof(action) ~= "string" then
-            return
-        end
-
-        -- ตรวจสอบ data ตาม action
-        if data ~= nil and typeof(data) ~= "table" then
-            return
-        end
-
-        -- ใส่ logic สำคัญของคุณตรงนี้
-        -- Server เป็นผู้ตัดสิน ไม่เชื่อค่าที่ Client ส่งมาโดยตรง
-
-        print("[SECURE]", player.Name, action)
-    end)
-
-else
-    -- =========================
-    -- CLIENT INTEGRITY
-    -- =========================
-
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Remote = ReplicatedStorage:WaitForChild("SecureRequest")
-
-    local baseline = {
-        pcall = pcall,
-        xpcall = xpcall,
-        type = type,
-        typeof = typeof,
-        tostring = tostring,
-        tonumber = tonumber
-    }
-
-    local reported = false
-
-    local function check()
-        if reported then
-            return
-        end
-
-        local current = {
-            pcall = pcall,
-            xpcall = xpcall,
-            type = type,
-            typeof = typeof,
-            tostring = tostring,
-            tonumber = tonumber
-        }
-
-        for name, original in pairs(baseline) do
-            if current[name] ~= original then
-                reported = true
-
-                pcall(function()
-                    Remote:FireServer(
-                        "integrity_violation",
-                        {source = name}
-                    )
-                end)
-
-                break
-            end
-        end
+    -- ตรวจสอบประเภทฟังก์ชันด้วย iscclosure (ถ้า Executor รองรับ)
+    if iscclosure and not iscclosure(loadstring) then
+        return false, "SecurityError: Native function tampered (Lua closure detected)."
     end
 
-    task.spawn(function()
-        while not reported do
-            check()
-            task.wait(2)
-        end
-    end)
+    return true, nil
+end
+
+-- 2. รันการตรวจสอบ
+local is_safe, err_msg = verifyLoadstring()
+
+if not is_safe then
+    -- สั่งตัดการทำงานและส่ง Error กลับไปทันที
+    error(err_msg, 2)
+end
+
+-- 3. หากปลอดภัย สามารถรันโค้ดได้ตามปกติ
+if (getgenv and getgenv().loadstring ~= nil and getgenv().loadstring ~= loadstring) or (iscclosure and not iscclosure(loadstring)) then
+    error("SecurityError: Hook attempt detected.", 0)
 end
 
 local MarketplaceService = game:GetService("MarketplaceService")
