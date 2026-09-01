@@ -458,7 +458,8 @@ local function checkPlayerAllSounds(targetPlayer)
                            string.find(fullNameLower, "flashlight.handle.toggle") or
                            string.find(fullNameLower, "nomotorvehiclemodel.middle.engine") or
                            string.find(fullNameLower, "handheldfan.handle.open_sound") or
-                           string.find(fullNameLower, "handheldfan.handle.fanclose_sound") then
+                           string.find(fullNameLower, "handheldfan.handle.fanclose_sound") or
+                           string.find(fullNameLower, "moneygun.lefthand.althandle.activate") then
                             isBlacklisted = true
                         end
                     end
