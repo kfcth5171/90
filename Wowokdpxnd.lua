@@ -598,7 +598,7 @@ local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0.5, 0, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "✨ HONKUKI AUDIO LOGGER VIP"
+Title.Text = "✨ HONKUKI AUDIO LOGGER EIEI"
 Title.TextColor3 = Color3.fromRGB(255, 215, 0)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
@@ -668,11 +668,11 @@ local function create3DButton(parent, text, color)
     return btn
 end
 
-local GetIDBtn = create3DButton(ButtonsContainer, "⚡ เจาะดึงไอดีเพลง", Color3.fromRGB(210, 160, 0))
-local GetJunkBtn = create3DButton(ButtonsContainer, "🎵 ยิงเปิดเพลงตามขยะ", Color3.fromRGB(160, 100, 220))
+local GetIDBtn = create3DButton(ButtonsContainer, "⚡ เจาะไอดีเพลง", Color3.fromRGB(210, 160, 0))
+local GetJunkBtn = create3DButton(ButtonsContainer, "🎵 ยิงเปิดเพลงตามplayer", Color3.fromRGB(160, 100, 220))
 local ListenToggleBtn = create3DButton(ButtonsContainer, "🎧 ฟังเพลงส่วนตัว (Volume 80%)", Color3.fromRGB(0, 140, 220))
-local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะ RAW เรียลไทม์", Color3.fromRGB(40, 45, 60))
-local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID เจาะสด Real-time", Color3.fromRGB(40, 45, 60))
+local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะplayer", Color3.fromRGB(40, 45, 60))
+local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID ที่เจาะมา", Color3.fromRGB(40, 45, 60))
 
 StatusLabel = Instance.new("TextLabel", MainFrame)
 StatusLabel.Size = UDim2.new(0.94, 0, 0, 22)
