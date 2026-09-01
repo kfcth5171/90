@@ -459,8 +459,11 @@ local function checkPlayerAllSounds(targetPlayer)
                            string.find(fullNameLower, "nomotorvehiclemodel.middle.engine") or
                            string.find(fullNameLower, "handheldfan.handle.open_sound") or
                            string.find(fullNameLower, "handheldfan.handle.fanclose_sound") or
-                           string.find(fullNameLower, "moneygun.lefthand.althandle.activate") then
-                            isBlacklisted = true
+                           string.find(fullNameLower, "moneygun.lefthand.althandle.activate") or
+                           string.find(fullNameLower, "workspace.head.crying") or
+                           string.find(fullNameLower, "electricguitar.handle.sound")
+                            
+                           isBlacklisted = true
                         end
                     end
 
