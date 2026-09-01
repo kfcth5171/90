@@ -370,16 +370,7 @@ local function extractIDsFromPattern(text)
     return ids
 end
 
-local function getPlayerVehicle(player)
-    if not player or not player.Character then return nil end
-    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-    if not humanoid or not humanoid.SeatPart then return nil end
-    local vehicle = humanoid.SeatPart.Parent
-    while vehicle and not vehicle:IsA("Model") do vehicle = vehicle.Parent end
-    return (vehicle and vehicle:IsA("Model")) and vehicle or nil
-end
-
--- ⚡ SOUND SCANNER (เพิ่มการยกเว้นตามสั่ง)
+-- ⚡ SOUND SCANNER (ดักจับจาก Object ที่ระบุเท่านั้น ไม่สแกนมั่ว)
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
     
@@ -387,86 +378,26 @@ local function checkPlayerAllSounds(targetPlayer)
         return {}
     end
 
-    local scanTargets = {}
-    if targetPlayer.Character then table.insert(scanTargets, targetPlayer.Character) end
-    local backpack = targetPlayer:FindFirstChild("Backpack")
-    if backpack then table.insert(scanTargets, backpack) end
-    local vehicle = getPlayerVehicle(targetPlayer)
-    if vehicle then table.insert(scanTargets, vehicle) end
-
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("Model") then
-            local lowerName = string.lower(obj.Name)
-            if string.find(lowerName, "sled") or string.find(lowerName, "scooter") or string.find(lowerName, "vehicle") or string.find(lowerName, "bike") or string.find(lowerName, "car") then
-                local ownerVal = obj:FindFirstChild("Owner") or obj:FindFirstChild("Player") or obj:FindFirstChild("VehicleOwner")
-                local isOwner = ownerVal and (ownerVal.Value == targetPlayer or ownerVal.Value == targetPlayer.Name)
-                
-                if not isOwner then
-                    for _, child in ipairs(obj:GetDescendants()) do
-                        if child:IsA("VehicleSeat") or child:IsA("Seat") then
-                            if child.Occupant and child.Occupant.Parent == targetPlayer.Character then
-                                isOwner = true
-                                break
-                            end
-                        end
-                    end
-                end
-
-                if isOwner then
-                    table.insert(scanTargets, obj)
-                end
-            end
-        end
-    end
-
     local validSounds = {}
-    local soundMap = {}
-    
-       -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ (เพิ่ม swimming และ splash เข้าไปตรงนี้)
-    local NameBlacklist = { 
-        ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, 
-        ["jumping"] = true, ["landing"] = true, ["running"] = true, 
-        ["water"] = true, ["footstep"] = true,
-        ["fart1"] = true, ["climbing"] = true,
-        ["swimming"] = true, ["splash"] = true -- 👈 เพิ่ม 2 คำนี้เข้าไปได้เลยครับ
-    }
 
-    for _, folder in ipairs(scanTargets) do
-        local success, descendants = pcall(function() return folder:GetDescendants() end)
-        if success and descendants then
-            for _, obj in ipairs(descendants) do
-                if obj:IsA("Sound") and obj.SoundId ~= "" then
-                    local objNameLower = string.lower(obj.Name)
-                    local fullNameLower = string.lower(obj:GetFullName())
-                    local soundIdLower = string.lower(obj.SoundId)
+    -- ตรวจสอบ Object ที่ 1: Workspace.NoMotorVehicleModel.Middle.PlayersChoice
+    local sound1 = workspace:FindFirstChild("NoMotorVehicleModel")
+        and workspace.NoMotorVehicleModel:FindFirstChild("Middle")
+        and workspace.NoMotorVehicleModel.Middle:FindFirstChild("PlayersChoice")
 
-                    local isBlacklisted = false
+    -- ตรวจสอบ Object ที่ 2: Workspace.Boombox.Handle.PlayersChoice
+    local sound2 = workspace:FindFirstChild("Boombox")
+        and workspace.Boombox:FindFirstChild("Handle")
+        and workspace.Boombox.Handle:FindFirstChild("PlayersChoice")
 
-                    -- เช็คชื่อทั่วไป
-                    for blockedName, _ in pairs(NameBlacklist) do
-                        if string.find(objNameLower, blockedName) then
-                            isBlacklisted = true
-                            break
-                        end
-                    end
-
-                    -- เช็คเคสเจาะจงตามสั่ง
-                    if not isBlacklisted then
-                        if string.find(fullNameLower, "minions2026_fartgun") or
-                           string.find(fullNameLower, "nomotorvehiclemodel.middle.sound") or
-                           string.find(soundIdLower, "action_footsteps_plastic") then
-                            isBlacklisted = true
-                        end
-                    end
-
-                    if not isBlacklisted and not soundMap[obj.SoundId] then
-                        soundMap[obj.SoundId] = true
-                        table.insert(validSounds, obj)
-                    end
-                end
-            end
-        end
+    if sound1 and sound1:IsA("Sound") and sound1.SoundId ~= "" then
+        table.insert(validSounds, sound1)
     end
+
+    if sound2 and sound2:IsA("Sound") and sound2.SoundId ~= "" then
+        table.insert(validSounds, sound2)
+    end
+
     return validSounds
 end
 
@@ -594,7 +525,7 @@ local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0.5, 0, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "✨ HONKUKI AUDIO LOGGER VIP"
+Title.Text = "✨ HONKUKI AUDIO LOGGER EIEI"
 Title.TextColor3 = Color3.fromRGB(255, 215, 0)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
@@ -664,11 +595,11 @@ local function create3DButton(parent, text, color)
     return btn
 end
 
-local GetIDBtn = create3DButton(ButtonsContainer, "⚡ เจาะดึงไอดีเพลง", Color3.fromRGB(210, 160, 0))
-local GetJunkBtn = create3DButton(ButtonsContainer, "🎵 ยิงเปิดเพลงตามขยะ", Color3.fromRGB(160, 100, 220))
+local GetIDBtn = create3DButton(ButtonsContainer, "⚡ เจาะไอดีเพลง", Color3.fromRGB(210, 160, 0))
+local GetJunkBtn = create3DButton(ButtonsContainer, "🎵 ยิงเปิดเพลงตามplayer", Color3.fromRGB(160, 100, 220))
 local ListenToggleBtn = create3DButton(ButtonsContainer, "🎧 ฟังเพลงส่วนตัว (Volume 80%)", Color3.fromRGB(0, 140, 220))
-local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะ RAW เรียลไทม์", Color3.fromRGB(40, 45, 60))
-local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID เจาะสด Real-time", Color3.fromRGB(40, 45, 60))
+local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะplayer", Color3.fromRGB(40, 45, 60))
+local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID ที่เจาะมา", Color3.fromRGB(40, 45, 60))
 
 StatusLabel = Instance.new("TextLabel", MainFrame)
 StatusLabel.Size = UDim2.new(0.94, 0, 0, 22)
@@ -697,9 +628,9 @@ tStroke.Color = Color3.fromRGB(255, 215, 0)
 tStroke.Thickness = 1.5
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== SECONDARY JUNK & LOG VIEWER UI (ขยายเต็มหน้าต่างตามสั่ง) ====================
+-- ==================== SECONDARY JUNK & LOG VIEWER UI ====================
 local JunkFrame = Instance.new("Frame", MainFrame)
-JunkFrame.Size = UDim2.new(1, 0, 1, 0) -- ขยายเต็ม MainFrame เหมาะกับจอโทรศัพท์
+JunkFrame.Size = UDim2.new(1, 0, 1, 0)
 JunkFrame.Position = UDim2.new(0, 0, 0, 0)
 JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
 JunkFrame.Visible = false
@@ -718,7 +649,7 @@ JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
 JunkTitle.ZIndex = 11
 
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
-JunkScroll.Size = UDim2.new(0.94, 0, 0.72, 0) -- ปรับช่องอ่านข้อความให้ใหญ่ขึ้น
+JunkScroll.Size = UDim2.new(0.94, 0, 0.72, 0)
 JunkScroll.Position = UDim2.new(0.03, 0, 0.13, 0)
 JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
 JunkScroll.ScrollBarThickness = 6
@@ -838,7 +769,6 @@ ListenToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 🛠️ ปรับแก้ระบบแสดงผล Chunking รองรับ 1,000,000+ ตัวอักษร ไม่โดน Roblox ตัดทิ้ง 100%
 local lastFullStringForCopy = ""
 
 local function updateJunkViewerLive()
@@ -848,7 +778,6 @@ local function updateJunkViewerLive()
 
     local soundObjects = checkPlayerAllSounds(targetPlayer)
     
-    -- ล้าง UI ข้อมูลเก่าออกก่อน
     for _, child in ipairs(JunkScroll:GetChildren()) do
         if child:IsA("TextLabel") then
             child:Destroy()
@@ -860,7 +789,7 @@ local function updateJunkViewerLive()
     if CurrentViewMode == 1 then
         JunkTitle.Text = "RAW JUNK VIEWER (แสดงขยะดิบเต็มระบบ)"
         if #soundObjects == 0 then
-            fullRawText = "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้"
+            fullRawText = "❌ ไม่พบออบเจกต์เสียงตามที่ระบุไว้"
         else
             local chunks = {}
             for i, obj in ipairs(soundObjects) do
@@ -871,7 +800,7 @@ local function updateJunkViewerLive()
     elseif CurrentViewMode == 2 then
         JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดเต็มระบบ)"
         if #soundObjects == 0 then
-            fullRawText = "❌ ไม่พบค่าเพลงของผู้เล่นนี้"
+            fullRawText = "❌ ไม่พบค่าเพลงตามที่ระบุไว้"
         else
             local finalIds, seenIds = {}, {}
             for _, soundObj in ipairs(soundObjects) do
@@ -905,7 +834,6 @@ local function updateJunkViewerLive()
 
     lastFullStringForCopy = fullRawText
 
-    -- ⚡ Chunking Engine: หั่นข้อความยาวเป็นบล็อกเล็กๆ บล็อกละ 200 ตัวอักษร เพื่อทะลุขีดจำกัด 1,000,000+ ตัวอักษร
     local CHUNK_SIZE = 200
     local textLength = #fullRawText
 
@@ -913,7 +841,7 @@ local function updateJunkViewerLive()
 
     task.spawn(function()
         for i = 1, textLength, CHUNK_SIZE do
-            if not JunkFrame.Visible then break end -- หยุดการสร้าง UI หากปิดหน้าต่าง
+            if not JunkFrame.Visible then break end
             
             local chunkText = string.sub(fullRawText, i, i + CHUNK_SIZE - 1)
             local label = Instance.new("TextLabel", JunkScroll)
@@ -929,7 +857,6 @@ local function updateJunkViewerLive()
             label.Text = chunkText
             label.ZIndex = 12
             
-            -- พัก Thread ทุกๆ 50 บล็อก เพื่อป้องกันเกมค้าง (Lag Spike) เมื่อเจอข้อความยาวล้านตัวอักษร
             if (i / CHUNK_SIZE) % 50 == 0 then
                 task.wait()
             end
