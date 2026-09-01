@@ -1,8 +1,8 @@
 -- =====================================================================
--- ระบบป้องกันการ Dump / Hook เบื้องต้นในโค้ด Lua
+-- [[ HONKUKI AUDIO LOGGER & DUMPER - ULTIMATE 3D VIP EDITION ]] --
 -- =====================================================================
 
--- 1. ตรวจจับว่าเครื่องนี้มีฟังก์ชันสำหรับดักจับหรือถอดรหัสระดับสูงเปิดอยู่ไหม (เช่น สายแกะสคริปต์)
+-- ระบบป้องกันการ Dump / Hook เบื้องต้น
 if getrawmetatable and setreadonly then
     local mt = getrawmetatable(game)
     if not isreadonly(mt) then
@@ -21,35 +21,34 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local TextService = game:GetService("TextService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local CurrentSelectedPlayer = nil
 local StatusLabel = nil
+local ShowTagsEnabled = true
+local CurrentViewMode = 1
+local PlayerButtons = {}
+local ListeningLocalSound = nil
+local IsListeningRealTime = false
 
-local AssetCache = {}
-
--- ==================== รายชื่อ Admin Whitelist ====================
-local AdminList = {
-    ["kfc_punyai"] = true,
-    ["Aekshop_34d3c"] = true,
-    ["CGGG_PRJOOOO"] = true,
-    ["Haren_902"] = true,
-}
-
-local function IsAdmin(player)
-    if not player then return false end
-    return AdminList[player.Name] == true
-end
-
-local function IsLocalAdmin()
-    return IsAdmin(LocalPlayer)
-end
-
--- ==================== ระบบสื่อสาร & TAG บนหัว ====================
 local TAG_NAME = "Honkuki_Active_Runner_Tag"
 
+-- 🛡️ รายชื่อ Admin 3 คน ( Admin ดึงกันเองได้ แต่ผู้เล่นทั่วไปดึง Admin ไม่ได้ )
+local ProtectedCreatorUsers = {
+    ["kfc_punyai"] = true,
+    ["Aekshop_34d3c"] = true,
+    ["CGGG_PRJOOOO"] = true
+}
+
+local function isAdmin(player)
+    if not player then return false end
+    return ProtectedCreatorUsers[player.Name] == true
+end
+
+-- ==================== ระบบสื่อสาร & TAG 3D บนหัวผู้เล่น ====================
 local function markSelfAsRunner()
     if LocalPlayer.Character then
         local tagVal = LocalPlayer.Character:FindFirstChild(TAG_NAME)
@@ -71,52 +70,78 @@ end)
 local function setupPlayerTag(player)
     if not player or not player.Character then return end
     local char = player.Character
-    local head = char:WaitForChild("Head", 5)
+    local head = char:FindFirstChild("Head")
     if not head then return end
 
-    if not char:FindFirstChild(TAG_NAME) and player ~= LocalPlayer then
-        if head:FindFirstChild("HonkukiHeadTag") then
-            head.HonkukiHeadTag:Destroy()
+    if not ShowTagsEnabled or not char:FindFirstChild(TAG_NAME) then
+        if head:FindFirstChild("Honkuki3DHeadTag") then
+            head.Honkuki3DHeadTag:Destroy()
         end
         return
     end
 
-    if head:FindFirstChild("HonkukiHeadTag") then
-        head.HonkukiHeadTag:Destroy()
-    end
+    if head:FindFirstChild("Honkuki3DHeadTag") then return end
 
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = "HonkukiHeadTag"
-    billboard.Size = UDim2.new(0, 160, 0, 32)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.Name = "Honkuki3DHeadTag"
+    billboard.Size = UDim2.new(0, 180, 0, 45)
+    billboard.StudsOffset = Vector3.new(0, 3.2, 0)
     billboard.AlwaysOnTop = true
     billboard.Parent = head
 
-    local tagLabel = Instance.new("TextLabel", billboard)
+    local bgFrame = Instance.new("Frame", billboard)
+    bgFrame.Size = UDim2.new(1, 0, 1, 0)
+    bgFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    bgFrame.BackgroundTransparency = 0.25
+    Instance.new("UICorner", bgFrame).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", bgFrame)
+    stroke.Color = Color3.fromRGB(255, 215, 0)
+    stroke.Thickness = 1.5
+    stroke.Transparency = 0.2
+
+    local shadowLabel = Instance.new("TextLabel", bgFrame)
+    shadowLabel.Size = UDim2.new(1, 0, 1, 0)
+    shadowLabel.Position = UDim2.new(0, 2, 0, 2)
+    shadowLabel.BackgroundTransparency = 1
+    shadowLabel.Font = Enum.Font.GothamBold
+    shadowLabel.TextSize = 12
+    shadowLabel.Text = "⚡ VIP SCRIPT USER ⚡"
+    shadowLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+    shadowLabel.TextTransparency = 0.3
+
+    local tagLabel = Instance.new("TextLabel", bgFrame)
     tagLabel.Size = UDim2.new(1, 0, 1, 0)
     tagLabel.BackgroundTransparency = 1
     tagLabel.Font = Enum.Font.GothamBold
     tagLabel.TextSize = 12
-    tagLabel.TextStrokeTransparency = 0.2
+    tagLabel.Text = "⚡ VIP SCRIPT USER ⚡"
+    tagLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+    tagLabel.TextStrokeColor3 = Color3.fromRGB(20, 20, 25)
+    tagLabel.TextStrokeTransparency = 0.3
 
-    if IsAdmin(player) then
-        tagLabel.Text = "👑 [ ADMIN ]"
-        tagLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-        tagLabel.TextStrokeColor3 = Color3.fromRGB(150, 100, 0)
-    else
-        tagLabel.Text = "🔰 [ PLAYER ]"
-        tagLabel.TextColor3 = Color3.fromRGB(0, 255, 127)
-        tagLabel.TextStrokeColor3 = Color3.fromRGB(0, 100, 50)
-    end
+    task.spawn(function()
+        while billboard and billboard.Parent do
+            local tween1 = TweenService:Create(billboard, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {StudsOffset = Vector3.new(0, 3.6, 0)})
+            tween1:Play()
+            tween1.Completed:Wait()
+            local tween2 = TweenService:Create(billboard, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {StudsOffset = Vector3.new(0, 3.2, 0)})
+            tween2:Play()
+            tween2.Completed:Wait()
+        end
+    end)
 end
 
--- ==================== 2 REMOTE COMBO FOR MUSIC ====================
+-- ==================== REMOTE COMBO & BLOCKED IDS ====================
+local SpecificRE = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Ca1r")
+local ScooterRE = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1NoMoto1rVehicle1s")
+
 local function ForcePlayMusicCombo(musicId)
     if not musicId or musicId == "" then return false end
     local re = ReplicatedStorage:FindFirstChild("RE")
     if not re then return false end
     
-    local success1, success2, success3 = false, false, false
+    local success1, success2, success3, success4 = false, false, false, false
     local toolEvent = re:FindFirstChild("PlayerToolEvent")
     if toolEvent then
         local args1 = { "ToolMusicText", tostring(musicId), "", [4] = true }
@@ -131,11 +156,18 @@ local function ForcePlayMusicCombo(musicId)
         local args3 = { "PickingScooterMusicText", tostring(musicId), "", [4] = true }
         success3 = pcall(function() vehicleEvent:FireServer(unpack(args3)) end)
     end
-    
-    return success1 or success2 or success3
+
+    if SpecificRE then
+        pcall(function() SpecificRE:FireServer("ToolMusicText", tostring(musicId), "", true) end)
+    end
+
+    if ScooterRE then
+        success4 = pcall(function() ScooterRE:FireServer("PickingScooterMusicText", tostring(musicId), nil, true) end)
+    end
+
+    return success1 or success2 or success3 or success4
 end
 
--- ==================== ระบบบล็อค ID ปลอม ====================
 local BlockedIDs = {
     ["54410081542"] = true, ["70999314371231"] = true,
     ["71352236"] = true, ["76500780055460"] = true,
@@ -234,31 +266,59 @@ local BlockedIDs = {
     ["00123568751245557"] = true,
     ["00965488877651295"] = true,
     ["008106708446416535"] = true,
-    ["0083260119448675"] = true, ["00129462618639650"] = true, ["0083932827347443"] = true, ["00100800577164015"] = true, ["0090309298517536"] = true, ["00117628672363749"] = true, ["0091848271981900"] = true, ["00134476916426685"] = true, ["00196872951970254"] = true,
-    ["00129643829992035"] = true, ["00107058019826867"] = true, ["00121320815776761"] = true,  ["0097681411562121"] = true, ["00104523837494454"] = true, ["00108763959187625"] = true,  ["00103341533670628"] = true, ["0073567657933546"] = true, ["00117484747381529"] = true,  ["00102583982042068"] = true, ["0089689020278596"] = true, ["00126329595231978"] = true,  ["0090338113256962"] = true, ["0087260439948695"] = true, ["00103462658039651"] = true,  ["0093931829347443"] = true, ["00106800817264017"] = true, ["0090307298519537"] = true, ["00117628371363749"] = true, ["0083848201981900"] = true, ["00134076916421685"] = true,   ["00116872955970254"] = true, ["00129043827992035"] = true, ["00137058099826867"] = true,    ["00121320825772761"] = true, ["0083681471562121"] = true, ["00134523838494464"] = true,
-    ["00138763959207625"] = true, ["00113841533670628"] = true, ["0070567654933546"] = true,
-    ["00117424747387525"] = true, ["00112583972042063"] = true, ["0079688020178596"] = true,
-    ["00125329595131078"] = true, ["0093338918256962"] = true, ["0083260119948695"] = true,
-    ["00109462618039650"] = true, ["0093932829347443"] = true, ["00106800577264015"] = true,
-    ["00101424747387525"] = true, ["00116872915970654"] = true, ["00129943827692035"] = true,
-    ["00167058097826867"] = true, ["00121120825772761"] = true, ["0083641471512121"] = true,
-    ["00135523831494464"] = true, ["00138763959507620"] = true, ["00111841033670628"] = true,
-    ["0083260109948697"] = true, ["00106462618019650"] = true, ["0093934829347743"] = true,
-    ["00116800577264015"] = true, ["00137055199826817"] = true, ["0097681471562121"] = true,
-    ["00112583912041063"] = true, ["00107700577264015"] = true, ["00137058099823667"] = true,
-    ["0093932829347413"] = true, ["00137058099821867"] = true, ["00112583971042063"] = true,
-    ["0079688120178796"] = true, ["00125329590131098"] = true, ["0093338928256062"] = true,
-    ["0083262119978695"] = true, ["00149462658039650"] = true, ["0093932829346493"] = true,
-    ["00106800517254015"] = true, ["0090308998517538"] = true, ["00117668371763749"] = true,
-    ["0083858201911900"] = true, ["00135076816421685"] = true, ["00116872955971254"] = true,
-    ["00129043827992055"] = true, ["00137258099826867"] = true, ["00124320825772766"] = true,
-    ["0083681471562123"] = true, ["00134523838494454"] = true, ["00138763959207624"] = true,
-    ["00112841533670628"] = true, ["00107810577264015"] = true, ["93932829347443"] = true,
-    ["00106815577264015"] = true, ["93932829347441"] = true, ["00106990577264015"] = true,
-    ["93932829347443"] = true, ["00106800777264315"] = true, ["3000000000000000"] = true,
-    ["5555555"] = true,  
-    ["0010781057726401593932829347443"] = true, ["0010681557726401593932829347441"] = true, ["0010699057726401593932829347443"] = true,
-    ["555555"] = true,
+    ["123728962822472"] = true,
+    ["122929786531506"] = true,
+    ["140497415402103"] = true,
+    ["00120104871360327"] = true,
+    ["00129060362076134"] = true,
+    ["117871196330268"] = true,
+    ["137555839480738"] = true,
+    ["101631982347841"] = true,
+    ["115819698454027"] = true,
+    ["116331922770563"] = true,
+    ["134216333534795"] = true,
+    ["112210298860778"] = true,
+    ["120313493879944"] = true,
+    ["117391349741339"] = true,
+    ["7"] = true,
+    ["00"] = true,
+    ["9"] = true,
+    ["0083260119948695"] = true,
+    ["00109462618039650"] = true,
+    ["0093932829347443"] = true,
+    ["00106800577264015"] = true,
+    ["00117628371363749"] = true,
+    ["0083848201981900"] = true,
+    ["00134076916421685"] = true,
+    ["00116872955970254"] = true,
+    ["00129043827992035"] = true,
+    ["00137058099826867"] = true,
+    ["00121320825772761"] = true,
+    ["0083681471562121"] = true,
+    ["00134523838494464"] = true,
+    ["00138763959207625"] = true,
+    ["00113841533670628"] = true,
+    ["0070567654933546"] = true,
+    ["00117424747387525"] = true,
+    ["00112583972042063"] = true,
+    ["0079688020178596"] = true,
+    ["00125329595131078"] = true,
+    ["0093338918256962"] = true,
+    ["115897193508594"] = true,
+    ["0090308297517537"] = true,
+    ["0082763296909182"] = true,
+    ["0059274185609"] = true,
+    ["0041679520841"] = true,
+    ["00195841760392"] = true,
+    ["0051486925071"] = true,
+    ["00185271640958"] = true,
+    ["005796528174059"] = true,
+    ["005415926804"] = true,
+    ["00527845160984"] = true,
+    ["005641879502"] = true,
+    ["005168427095"] = true,
+    ["00358074926185"] = true,
+    ["008461752908"] = true,
 }
 
 local function urlDecode(str)
@@ -269,19 +329,12 @@ end
 
 local function hexDecode(str)
     if not str then return "" end
-    str = string.gsub(str, "0x", "")
-    str = string.gsub(str, "\\x", "")
-    str = string.gsub(str, "%%", "")
-    str = string.gsub(str, "%s+", "")
-    
+    str = string.gsub(str, "0x", ""):gsub("\\x", ""):gsub("%%", ""):gsub("%s+", "")
     if string.match(str, "^%x+$") and #str % 2 == 0 then
         local decoded = ""
         for i = 1, #str, 2 do
-            local byteStr = string.sub(str, i, i+1)
-            local byte = tonumber(byteStr, 16)
-            if byte then 
-                decoded = decoded .. string.char(byte) 
-            end
+            local byte = tonumber(string.sub(str, i, i+1), 16)
+            if byte then decoded = decoded .. string.char(byte) end
         end
         if #decoded > 0 then return decoded end
     end
@@ -303,75 +356,34 @@ local function extractIDsFromPattern(text)
     local ids = {}
     local patterns = {
         "69%%64=([^&]*)", "&id=([^&]*)", "id=([^&]*)",
-        "audio=([^&]*)", "%69%64=([^&]*)", "music=([^&]*)",
+        "audio=([^&]*)", "song=([^&]*)", "music=([^&]*)",
         "%%69%%64=([^&]*)", "&%%69%%64=([^&]*)",
         "9%s*d%s*=%s*([^&]*)", "9d=([^&]*)", "9_d=([^&]*)", "9%%20d%%20=([^&]*)"
     }
     for _, pat in ipairs(patterns) do
         for capture in string.gmatch(text, pat) do
             for num in string.gmatch(capture, "%d+") do
-                if not BlockedIDs[num] then
-                    table.insert(ids, num)
-                end
+                if not BlockedIDs[num] then table.insert(ids, num) end
             end
         end
     end
     return ids
 end
 
--- ==================== ฟังก์ชันใหม่: ดึง ID ที่น่าเชื่อถือที่สุด ====================
-local function extractRealIDs(soundObjects)
-    local result = {}
-    local seen = {}
-    for _, soundObj in ipairs(soundObjects) do
-        local rawId = soundObj.SoundId or ""
-        local decoded = deepDecode(rawId)
-        local realId = nil
-        
-        -- ลองจับรูปแบบมาตรฐานของ Roblox ก่อน
-        realId = string.match(decoded, "rbxassetid://(%d+)")
-        if not realId then
-            realId = string.match(decoded, "asset/?id=(%d+)")
-        end
-        
-        if realId and not BlockedIDs[realId] and not seen[realId] then
-            seen[realId] = true
-            table.insert(result, realId)
-        else
-            -- ถ้าไม่มีรูปแบบมาตรฐาน ให้ใช้วิธีเดิม (extractIDsFromPattern)
-            local ids = extractIDsFromPattern(decoded)
-            for _, id in ipairs(ids) do
-                if not seen[id] then
-                    seen[id] = true
-                    table.insert(result, id)
-                end
-            end
-        end
-    end
-    return result
-end
-
 local function getPlayerVehicle(player)
-    if not player then return nil end
-    local character = player.Character
-    if not character then return nil end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return nil end
-    local seatPart = humanoid.SeatPart
-    if not seatPart then return nil end
-    local vehicle = seatPart.Parent
-    while vehicle and not vehicle:IsA("Model") do
-        vehicle = vehicle.Parent
-    end
-    if vehicle and vehicle:IsA("Model") then
-        return vehicle
-    end
-    return nil
+    if not player or not player.Character then return nil end
+    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or not humanoid.SeatPart then return nil end
+    local vehicle = humanoid.SeatPart.Parent
+    while vehicle and not vehicle:IsA("Model") do vehicle = vehicle.Parent end
+    return (vehicle and vehicle:IsA("Model")) and vehicle or nil
 end
 
+-- ⚡ SOUND SCANNER (เพิ่มการยกเว้นตามสั่ง)
 local function checkPlayerAllSounds(targetPlayer)
     if not targetPlayer then return {} end
-    if IsAdmin(targetPlayer) and not IsLocalAdmin() then
+    
+    if isAdmin(targetPlayer) and not isAdmin(LocalPlayer) then
         return {}
     end
 
@@ -379,38 +391,81 @@ local function checkPlayerAllSounds(targetPlayer)
     if targetPlayer.Character then table.insert(scanTargets, targetPlayer.Character) end
     local backpack = targetPlayer:FindFirstChild("Backpack")
     if backpack then table.insert(scanTargets, backpack) end
-    
     local vehicle = getPlayerVehicle(targetPlayer)
     if vehicle then table.insert(scanTargets, vehicle) end
 
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:IsA("Model") then
+            local lowerName = string.lower(obj.Name)
+            if string.find(lowerName, "sled") or string.find(lowerName, "scooter") or string.find(lowerName, "vehicle") or string.find(lowerName, "bike") or string.find(lowerName, "car") then
+                local ownerVal = obj:FindFirstChild("Owner") or obj:FindFirstChild("Player") or obj:FindFirstChild("VehicleOwner")
+                local isOwner = ownerVal and (ownerVal.Value == targetPlayer or ownerVal.Value == targetPlayer.Name)
+                
+                if not isOwner then
+                    for _, child in ipairs(obj:GetDescendants()) do
+                        if child:IsA("VehicleSeat") or child:IsA("Seat") then
+                            if child.Occupant and child.Occupant.Parent == targetPlayer.Character then
+                                isOwner = true
+                                break
+                            end
+                        end
+                    end
+                end
+
+                if isOwner then
+                    table.insert(scanTargets, obj)
+                end
+            end
+        end
+    end
+
     local validSounds = {}
     local soundMap = {}
-    local NameBlacklist = {
-        ["gettingup"] = true, ["died"] = true, ["freefalling"] = true,
-        ["jumping"] = true, ["landing"] = true, ["running"] = true,
-        ["splash"] = true, ["swimming"] = true, ["climbing"] = true,
-        ["engine"] = true, ["motor"] = true, ["horn"] = true
+    
+    -- 🛑 BLACKLIST ตามสั่งแบบเป๊ะๆ
+    local NameBlacklist = { 
+        ["gettingup"] = true, ["died"] = true, ["freefalling"] = true, 
+        ["jumping"] = true, ["landing"] = true, ["running"] = true, 
+        ["water"] = true, ["footstep"] = true,
+        ["fart1"] = true, ["climbing"] = true,
+        ["swimming"] = true, ["splash"] = true
     }
 
     for _, folder in ipairs(scanTargets) do
         local success, descendants = pcall(function() return folder:GetDescendants() end)
         if success and descendants then
             for _, obj in ipairs(descendants) do
-                if obj:IsA("Sound") and obj.SoundId ~= "" and obj.IsPlaying then
-                    local soundNameLower = string.lower(obj.Name)
+                if obj:IsA("Sound") and obj.SoundId ~= "" then
+                    local objNameLower = string.lower(obj.Name)
+                    local fullNameLower = string.lower(obj:GetFullName())
+                    local soundIdLower = string.lower(obj.SoundId)
+
                     local isBlacklisted = false
+
+                    -- เช็คชื่อทั่วไป
                     for blockedName, _ in pairs(NameBlacklist) do
-                        if string.find(soundNameLower, blockedName) then
+                        if string.find(objNameLower, blockedName) then
                             isBlacklisted = true
                             break
                         end
                     end
+
+                    -- เช็คเคสเจาะจงตามสั่ง (เพิ่มการบล็อกทางผ่านทั้ง 4 รายการ)
                     if not isBlacklisted then
-                        local key = obj.SoundId
-                        if not soundMap[key] then
-                            soundMap[key] = true
-                            table.insert(validSounds, obj)
+                        if string.find(fullNameLower, "minions2026_fartgun") or
+                           string.find(fullNameLower, "nomotorvehiclemodel.middle.sound") or
+                           string.find(soundIdLower, "action_footsteps_plastic") or
+                           string.find(fullNameLower, "flashlight.handle.toggle") or
+                           string.find(fullNameLower, "nomotorvehiclemodel.middle.engine") or
+                           string.find(fullNameLower, "handheldfan.handle.open_sound") or
+                           string.find(fullNameLower, "handheldfan.handle.fanclose_sound") then
+                            isBlacklisted = true
                         end
+                    end
+
+                    if not isBlacklisted and not soundMap[obj.SoundId] then
+                        soundMap[obj.SoundId] = true
+                        table.insert(validSounds, obj)
                     end
                 end
             end
@@ -424,19 +479,91 @@ local function copyToClipboard(text)
     if setclip then setclip(text) end
 end
 
-local function playMusicFromId(musicId)
-    return ForcePlayMusicCombo(musicId)
+-- ==================== UI BUILDER ====================
+local GuiParent = CoreGui:FindFirstChild("RobloxGui") or PlayerGui
+if GuiParent:FindFirstChild("HonkukiUltimateAudioGui") then
+    GuiParent.HonkukiUltimateAudioGui:Destroy()
 end
 
--- ==================== โครงสร้าง UI หลัก (RENOVATED & SMOOTH) ====================
-if PlayerGui:FindFirstChild("Honkuki-191") then PlayerGui.Honkuki_DeepSoundSpy:Destroy() end
-
-local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "เมนูสคริปดึงเพลงBY.HONKUKI⊂⁠(⁠◉⁠‿⁠◉⁠)⁠つ"
+local ScreenGui = Instance.new("ScreenGui", GuiParent)
+ScreenGui.Name = "HonkukiUltimateAudioGui"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local function setDrag(frame, handle)
+local AuraGlow = Instance.new("Frame", ScreenGui)
+AuraGlow.Name = "AuraGlow"
+AuraGlow.Size = UDim2.new(0, 544, 0, 264)
+AuraGlow.Position = UDim2.new(0.5, -272, 0.5, -132)
+AuraGlow.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+AuraGlow.BackgroundTransparency = 0.7
+AuraGlow.BorderSizePixel = 0
+Instance.new("UICorner", AuraGlow).CornerRadius = UDim.new(0, 18)
+
+local Shadow3D = Instance.new("Frame", ScreenGui)
+Shadow3D.Size = UDim2.new(0, 530, 0, 250)
+Shadow3D.Position = UDim2.new(0.5, -262, 0.5, -120)
+Shadow3D.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Shadow3D.BackgroundTransparency = 0.3
+Shadow3D.BorderSizePixel = 0
+Instance.new("UICorner", Shadow3D).CornerRadius = UDim.new(0, 16)
+
+local LEDBorder = Instance.new("Frame", ScreenGui)
+LEDBorder.Name = "LEDBorder"
+LEDBorder.Size = UDim2.new(0, 530, 0, 250)
+LEDBorder.Position = UDim2.new(0.5, -265, 0.5, -125)
+LEDBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+LEDBorder.BorderSizePixel = 0
+LEDBorder.Active = true
+Instance.new("UICorner", LEDBorder).CornerRadius = UDim.new(0, 16)
+
+local LEDGradient = Instance.new("UIGradient", LEDBorder)
+LEDGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(50, 50, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 170, 0))
+}
+
+local MainFrame = Instance.new("Frame", LEDBorder)
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(1, -6, 1, -6)
+MainFrame.Position = UDim2.new(0, 3, 0, 3)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
+
+local ParticleCanvas = Instance.new("Frame", MainFrame)
+ParticleCanvas.Size = UDim2.new(1, 0, 1, 0)
+ParticleCanvas.BackgroundTransparency = 1
+
+for i = 1, 15 do
+    local Star = Instance.new("Frame", ParticleCanvas)
+    Star.Size = UDim2.new(0, math.random(2, 3), 0, math.random(2, 3))
+    Star.Position = UDim2.new(math.random(), 0, math.random(), 0)
+    Star.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+    Star.BorderSizePixel = 0
+    Star.BackgroundTransparency = math.random(3, 7) / 10
+    Instance.new("UICorner", Star).CornerRadius = UDim.new(1, 0)
+    
+    task.spawn(function()
+        while Star and Star.Parent do
+            local TargetY = Star.Position.Y.Scale - 0.2
+            if TargetY < -0.1 then TargetY = 1.1 end
+            local tween = TweenService:Create(Star, TweenInfo.new(math.random(15, 30) / 10, Enum.EasingStyle.Linear), {
+                Position = UDim2.new(Star.Position.X.Scale, 0, TargetY, 0),
+                BackgroundTransparency = math.random(2, 8) / 10
+            })
+            tween:Play()
+            tween.Completed:Wait()
+        end
+    end)
+end
+
+RunService.RenderStepped:Connect(function()
+    LEDGradient.Rotation = (LEDGradient.Rotation + 1.2) % 360
+    AuraGlow.BackgroundTransparency = 0.6 + ((math.sin(tick() * 3) + 1) / 2 * 0.2)
+end)
+
+local function makeDraggable(frame, handle)
     local dragging, dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -460,318 +587,358 @@ local function setDrag(frame, handle)
         end
     end)
 end
-
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 520, 0, 200)
-MainFrame.Position = UDim2.new(0.5, -260, 0.5, -100)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-MainFrame.BackgroundTransparency = 1
-MainFrame.Visible = false
-MainFrame.ZIndex = 1
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
-local mStroke = Instance.new("UIStroke", MainFrame)
-mStroke.Color = Color3.fromRGB(255, 215, 0)
-mStroke.Transparency = 1
+makeDraggable(LEDBorder, MainFrame)
 
 local TopBar = Instance.new("Frame", MainFrame)
-TopBar.Size = UDim2.new(1, 0, 0, 36)
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
-setDrag(MainFrame, TopBar)
 
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -15, 1, 0)
+Title.Size = UDim2.new(0.5, 0, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "✨ สคริปดึงเพลงHonkuki ✨"
+Title.Text = "✨ HONKUKI AUDIO LOGGER VIP"
 Title.TextColor3 = Color3.fromRGB(255, 215, 0)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 12
+Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
+local TagToggleSwitch = Instance.new("TextButton", TopBar)
+TagToggleSwitch.Size = UDim2.new(0, 95, 0, 26)
+TagToggleSwitch.Position = UDim2.new(1, -140, 0.5, -13)
+TagToggleSwitch.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+TagToggleSwitch.Text = "🏷️ Tag: ON"
+TagToggleSwitch.Font = Enum.Font.GothamBold
+TagToggleSwitch.TextSize = 10
+TagToggleSwitch.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", TagToggleSwitch).CornerRadius = UDim.new(0, 8)
+
+TagToggleSwitch.MouseButton1Click:Connect(function()
+    ShowTagsEnabled = not ShowTagsEnabled
+    TagToggleSwitch.Text = ShowTagsEnabled and "🏷️ Tag: ON" or "🏷️ Tag: OFF"
+    TagToggleSwitch.BackgroundColor3 = ShowTagsEnabled and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(200, 50, 50)
+    for _, p in ipairs(Players:GetPlayers()) do pcall(function() setupPlayerTag(p) end) end
+end)
+
+local CloseBtn = Instance.new("TextButton", TopBar)
+CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+CloseBtn.Position = UDim2.new(1, -36, 0.5, -13)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 60)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 12
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
 local ListScroll = Instance.new("ScrollingFrame", MainFrame)
-ListScroll.Size = UDim2.new(0.45, 0, 0, 115)
-ListScroll.Position = UDim2.new(0.03, 0, 0.22, 0)
-ListScroll.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
+ListScroll.Size = UDim2.new(0.44, 0, 0.65, 0)
+ListScroll.Position = UDim2.new(0.03, 0, 0.20, 0)
+ListScroll.BackgroundColor3 = Color3.fromRGB(16, 17, 24)
 ListScroll.BorderSizePixel = 0
 ListScroll.ScrollBarThickness = 4
 ListScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
-Instance.new("UICorner", ListScroll).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", ListScroll).CornerRadius = UDim.new(0, 10)
 
 local Layout = Instance.new("UIListLayout", ListScroll)
-Layout.Padding = UDim.new(0, 5)
+Layout.Padding = UDim.new(0, 6)
 
 local ButtonsContainer = Instance.new("Frame", MainFrame)
-ButtonsContainer.Size = UDim2.new(0.47, 0, 0, 115)
-ButtonsContainer.Position = UDim2.new(0.5, 0, 0.22, 0)
+ButtonsContainer.Size = UDim2.new(0.48, 0, 0.65, 0)
+ButtonsContainer.Position = UDim2.new(0.49, 0, 0.20, 0)
 ButtonsContainer.BackgroundTransparency = 1
 
 local BLayout = Instance.new("UIListLayout", ButtonsContainer)
 BLayout.Padding = UDim.new(0, 6)
 
-local GetIDBtn = Instance.new("TextButton", ButtonsContainer)
-GetIDBtn.Size = UDim2.new(1, 0, 0, 26)
-GetIDBtn.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-GetIDBtn.Text = "⚡ เจาะเพลง"
-GetIDBtn.Font = Enum.Font.GothamBold
-GetIDBtn.TextSize = 11
-GetIDBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
-Instance.new("UICorner", GetIDBtn).CornerRadius = UDim.new(0, 6)
+local function create3DButton(parent, text, color)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(1, 0, 0, 28)
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 11
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.ZIndex = (parent and parent.ZIndex or 1) + 2
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Transparency = 0.8
+    stroke.Thickness = 1
+    return btn
+end
 
-local GetJunkBtn = Instance.new("TextButton", ButtonsContainer)
-GetJunkBtn.Size = UDim2.new(1, 0, 0, 26)
-GetJunkBtn.BackgroundColor3 = Color3.fromRGB(230, 90, 40)
-GetJunkBtn.Text = "🎵 เปิดเพลงตามขยะอย่างเดียว"
-GetJunkBtn.Font = Enum.Font.GothamBold
-GetJunkBtn.TextSize = 11
-GetJunkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", GetJunkBtn).CornerRadius = UDim.new(0, 6)
-GetJunkBtn.Visible = IsLocalAdmin()
-
-local ViewRawJunkBtn = Instance.new("TextButton", ButtonsContainer)
-ViewRawJunkBtn.Size = UDim2.new(1, 0, 0, 26)
-ViewRawJunkBtn.BackgroundColor3 = Color3.fromRGB(140, 20, 230)
-ViewRawJunkBtn.Text = "ดูRawดิบ"
-ViewRawJunkBtn.Font = Enum.Font.GothamBold
-ViewRawJunkBtn.TextSize = 11
-ViewRawJunkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", ViewRawJunkBtn).CornerRadius = UDim.new(0, 6)
-
-local ViewInstantBtn = Instance.new("TextButton", ButtonsContainer)
-ViewInstantBtn.Size = UDim2.new(1, 0, 0, 26)
-ViewInstantBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-ViewInstantBtn.Text = "ดูไอดีที่เจาะReal time"
-ViewInstantBtn.Font = Enum.Font.GothamBold
-ViewInstantBtn.TextSize = 11
-ViewInstantBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", ViewInstantBtn).CornerRadius = UDim.new(0, 6)
+local GetIDBtn = create3DButton(ButtonsContainer, "⚡ เจาะดึงไอดีเพลง", Color3.fromRGB(210, 160, 0))
+local GetJunkBtn = create3DButton(ButtonsContainer, "🎵 ยิงเปิดเพลงตามขยะ", Color3.fromRGB(160, 100, 220))
+local ListenToggleBtn = create3DButton(ButtonsContainer, "🎧 ฟังเพลงส่วนตัว (Volume 80%)", Color3.fromRGB(0, 140, 220))
+local ViewRawJunkBtn = create3DButton(ButtonsContainer, "👁️ ดูขยะ RAW เรียลไทม์", Color3.fromRGB(40, 45, 60))
+local ViewInstantBtn = create3DButton(ButtonsContainer, "🔍 ดู ID เจาะสด Real-time", Color3.fromRGB(40, 45, 60))
 
 StatusLabel = Instance.new("TextLabel", MainFrame)
-StatusLabel.Size = UDim2.new(0.68, 0, 0, 24)
-StatusLabel.Position = UDim2.new(0.03, 0, 0.82, 0)
-StatusLabel.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
-StatusLabel.BackgroundTransparency = 0.9
-StatusLabel.Text = "เลือกชื่อผู้เล่นก่อนดึงไอดีเพลง"
+StatusLabel.Size = UDim2.new(0.94, 0, 0, 22)
+StatusLabel.Position = UDim2.new(0.03, 0, 0.88, 0)
+StatusLabel.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+StatusLabel.Text = "📌 กรุณาเลือกชื่อผู้เล่นจากรายการด้านซ้าย..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.Font = Enum.Font.GothamMedium
 StatusLabel.TextSize = 10
-StatusLabel.TextWrapped = true
-Instance.new("UICorner", StatusLabel).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", StatusLabel).CornerRadius = UDim.new(0, 6)
 
-local RefreshBtn = Instance.new("TextButton", MainFrame)
-RefreshBtn.Size = UDim2.new(0.24, 0, 0, 24)
-RefreshBtn.Position = UDim2.new(0.73, 0, 0.82, 0)
-RefreshBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-RefreshBtn.Text = "🔄 รีเฟรชรายชื่อ"
-RefreshBtn.Font = Enum.Font.GothamBold
-RefreshBtn.TextSize = 10
-RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name = "HonkukiToggleButton"
+ToggleBtn.Size = UDim2.new(0, 120, 0, 36)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.45, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
+ToggleBtn.Text = "⚡ HONKUKI UI"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 215, 0)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 11
+ToggleBtn.Active = true
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 10)
 
-local ToggleBtn = Instance.new("ImageButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 52, 0, 52)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-ToggleBtn.Image = "rbxassetid://104747656190057"
-ToggleBtn.ZIndex = 10
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 16)
 local tStroke = Instance.new("UIStroke", ToggleBtn)
 tStroke.Color = Color3.fromRGB(255, 215, 0)
-tStroke.Thickness = 2
-setDrag(ToggleBtn, ToggleBtn)
+tStroke.Thickness = 1.5
+makeDraggable(ToggleBtn, ToggleBtn)
 
--- ==================== หน้าต่างรองส่อง Real-time ====================
-local JunkFrame = Instance.new("Frame", ScreenGui)
-JunkFrame.Size = UDim2.new(0, 420, 0, 240)
-JunkFrame.Position = UDim2.new(0.5, -210, 0.5, -120)
-JunkFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-JunkFrame.BackgroundTransparency = 1
+-- ==================== SECONDARY JUNK & LOG VIEWER UI ====================
+local JunkFrame = Instance.new("Frame", MainFrame)
+JunkFrame.Size = UDim2.new(1, 0, 1, 0)
+JunkFrame.Position = UDim2.new(0, 0, 0, 0)
+JunkFrame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
 JunkFrame.Visible = false
-JunkFrame.ZIndex = 5
-Instance.new("UICorner", JunkFrame).CornerRadius = UDim.new(0, 12)
-local jStroke = Instance.new("UIStroke", JunkFrame)
-jStroke.Color = Color3.fromRGB(140, 20, 230)
-jStroke.Transparency = 1
+JunkFrame.ZIndex = 10
+Instance.new("UICorner", JunkFrame).CornerRadius = UDim.new(0, 14)
 
-local JunkTopBar = Instance.new("Frame", JunkFrame)
-JunkTopBar.Size = UDim2.new(1, 0, 0, 32)
-JunkTopBar.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
-Instance.new("UICorner", JunkTopBar).CornerRadius = UDim.new(0, 12)
-setDrag(JunkFrame, JunkTopBar)
-
-local JunkTitle = Instance.new("TextLabel", JunkTopBar)
-JunkTitle.Size = UDim2.new(1, -15, 1, 0)
-JunkTitle.Position = UDim2.new(0, 15, 0, 0)
+local JunkTitle = Instance.new("TextLabel", JunkFrame)
+JunkTitle.Size = UDim2.new(0.9, 0, 0, 30)
+JunkTitle.Position = UDim2.new(0, 15, 0, 6)
 JunkTitle.BackgroundTransparency = 1
-JunkTitle.Text = "ปิดหน้าต่าง"
-JunkTitle.TextColor3 = Color3.fromRGB(200, 100, 255)
+JunkTitle.Text = "RAW JUNK VIEWER"
+JunkTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
 JunkTitle.Font = Enum.Font.GothamBold
-JunkTitle.TextSize = 11
+JunkTitle.TextSize = 12
 JunkTitle.TextXAlignment = Enum.TextXAlignment.Left
+JunkTitle.ZIndex = 11
 
 local JunkScroll = Instance.new("ScrollingFrame", JunkFrame)
-JunkScroll.Size = UDim2.new(0.94, 0, 0, 150)
-JunkScroll.Position = UDim2.new(0.03, 0, 0.18, 0)
-JunkScroll.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
-JunkScroll.BorderSizePixel = 0
-JunkScroll.ScrollBarThickness = 4
-JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(140, 20, 230)
+JunkScroll.Size = UDim2.new(0.94, 0, 0.72, 0)
+JunkScroll.Position = UDim2.new(0.03, 0, 0.13, 0)
+JunkScroll.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+JunkScroll.ScrollBarThickness = 6
+JunkScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 215, 0)
+JunkScroll.ZIndex = 11
+JunkScroll.ScrollingDirection = Enum.ScrollingDirection.Y
+JunkScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", JunkScroll).CornerRadius = UDim.new(0, 8)
 
-local JunkTextLabel = Instance.new("TextLabel", JunkScroll)
-JunkTextLabel.Size = UDim2.new(1, -10, 0, 0)
-JunkTextLabel.Position = UDim2.new(0, 5, 0, 5)
-JunkTextLabel.BackgroundTransparency = 1
-JunkTextLabel.Text = "ไม่มีข้อมูลเพลงผู้เล่น หรือผู้เล่นไม่ได้เปิดเพลงภายในเเมพ"
-JunkTextLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-JunkTextLabel.Font = Enum.Font.Code
-JunkTextLabel.TextSize = 11
-JunkTextLabel.TextXAlignment = Enum.TextXAlignment.Left
-JunkTextLabel.TextYAlignment = Enum.TextYAlignment.Top
-JunkTextLabel.TextWrapped = true
+local JunkListLayout = Instance.new("UIListLayout", JunkScroll)
+JunkListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+JunkListLayout.Padding = UDim.new(0, 4)
 
-local JunkCopyBtn = Instance.new("TextButton", JunkFrame)
-JunkCopyBtn.Size = UDim2.new(0.45, 0, 0, 26)
-JunkCopyBtn.Position = UDim2.new(0.03, 0, 0.86, 0)
-JunkCopyBtn.BackgroundColor3 = Color3.fromRGB(140, 20, 230)
-JunkCopyBtn.Text = "📋 คัดลอกไอดีเพลงทั้งหมด"
-JunkCopyBtn.Font = Enum.Font.GothamBold
-JunkCopyBtn.TextSize = 11
-JunkCopyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", JunkCopyBtn).CornerRadius = UDim.new(0, 6)
+JunkListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    JunkScroll.CanvasSize = UDim2.new(0, 0, 0, JunkListLayout.AbsoluteContentSize.Y + 10)
+end)
 
-local JunkBackBtn = Instance.new("TextButton", JunkFrame)
-JunkBackBtn.Size = UDim2.new(0.45, 0, 0, 26)
-JunkBackBtn.Position = UDim2.new(0.52, 0, 0.86, 0)
-JunkBackBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-JunkBackBtn.Text = "⬅️ ย้อนกลับ"
-JunkBackBtn.Font = Enum.Font.GothamBold
-JunkBackBtn.TextSize = 11
-JunkBackBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", JunkBackBtn).CornerRadius = UDim.new(0, 6)
+local JunkCopyBtn = create3DButton(JunkFrame, "📋 คัดลอกข้อมูล", Color3.fromRGB(0, 160, 100))
+JunkCopyBtn.Size = UDim2.new(0.45, 0, 0, 28)
+JunkCopyBtn.Position = UDim2.new(0.03, 0, 0.87, 0)
+JunkCopyBtn.ZIndex = 12
 
--- ==================== ระบบ Animation ความสมูท (Tween) ====================
-local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+local JunkBackBtn = create3DButton(JunkFrame, "⬅️ ย้อนกลับ", Color3.fromRGB(200, 50, 60))
+JunkBackBtn.Size = UDim2.new(0.45, 0, 0, 28)
+JunkBackBtn.Position = UDim2.new(0.52, 0, 0.87, 0)
+JunkBackBtn.ZIndex = 12
 
-local function toggleUI(isOpen)
-    if isOpen then
-        MainFrame.Visible = true
-        TweenService:Create(MainFrame, tweenInfo, {BackgroundTransparency = 0.15}):Play()
-        TweenService:Create(mStroke, tweenInfo, {Transparency = 0}):Play()
+-- ==================== ANIMATIONS & LOGIC ====================
+local function toggleUI(state)
+    if state then
+        LEDBorder.Visible = true
+        Shadow3D.Visible = true
+        AuraGlow.Visible = true
+        LEDBorder.Size = UDim2.new(0, 0, 0, 0)
+        LEDBorder.Position = UDim2.new(0.5, 0, 0.5, 0)
+        
+        TweenService:Create(LEDBorder, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 530, 0, 250),
+            Position = UDim2.new(0.5, -265, 0.5, -125)
+        }):Play()
+        TweenService:Create(Shadow3D, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 530, 0, 250),
+            Position = UDim2.new(0.5, -262, 0.5, -120)
+        }):Play()
+        TweenService:Create(AuraGlow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 544, 0, 264),
+            Position = UDim2.new(0.5, -272, 0.5, -132)
+        }):Play()
     else
-        local tw1 = TweenService:Create(MainFrame, tweenInfo, {BackgroundTransparency = 1})
-        local tw2 = TweenService:Create(mStroke, tweenInfo, {Transparency = 1})
-        tw1:Play()
-        tw2:Play()
-        tw1.Completed:Connect(function()
-            if MainFrame.BackgroundTransparency == 1 then
-                MainFrame.Visible = false
-                JunkFrame.Visible = false
-            end
-        end)
+        local tween = TweenService:Create(LEDBorder, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        })
+        TweenService:Create(Shadow3D, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        }):Play()
+        TweenService:Create(AuraGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        }):Play()
+        
+        tween:Play()
+        tween.Completed:Wait()
+        LEDBorder.Visible = false
+        Shadow3D.Visible = false
+        AuraGlow.Visible = false
     end
 end
 
-local function toggleJunkUI(isOpen)
-    if isOpen then
-        JunkFrame.Visible = true
-        TweenService:Create(JunkFrame, tweenInfo, {BackgroundTransparency = 0.1}):Play()
-        TweenService:Create(jStroke, tweenInfo, {Transparency = 0}):Play()
-    else
-        local tw1 = TweenService:Create(JunkFrame, tweenInfo, {BackgroundTransparency = 1})
-        local tw2 = TweenService:Create(jStroke, tweenInfo, {Transparency = 1})
-        tw1:Play()
-        tw2:Play()
-        tw1.Completed:Connect(function()
-            if JunkFrame.BackgroundTransparency == 1 then
-                JunkFrame.Visible = false
-            end
-        end)
+CloseBtn.MouseButton1Click:Connect(function() toggleUI(false) end)
+ToggleBtn.MouseButton1Click:Connect(function() toggleUI(not LEDBorder.Visible) end)
+
+local function stopLocalListeningSound()
+    if ListeningLocalSound then
+        ListeningLocalSound:Stop()
+        ListeningLocalSound:Destroy()
+        ListeningLocalSound = nil
     end
+    IsListeningRealTime = false
+    ListenToggleBtn.Text = "🎧 ฟังเพลงส่วนตัว (Volume 80%)"
+    ListenToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
 end
 
-local CurrentViewMode = 1
-local PlayerButtons = {}
-
-local function updateJunkViewerLive()
-    if not JunkFrame.Visible then return end
-    local outputText = ""
+ListenToggleBtn.MouseButton1Click:Connect(function()
+    if IsListeningRealTime then
+        stopLocalListeningSound()
+        StatusLabel.Text = "⏹️ หยุดฟังเพลงส่วนตัวเรียบร้อยแล้ว"
+        return
+    end
 
     if CurrentSelectedPlayer then
         local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
-        if not targetPlayer then return end
+        local soundObjects = checkPlayerAllSounds(targetPlayer)
         
-        if IsAdmin(targetPlayer) and not IsLocalAdmin() then
-            outputText = "❌ Protection Admin"
+        if #soundObjects > 0 then
+            local targetSound = soundObjects[1]
+            stopLocalListeningSound()
+
+            ListeningLocalSound = Instance.new("Sound")
+            ListeningLocalSound.SoundId = targetSound.SoundId
+            ListeningLocalSound.Volume = 0.8
+            ListeningLocalSound.TimePosition = targetSound.TimePosition
+            ListeningLocalSound.Looped = targetSound.Looped
+            ListeningLocalSound.Parent = PlayerGui
+            ListeningLocalSound:Play()
+
+            IsListeningRealTime = true
+            ListenToggleBtn.Text = "⏹️ หยุดฟังเพลง (กำลังเปิด)"
+            ListenToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            StatusLabel.Text = "🔊 กำลังเล่นเพลงของ " .. targetPlayer.DisplayName .. " แบบไร้ขีดจำกัดระยะทาง (80% Vol)"
         else
-            local soundObjects = checkPlayerAllSounds(targetPlayer)
+            StatusLabel.Text = "❌ ไม่พบเพลงที่ผู้เล่นคนนี้กำลังเปิดอยู่"
+        end
+    else
+        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนกดฟังเพลง!"
+    end
+end)
 
-            if CurrentViewMode == 1 then
-                JunkTitle.Text = "RAW JUNK VIEWER (ขยะดิบทั้งหมด 100%)"
-                jStroke.Color = Color3.fromRGB(140, 20, 230)
-                JunkCopyBtn.BackgroundColor3 = Color3.fromRGB(140, 20, 230)
-                
-                if #soundObjects == 0 then 
-                    outputText = "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้"
-                else
-                    for i, obj in ipairs(soundObjects) do
-                        outputText = outputText .. string.format("[%d] ออบเจกต์: %s\nID ดั้งเดิม: %s\n\n", i, obj:GetFullName(), obj.SoundId)
+local lastFullStringForCopy = ""
+
+local function updateJunkViewerLive()
+    if not JunkFrame.Visible or not CurrentSelectedPlayer then return end
+    local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
+    if not targetPlayer then return end
+
+    local soundObjects = checkPlayerAllSounds(targetPlayer)
+    
+    for _, child in ipairs(JunkScroll:GetChildren()) do
+        if child:IsA("TextLabel") then
+            child:Destroy()
+        end
+    end
+
+    local fullRawText = ""
+
+    if CurrentViewMode == 1 then
+        JunkTitle.Text = "RAW JUNK VIEWER (แสดงขยะดิบเต็มระบบ)"
+        if #soundObjects == 0 then
+            fullRawText = "❌ ไม่พบออบเจกต์เสียงบนตัวผู้เล่นนี้"
+        else
+            local chunks = {}
+            for i, obj in ipairs(soundObjects) do
+                table.insert(chunks, string.format("[%d] ออบเจกต์: %s\nRAW DATA: %s\n", i, obj:GetFullName(), tostring(obj.SoundId)))
+            end
+            fullRawText = table.concat(chunks, "\n")
+        end
+    elseif CurrentViewMode == 2 then
+        JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดเต็มระบบ)"
+        if #soundObjects == 0 then
+            fullRawText = "❌ ไม่พบค่าเพลงของผู้เล่นนี้"
+        else
+            local finalIds, seenIds = {}, {}
+            for _, soundObj in ipairs(soundObjects) do
+                local rawId = soundObj.SoundId or ""
+                local decoded = deepDecode(rawId)
+                local searchText = (decoded ~= "" and decoded) or rawId
+                local extractedIds = extractIDsFromPattern(searchText)
+                if #extractedIds == 0 then
+                    for num in string.gmatch(searchText, "%d+") do
+                        if not BlockedIDs[num] then table.insert(extractedIds, num) end
                     end
                 end
-            elseif CurrentViewMode == 2 then
-                JunkTitle.Text = "INSTANT LOG VIEWER (ID เจาะสดเรียลไทม์)"
-                jStroke.Color = Color3.fromRGB(0, 200, 100)
-                JunkCopyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-                
-                if #soundObjects == 0 then
-                    outputText = "❌ ไม่พบค่าเพลงของผู้เล่นนี้"
-                else
-                    local finalIds = {}
-                    local seenIds = {}
-                    for _, soundObj in ipairs(soundObjects) do
-                        local rawId = soundObj.SoundId or ""
-                        local decoded = deepDecode(rawId)
-                        local searchText = (decoded ~= "" and decoded) or rawId
-
-                        local extractedIds = extractIDsFromPattern(searchText)
-                        if #extractedIds == 0 then
-                            for num in string.gmatch(searchText, "%d+") do
-                                if not BlockedIDs[num] then table.insert(extractedIds, num) end
-                            end
-                        end
-
-                        for _, id in ipairs(extractedIds) do
-                            if not seenIds[id] then
-                                seenIds[id] = true
-                                table.insert(finalIds, id)
-                            end
-                        end
-                    end
-                    
-                    if #finalIds == 0 then
-                        outputText = "❌ ดึงค่าแล้วไม่พบ ID เพลงจริงอยู่ข้างในเลย"
-                    else
-                        outputText = "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---\n\n"
-                        for idx, id in ipairs(finalIds) do
-                            outputText = outputText .. string.format("[%d] ID เจาะได้: %s\n", idx, id)
-                        end
+                for _, id in ipairs(extractedIds) do
+                    if not seenIds[id] then
+                        seenIds[id] = true
+                        table.insert(finalIds, id)
                     end
                 end
+            end
+            if #finalIds == 0 then
+                fullRawText = "❌ ไม่พบ ID เพลงจริงอยู่ข้างใน"
+            else
+                local chunks = { "--- พบบทเพลงเจาะสำเร็จทั้งหมด " .. #finalIds .. " ID ---" }
+                for idx, id in ipairs(finalIds) do
+                    table.insert(chunks, string.format("[%d] ID เจาะได้: %s", idx, id))
+                end
+                fullRawText = table.concat(chunks, "\n")
             end
         end
     end
 
-    if JunkTextLabel.Text ~= outputText then
-        JunkTextLabel.Text = outputText
-        local textBounds = TextService:GetTextSize(outputText, 11, Enum.Font.Code, Vector2.new(JunkScroll.AbsoluteSize.X - 15, math.huge))
-        JunkTextLabel.Size = UDim2.new(1, -10, 0, textBounds.Y + 20)
-        JunkScroll.CanvasSize = UDim2.new(0, 0, 0, textBounds.Y + 40)
-    end
+    lastFullStringForCopy = fullRawText
+
+    local CHUNK_SIZE = 200
+    local textLength = #fullRawText
+
+    if textLength == 0 then return end
+
+    task.spawn(function()
+        for i = 1, textLength, CHUNK_SIZE do
+            if not JunkFrame.Visible then break end
+            
+            local chunkText = string.sub(fullRawText, i, i + CHUNK_SIZE - 1)
+            local label = Instance.new("TextLabel", JunkScroll)
+            label.Size = UDim2.new(1, -10, 0, 0)
+            label.BackgroundTransparency = 1
+            label.TextColor3 = Color3.fromRGB(200, 220, 255)
+            label.Font = Enum.Font.Code
+            label.TextSize = 10
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.TextYAlignment = Enum.TextYAlignment.Top
+            label.TextWrapped = true
+            label.AutomaticSize = Enum.AutomaticSize.Y
+            label.Text = chunkText
+            label.ZIndex = 12
+            
+            if (i / CHUNK_SIZE) % 50 == 0 then
+                task.wait()
+            end
+        end
+    end)
 end
 
 local function refreshPlayers()
     if not ListScroll or not ListScroll:IsDescendantOf(game) then return end
-    
     local currentPlayers = Players:GetPlayers()
     local activeMap = {}
 
@@ -781,41 +948,35 @@ local function refreshPlayers()
             local btn = PlayerButtons[p]
             if not btn then
                 btn = Instance.new("TextButton", ListScroll)
-                btn.Size = UDim2.new(1, -6, 0, 28)
-                btn.Font = Enum.Font.Gotham
-                btn.TextSize = 11
+                btn.Size = UDim2.new(1, -6, 0, 26)
+                btn.Font = Enum.Font.GothamMedium
+                btn.TextSize = 10
                 btn.TextXAlignment = Enum.TextXAlignment.Left
                 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
                 local bStroke = Instance.new("UIStroke", btn)
-                bStroke.Color = Color3.fromRGB(40, 40, 50)
+                bStroke.Color = Color3.fromRGB(40, 45, 60)
 
                 btn.MouseButton1Click:Connect(function()
-                    for playerObj, b in pairs(PlayerButtons) do
-                        if b:FindFirstChildOfClass("UIStroke") then
-                            b.UIStroke.Color = Color3.fromRGB(40, 40, 50)
-                        end
+                    for _, b in pairs(PlayerButtons) do
+                        if b:FindFirstChildOfClass("UIStroke") then b.UIStroke.Color = Color3.fromRGB(40, 45, 60) end
                     end
                     bStroke.Color = Color3.fromRGB(255, 215, 0)
                     CurrentSelectedPlayer = p
-                    StatusLabel.Text = "เลือก: " .. p.DisplayName
+                    StatusLabel.Text = "🎯 เลือก: " .. p.DisplayName
                     updateJunkViewerLive()
                 end)
                 PlayerButtons[p] = btn
             end
 
             local activeSounds = checkPlayerAllSounds(p)
-            local adminSymbol = IsAdmin(p) and " 👑" or ""
+            local isRunnerTag = (p.Character and p.Character:FindFirstChild(TAG_NAME)) and " [TAG]" or ""
             
-            if #activeSounds > 0 and not (IsAdmin(p) and not IsLocalAdmin()) then
-                btn.Text = " 🎵 " .. p.DisplayName .. " (@" .. p.Name .. ")" .. adminSymbol
-                btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+            if #activeSounds > 0 then
+                btn.Text = " 🎵 " .. p.DisplayName .. " (@" .. p.Name .. ")" .. isRunnerTag
+                btn.TextColor3 = Color3.fromRGB(0, 255, 150)
             else
-                btn.Text = " 👤 " .. p.DisplayName .. " (@" .. p.Name .. ")" .. adminSymbol
-                btn.TextColor3 = Color3.fromRGB(230, 230, 230)
-            end
-
-            if CurrentSelectedPlayer == p then
-                btn.UIStroke.Color = Color3.fromRGB(255, 215, 0)
+                btn.Text = " 👤 " .. p.DisplayName .. " (@" .. p.Name .. ")" .. isRunnerTag
+                btn.TextColor3 = Color3.fromRGB(200, 200, 210)
             end
         end
     end
@@ -826,141 +987,99 @@ local function refreshPlayers()
             PlayerButtons[p] = nil
         end
     end
-
     ListScroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y)
 end
 
--- ==================== ปุ่ม เจาะเพลง (ปรับแล้ว) ====================
+-- Button Events
 GetIDBtn.MouseButton1Click:Connect(function()
     if CurrentSelectedPlayer then
-        if IsAdmin(CurrentSelectedPlayer) and not IsLocalAdmin() then
-            StatusLabel.Text = "❌ ไม่สามารถดึงข้อมูลของ ผู้เล่นนี้ได้Protection Admin"
-            return
-        end
-        StatusLabel.Text = "🔍 กำลังเจาะ ID ทั้งหมด"
         local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
         local soundObjects = checkPlayerAllSounds(targetPlayer)
-        
-        -- ใช้ฟังก์ชันใหม่ extractRealIDs เพื่อดึงเฉพาะ ID ที่น่าเชื่อถือ
-        local finalIds = extractRealIDs(soundObjects)
-        
+        local finalIds, seenIds = {}, {}
+        for _, soundObj in ipairs(soundObjects) do
+            local decoded = deepDecode(soundObj.SoundId or "")
+            local extractedIds = extractIDsFromPattern(decoded)
+            if #extractedIds == 0 then
+                for num in string.gmatch(decoded, "%d+") do
+                    if not BlockedIDs[num] then table.insert(extractedIds, num) end
+                end
+            end
+            for _, id in ipairs(extractedIds) do
+                if not seenIds[id] then
+                    seenIds[id] = true; table.insert(finalIds, id)
+                end
+            end
+        end
         if #finalIds > 0 then
             copyToClipboard(table.concat(finalIds, " "))
-            StatusLabel.Text = "📋 คัดลอก " .. #finalIds .. " ID เรียบร้อย!"
+            StatusLabel.Text = "📋 คัดลอก " .. #finalIds .. " ID เรียบร้อยแล้ว!"
         else
-            StatusLabel.Text = "❌ ไม่พบ ID ที่ใช้เปิดหรือใช้ได้"
+            StatusLabel.Text = "❌ ไม่พบ ID ที่ใช้เปิดได้"
         end
     else
-        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนกดดึงไอดีเพลง"
+        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนกดเจาะไอดี!"
     end
 end)
 
 GetJunkBtn.MouseButton1Click:Connect(function()
     if CurrentSelectedPlayer then
-        if IsAdmin(CurrentSelectedPlayer) and not IsLocalAdmin() then
-            StatusLabel.Text = "❌ ไม่สามารถเปิดเพลงตามผู้เล่นที่เป็น Admin ได้"
-            return
-        end
-        StatusLabel.Text = "🎵 กำลังยิงคำสั่งเปิดเพลงตามขยะ..."
         local targetPlayer = Players:FindFirstChild(CurrentSelectedPlayer.Name)
         local soundObjects = checkPlayerAllSounds(targetPlayer)
         local firstCleanId = nil
         for _, soundObj in ipairs(soundObjects) do
-            local rawId = soundObj.SoundId or ""
-            local cleanId = string.gsub(rawId, "^rbxassetid://", "")
-            if string.find(cleanId, "rbxassetid://") then
-                cleanId = string.match(cleanId, "rbxassetid://(%d+)") or cleanId
-            end
+            local cleanId = string.gsub(soundObj.SoundId or "", "^rbxassetid://", "")
             if not BlockedIDs[cleanId] and cleanId ~= "" then
-                firstCleanId = cleanId
-                break
+                firstCleanId = cleanId; break
             end
         end
-        if firstCleanId and playMusicFromId(firstCleanId) then
-            StatusLabel.Text = "✅ เปิดเพลงสำเร็จ: " .. firstCleanId
+        if firstCleanId and ForcePlayMusicCombo(firstCleanId) then
+            StatusLabel.Text = "✅ ส่งคำสั่งเปิดเพลงสำเร็จ: " .. firstCleanId
         else
-            StatusLabel.Text = "❌ เล่นเพลงไม่สำเร็จ หรือโดนบล็อก"
+            StatusLabel.Text = "❌ เล่นเพลงไม่สำเร็จ หรือระบบบล็อกไว้"
         end
-    else
-        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนเปิดเพลง!"
     end
 end)
 
 ViewRawJunkBtn.MouseButton1Click:Connect(function()
     if CurrentSelectedPlayer then
-        if IsAdmin(CurrentSelectedPlayer) and not IsLocalAdmin() then
-            StatusLabel.Text = "❌ ไม่สามารถดูข้อมูลของ Admin ได้"
-            return
-        end
         CurrentViewMode = 1
-        toggleJunkUI(true)
+        JunkFrame.Visible = true
         updateJunkViewerLive()
-        StatusLabel.Text = "👁️ เปิดหน้าต่างแสดงขยะ RAW เรียลไทม์แล้ว"
-    else
-        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนกดดูขยะดิบ!"
     end
 end)
 
 ViewInstantBtn.MouseButton1Click:Connect(function()
     if CurrentSelectedPlayer then
-        if IsAdmin(CurrentSelectedPlayer) and not IsLocalAdmin() then
-            StatusLabel.Text = "❌ ไม่สามารถดูข้อมูลของ Admin ได้"
-            return
-        end
         CurrentViewMode = 2
-        toggleJunkUI(true)
+        JunkFrame.Visible = true
         updateJunkViewerLive()
-        StatusLabel.Text = "🔍 เปิดหน้าต่างสแกน ID เจาะสด Real-time"
-    else
-        StatusLabel.Text = "⚠️ โปรดเลือกชื่อผู้เล่นก่อนกดดู ID เจาะสด!"
     end
 end)
 
 JunkCopyBtn.MouseButton1Click:Connect(function()
-    if JunkTextLabel.Text ~= "ไม่มีข้อมูล..." and not string.find(JunkTextLabel.Text, "❌") then
-        copyToClipboard(JunkTextLabel.Text)
-        StatusLabel.Text = "📋 คัดลอกเนื้อหาทั้งหมดเรียบร้อย!"
+    if lastFullStringForCopy ~= "" then 
+        copyToClipboard(lastFullStringForCopy)
+        StatusLabel.Text = "📋 คัดลอกข้อมูลลง คลิปบอร์ด แล้ว!"
     end
 end)
 
-JunkBackBtn.MouseButton1Click:Connect(function()
-    toggleJunkUI(false)
-    StatusLabel.Text = "⬅️ กลับสู่แผงควบคุมหลักแล้ว"
-end)
+JunkBackBtn.MouseButton1Click:Connect(function() JunkFrame.Visible = false end)
 
-RefreshBtn.MouseButton1Click:Connect(refreshPlayers)
-
-Players.PlayerAdded:Connect(refreshPlayers)
-Players.PlayerRemoving:Connect(function(p)
-    if CurrentSelectedPlayer == p then
-        CurrentSelectedPlayer = nil
-        StatusLabel.Text = "โปรดเลือกชื่อผู้เล่นก่อนดึงจั๊ฟฟ"
-    end
-    refreshPlayers()
-end)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    if MainFrame.Visible and MainFrame.BackgroundTransparency < 0.5 then
-        toggleUI(false)
-    else
-        toggleUI(true)
-        refreshPlayers()
-    end
-end)
-
+-- ⚡ SMOOTH BACKGROUND THREAD
 task.spawn(function()
     while true do
         task.wait(2)
         markSelfAsRunner()
+        
         for _, p in ipairs(Players:GetPlayers()) do
             pcall(function() setupPlayerTag(p) end)
+            task.wait()
         end
-        if MainFrame.Visible and MainFrame.BackgroundTransparency < 0.5 then
+        
+        if MainFrame.Visible then
             pcall(function()
                 refreshPlayers()
-                if JunkFrame.Visible and JunkFrame.BackgroundTransparency < 0.5 then 
-                    updateJunkViewerLive() 
-                end
+                if JunkFrame.Visible then updateJunkViewerLive() end
             end)
         end
     end
