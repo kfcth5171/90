@@ -1,4 +1,4 @@
--- Roblox UI Script for Delta Executor (Custom Replica Edition)
+-- Roblox UI Script for Delta Executor (Hon Kuki Custom Edition)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -30,10 +30,6 @@ local openSFX = createSFX(OPEN_SOUND_ID)
 local closeSFX = createSFX(CLOSE_SOUND_ID)
 local playSFX = createSFX(PLAY_SOUND_ID)
 
--- Sound Local Check (Used for Length & Time Detection)
-local activeSound = Instance.new("Sound")
-activeSound.Parent = SoundService
-
 -- Saved Songs Data Manager
 local savedSongs = {}
 
@@ -60,25 +56,51 @@ loadSongsFromFile()
 
 -- GUI Initialization
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UltraMusicControlUI_V7"
+ScreenGui.Name = "UltraMusicControlUI_HonKuki"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
+
+-- Helper UI Function (Draw Custom Neon Button)
+local function createCustomButton(parent, size, pos, text)
+    local btn = Instance.new("TextButton")
+    btn.Size = size
+    btn.Position = pos
+    btn.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    btn.AutoButtonColor = true
+    btn.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = Color3.fromRGB(0, 180, 255)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = btn
+
+    return btn, stroke
+end
 
 -- 1. Toggle Button
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0, 110, 0, 45)
+ToggleButton.Size = UDim2.new(0, 120, 0, 42)
 ToggleButton.Position = UDim2.new(0, 15, 0, 180)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "Kuki.⸝⁠xyz⸝⸝⁠⸝⁠⸝"
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 14
+ToggleButton.Text = "MUSIC UI"
+ToggleButton.Font = Enum.Font.GothamBlack
+ToggleButton.TextSize = 13
 ToggleButton.ClipsDescendants = true
 ToggleButton.Parent = ScreenGui
 
 local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 10)
+ToggleCorner.CornerRadius = UDim.new(0, 8)
 ToggleCorner.Parent = ToggleButton
 
 local ToggleStroke = Instance.new("UIStroke")
@@ -93,7 +115,7 @@ MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
 MainFrame.ClipsDescendants = true
@@ -103,20 +125,19 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 12)
 MainCorner.Parent = MainFrame
 
--- LED Rainbow Border
+-- LED Rainbow Border Effect
 local MainStroke = Instance.new("UIStroke")
-MainStroke.Thickness = 2
+MainStroke.Thickness = 2.5
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 MainStroke.Parent = MainFrame
 
 local UIGradient = Instance.new("UIGradient")
 UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.20, Color3.fromRGB(255, 255, 0)),
-    ColorSequenceKeypoint.new(0.40, Color3.fromRGB(0, 255, 0)),
-    ColorSequenceKeypoint.new(0.60, Color3.fromRGB(0, 255, 255)),
-    ColorSequenceKeypoint.new(0.80, Color3.fromRGB(0, 0, 255)),
-    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 255))
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 120)),
+    ColorSequenceKeypoint.new(0.25, Color3.fromRGB(0, 255, 200)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 150, 255)),
+    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 220, 0)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 120))
 }
 UIGradient.Parent = MainStroke
 local ToggleGradient = UIGradient:Clone()
@@ -137,7 +158,7 @@ BackgroundImage.Name = "BackgroundImage"
 BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
 BackgroundImage.BackgroundTransparency = 1
 BackgroundImage.Image = IMAGE_ID
-BackgroundImage.ImageTransparency = 0.7
+BackgroundImage.ImageTransparency = 0.75
 BackgroundImage.ScaleType = Enum.ScaleType.Crop
 BackgroundImage.Parent = MainFrame
 
@@ -149,25 +170,24 @@ HeaderLabel.BackgroundTransparency = 1
 HeaderLabel.Text = "PLAYER / VISUALIZER"
 HeaderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 HeaderLabel.Font = Enum.Font.GothamBlack
-HeaderLabel.TextSize = 15
+HeaderLabel.TextSize = 14
 HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
 HeaderLabel.Parent = MainFrame
 
 local HeaderLine = Instance.new("Frame")
 HeaderLine.Size = UDim2.new(1, -30, 0, 1)
-HeaderLine.Position = UDim2.new(0, 15, 0, 38)
-HeaderLine.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+HeaderLine.Position = UDim2.new(0, 15, 0, 36)
+HeaderLine.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
 HeaderLine.BorderSizePixel = 0
 HeaderLine.Parent = MainFrame
 
--- Content Pages Container
+-- Pages Container
 local PagesContainer = Instance.new("Frame")
 PagesContainer.Size = UDim2.new(1, -30, 1, -95)
 PagesContainer.Position = UDim2.new(0, 15, 0, 45)
 PagesContainer.BackgroundTransparency = 1
 PagesContainer.Parent = MainFrame
 
--- Pages Declarations
 local HomePage = Instance.new("Frame")
 HomePage.Size = UDim2.new(1, 0, 1, 0)
 HomePage.BackgroundTransparency = 1
@@ -192,12 +212,12 @@ SavePage.Parent = PagesContainer
 local HomeText = Instance.new("TextLabel")
 HomeText.Size = UDim2.new(1, 0, 1, 0)
 HomeText.BackgroundTransparency = 1
-HomeText.TextColor3 = Color3.fromRGB(220, 220, 220)
+HomeText.TextColor3 = Color3.fromRGB(220, 220, 240)
 HomeText.Font = Enum.Font.GothamMedium
 HomeText.TextSize = 13
 HomeText.TextYAlignment = Enum.TextYAlignment.Top
 HomeText.TextXAlignment = Enum.TextXAlignment.Left
-HomeText.Text = "HEY WELCOME TO BOOMBOX CUSTOM ID V7.1\n\n-Needed (Gamepass)\n-Added Live Wallpaper\n\nCredit: @LaztDex\n\ntutorial : (equip : boombox and press play)"
+HomeText.Text = "HEY WELCOME TO BOOMBOX CUSTOM ID V7.1\n\n-Needed (Gamepass)\n-Added Live Wallpaper\n\nCredit: @hon kuki\n\ntutorial : (equip : boombox and press play)"
 HomeText.Parent = HomePage
 
 ----------------------------------------------------
@@ -206,10 +226,10 @@ HomeText.Parent = HomePage
 local MusicTextBox = Instance.new("TextBox")
 MusicTextBox.Size = UDim2.new(0.38, 0, 0, 35)
 MusicTextBox.Position = UDim2.new(0.02, 0, 0.05, 0)
-MusicTextBox.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+MusicTextBox.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 MusicTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 MusicTextBox.PlaceholderText = "ENTER ID.."
-MusicTextBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+MusicTextBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
 MusicTextBox.Font = Enum.Font.GothamMedium
 MusicTextBox.TextSize = 12
 MusicTextBox.Text = ""
@@ -219,32 +239,64 @@ local BoxCorner = Instance.new("UICorner")
 BoxCorner.CornerRadius = UDim.new(0, 6)
 BoxCorner.Parent = MusicTextBox
 
-local PlayButton = Instance.new("TextButton")
-PlayButton.Size = UDim2.new(0.16, 0, 0, 40)
-PlayButton.Position = UDim2.new(0.04, 0, 0.38, 0)
-PlayButton.BackgroundTransparency = 1
-PlayButton.Text = "▶"
-PlayButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-PlayButton.Font = Enum.Font.GothamBlack
-PlayButton.TextSize = 32
-PlayButton.Parent = PlayerPage
+local BoxStroke = Instance.new("UIStroke")
+BoxStroke.Thickness = 1
+BoxStroke.Color = Color3.fromRGB(50, 50, 70)
+BoxStroke.Parent = MusicTextBox
 
-local LoopButton = Instance.new("TextButton")
-LoopButton.Size = UDim2.new(0.16, 0, 0, 40)
-LoopButton.Position = UDim2.new(0.22, 0, 0.38, 0)
-LoopButton.BackgroundTransparency = 1
-LoopButton.Text = "🔁"
-LoopButton.TextColor3 = Color3.fromRGB(160, 160, 180)
-LoopButton.Font = Enum.Font.GothamBlack
-LoopButton.TextSize = 26
-LoopButton.Parent = PlayerPage
+-- Custom Drawn Geometry Play Icon Button
+local PlayBtnFrame = Instance.new("TextButton")
+PlayBtnFrame.Size = UDim2.new(0, 48, 0, 48)
+PlayBtnFrame.Position = UDim2.new(0.04, 0, 0.38, 0)
+PlayBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+PlayBtnFrame.Text = ""
+PlayBtnFrame.Parent = PlayerPage
+Instance.new("UICorner", PlayBtnFrame).CornerRadius = UDim.new(0, 8)
+
+local PlayBtnStroke = Instance.new("UIStroke")
+PlayBtnStroke.Thickness = 1.5
+PlayBtnStroke.Color = Color3.fromRGB(0, 255, 170)
+PlayBtnStroke.Parent = PlayBtnFrame
+
+-- Drawn Play Vector Icon
+local PlayIconVisual = Instance.new("TextLabel")
+PlayIconVisual.Size = UDim2.new(1, 0, 1, 0)
+PlayIconVisual.BackgroundTransparency = 1
+PlayIconVisual.Text = "▶"
+PlayIconVisual.TextColor3 = Color3.fromRGB(0, 255, 170)
+PlayIconVisual.Font = Enum.Font.GothamBlack
+PlayIconVisual.TextSize = 22
+PlayIconVisual.Parent = PlayBtnFrame
+
+-- Custom Drawn Loop Button
+local LoopBtnFrame = Instance.new("TextButton")
+LoopBtnFrame.Size = UDim2.new(0, 48, 0, 48)
+LoopBtnFrame.Position = UDim2.new(0.22, 0, 0.38, 0)
+LoopBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+LoopBtnFrame.Text = ""
+LoopBtnFrame.Parent = PlayerPage
+Instance.new("UICorner", LoopBtnFrame).CornerRadius = UDim.new(0, 8)
+
+local LoopBtnStroke = Instance.new("UIStroke")
+LoopBtnStroke.Thickness = 1.5
+LoopBtnStroke.Color = Color3.fromRGB(100, 100, 130)
+LoopBtnStroke.Parent = LoopBtnFrame
+
+local LoopIconVisual = Instance.new("TextLabel")
+LoopIconVisual.Size = UDim2.new(1, 0, 1, 0)
+LoopIconVisual.BackgroundTransparency = 1
+LoopIconVisual.Text = "⇄"
+LoopIconVisual.TextColor3 = Color3.fromRGB(150, 150, 180)
+LoopIconVisual.Font = Enum.Font.GothamBlack
+LoopIconVisual.TextSize = 24
+LoopIconVisual.Parent = LoopBtnFrame
 
 -- Visualizer Display Area
 local VizFrame = Instance.new("Frame")
 VizFrame.Size = UDim2.new(0.56, 0, 0.85, 0)
 VizFrame.Position = UDim2.new(0.42, 0, 0.02, 0)
-VizFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-VizFrame.BackgroundTransparency = 0.3
+VizFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+VizFrame.BackgroundTransparency = 0.2
 VizFrame.Parent = PlayerPage
 
 local VizCorner = Instance.new("UICorner")
@@ -253,77 +305,52 @@ VizCorner.Parent = VizFrame
 
 local VizStroke = Instance.new("UIStroke")
 VizStroke.Thickness = 1
-VizStroke.Color = Color3.fromRGB(80, 80, 100)
+VizStroke.Color = Color3.fromRGB(60, 60, 80)
 VizStroke.Parent = VizFrame
 
--- Progress Line & Time
-local ProgressBg = Instance.new("Frame")
-ProgressBg.Size = UDim2.new(0.88, 0, 0, 3)
-ProgressBg.Position = UDim2.new(0.06, 0, 0.78, 0)
-ProgressBg.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-ProgressBg.BorderSizePixel = 0
-ProgressBg.Parent = VizFrame
-
-local ProgressFill = Instance.new("Frame")
-ProgressFill.Size = UDim2.new(0, 0, 1, 0)
-ProgressFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ProgressFill.BorderSizePixel = 0
-ProgressFill.Parent = ProgressBg
-
-local TimeLabel = Instance.new("TextLabel")
-TimeLabel.Size = UDim2.new(1, 0, 0, 20)
-TimeLabel.Position = UDim2.new(0, 0, 0.83, 0)
-TimeLabel.BackgroundTransparency = 1
-TimeLabel.Text = "00:00 / 00:00"
-TimeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-TimeLabel.Font = Enum.Font.Gotham
-TimeLabel.TextSize = 11
-TimeLabel.Parent = VizFrame
+-- Decorative Line inside Visualizer
+local VizLine = Instance.new("Frame")
+VizLine.Size = UDim2.new(0.88, 0, 0, 2)
+VizLine.Position = UDim2.new(0.06, 0, 0.78, 0)
+VizLine.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
+VizLine.BorderSizePixel = 0
+VizLine.Parent = VizFrame
 
 ----------------------------------------------------
 -- 3. SAVE PAGE CONTENT
 ----------------------------------------------------
 local SaveNameBox = Instance.new("TextBox")
-SaveNameBox.Size = UDim2.new(0.35, 0, 0, 30)
+SaveNameBox.Size = UDim2.new(0.35, 0, 0, 32)
 SaveNameBox.Position = UDim2.new(0.02, 0, 0.02, 0)
-SaveNameBox.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+SaveNameBox.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 SaveNameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 SaveNameBox.PlaceholderText = "NAME.."
-SaveNameBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+SaveNameBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
 SaveNameBox.Font = Enum.Font.Gotham
 SaveNameBox.TextSize = 11
 SaveNameBox.Parent = SavePage
 Instance.new("UICorner", SaveNameBox).CornerRadius = UDim.new(0, 6)
 
 local SaveIdBox = Instance.new("TextBox")
-SaveIdBox.Size = UDim2.new(0.35, 0, 0, 30)
+SaveIdBox.Size = UDim2.new(0.35, 0, 0, 32)
 SaveIdBox.Position = UDim2.new(0.39, 0, 0.02, 0)
-SaveIdBox.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+SaveIdBox.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 SaveIdBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 SaveIdBox.PlaceholderText = "ID.."
-SaveIdBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+SaveIdBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
 SaveIdBox.Font = Enum.Font.Gotham
 SaveIdBox.TextSize = 11
 SaveIdBox.Parent = SavePage
 Instance.new("UICorner", SaveIdBox).CornerRadius = UDim.new(0, 6)
 
-local AddSaveBtn = Instance.new("TextButton")
-AddSaveBtn.Size = UDim2.new(0.22, 0, 0, 30)
-AddSaveBtn.Position = UDim2.new(0.76, 0, 0.02, 0)
-AddSaveBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-AddSaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AddSaveBtn.Text = "ADD"
-AddSaveBtn.Font = Enum.Font.GothamBold
-AddSaveBtn.TextSize = 11
-AddSaveBtn.Parent = SavePage
-Instance.new("UICorner", AddSaveBtn).CornerRadius = UDim.new(0, 6)
+local AddSaveBtn, AddStroke = createCustomButton(SavePage, UDim2.new(0.22, 0, 0, 32), UDim2.new(0.76, 0, 0.02, 0), "ADD")
 
 local ScrollFrame = Instance.new("ScrollingFrame")
 ScrollFrame.Size = UDim2.new(1, 0, 0.78, 0)
 ScrollFrame.Position = UDim2.new(0, 0, 0.22, 0)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.ScrollBarThickness = 3
 ScrollFrame.Parent = SavePage
 
 local UIListLayout = Instance.new("UIListLayout")
@@ -335,9 +362,9 @@ UIListLayout.Parent = ScrollFrame
 -- BOTTOM NAVIGATION BAR
 ----------------------------------------------------
 local BottomBar = Instance.new("Frame")
-BottomBar.Size = UDim2.new(1, 0, 0, 45)
-BottomBar.Position = UDim2.new(0, 0, 1, -45)
-BottomBar.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
+BottomBar.Size = UDim2.new(1, 0, 0, 42)
+BottomBar.Position = UDim2.new(0, 0, 1, -42)
+BottomBar.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
 BottomBar.BorderSizePixel = 0
 BottomBar.Parent = MainFrame
 
@@ -345,34 +372,40 @@ local HomeTabBtn = Instance.new("TextButton")
 HomeTabBtn.Size = UDim2.new(0.15, 0, 1, 0)
 HomeTabBtn.Position = UDim2.new(0.08, 0, 0, 0)
 HomeTabBtn.BackgroundTransparency = 1
-HomeTabBtn.Text = "🏠"
-HomeTabBtn.TextSize = 22
+HomeTabBtn.Text = "HOME"
+HomeTabBtn.TextColor3 = Color3.fromRGB(150, 150, 180)
+HomeTabBtn.Font = Enum.Font.GothamBold
+HomeTabBtn.TextSize = 11
 HomeTabBtn.Parent = BottomBar
 
 local PlayerTabBtn = Instance.new("TextButton")
 PlayerTabBtn.Size = UDim2.new(0.15, 0, 1, 0)
 PlayerTabBtn.Position = UDim2.new(0.25, 0, 0, 0)
 PlayerTabBtn.BackgroundTransparency = 1
-PlayerTabBtn.Text = "📈"
-PlayerTabBtn.TextSize = 22
+PlayerTabBtn.Text = "PLAYER"
+PlayerTabBtn.TextColor3 = Color3.fromRGB(0, 255, 200)
+PlayerTabBtn.Font = Enum.Font.GothamBold
+PlayerTabBtn.TextSize = 11
 PlayerTabBtn.Parent = BottomBar
 
 local SaveTabBtn = Instance.new("TextButton")
 SaveTabBtn.Size = UDim2.new(0.15, 0, 1, 0)
 SaveTabBtn.Position = UDim2.new(0.42, 0, 0, 0)
 SaveTabBtn.BackgroundTransparency = 1
-SaveTabBtn.Text = "💾"
-SaveTabBtn.TextSize = 22
+SaveTabBtn.Text = "SAVE"
+SaveTabBtn.TextColor3 = Color3.fromRGB(150, 150, 180)
+SaveTabBtn.Font = Enum.Font.GothamBold
+SaveTabBtn.TextSize = 11
 SaveTabBtn.Parent = BottomBar
 
 local CloseXBtn = Instance.new("TextButton")
-CloseXBtn.Size = UDim2.new(0.15, 0, 1, 0)
-CloseXBtn.Position = UDim2.new(0.8, 0, 0, 0)
+CloseXBtn.Size = UDim2.new(0.12, 0, 1, 0)
+CloseXBtn.Position = UDim2.new(0.85, 0, 0, 0)
 CloseXBtn.BackgroundTransparency = 1
 CloseXBtn.Text = "✕"
-CloseXBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseXBtn.Font = Enum.Font.GothamBold
-CloseXBtn.TextSize = 20
+CloseXBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseXBtn.Font = Enum.Font.GothamBlack
+CloseXBtn.TextSize = 16
 CloseXBtn.Parent = BottomBar
 
 -- Tab Switch Logic
@@ -381,6 +414,10 @@ local function switchTab(tabName)
     PlayerPage.Visible = (tabName == "Player")
     SavePage.Visible = (tabName == "Save")
     
+    HomeTabBtn.TextColor3 = (tabName == "Home") and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(150, 150, 180)
+    PlayerTabBtn.TextColor3 = (tabName == "Player") and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(150, 150, 180)
+    SaveTabBtn.TextColor3 = (tabName == "Save") and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(150, 150, 180)
+
     if tabName == "Home" then
         HeaderLabel.Text = "HOME"
     elseif tabName == "Player" then
@@ -395,7 +432,7 @@ PlayerTabBtn.MouseButton1Click:Connect(function() switchTab("Player") end)
 SaveTabBtn.MouseButton1Click:Connect(function() switchTab("Save") end)
 
 ----------------------------------------------------
--- REMOTE EVENT HELPER & MUSIC LOGIC
+-- REMOTE EVENT ONLY (NO CAMERA / LOCAL SOUND)
 ----------------------------------------------------
 local isPlaying = false
 local isLooping = false
@@ -416,27 +453,22 @@ end
 
 local function stopPlayback()
     isPlaying = false
-    PlayButton.Text = "▶"
+    PlayIconVisual.Text = "▶"
+    PlayIconVisual.TextColor3 = Color3.fromRGB(0, 255, 170)
+    PlayBtnStroke.Color = Color3.fromRGB(0, 255, 170)
     sendMusicRemote("", false)
-    activeSound:Stop()
-    ProgressFill.Size = UDim2.new(0, 0, 1, 0)
-    TimeLabel.Text = "00:00 / 00:00"
 end
 
 local function startPlayback(id)
     if id == "" then return end
     isPlaying = true
-    PlayButton.Text = "⏹️"
-    
-    -- Local Sound for Duration Tracking
-    activeSound.SoundId = "rbxassetid://" .. id
-    activeSound:Play()
-    
+    PlayIconVisual.Text = "■"
+    PlayIconVisual.TextColor3 = Color3.fromRGB(255, 60, 80)
+    PlayBtnStroke.Color = Color3.fromRGB(255, 60, 80)
     sendMusicRemote(id, true)
 end
 
--- Play/Stop Click
-PlayButton.MouseButton1Click:Connect(function()
+PlayBtnFrame.MouseButton1Click:Connect(function()
     playSFX:Play()
     if isPlaying then
         stopPlayback()
@@ -445,51 +477,28 @@ PlayButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Loop Click
-LoopButton.MouseButton1Click:Connect(function()
+LoopBtnFrame.MouseButton1Click:Connect(function()
     isLooping = not isLooping
     if isLooping then
-        LoopButton.TextColor3 = Color3.fromRGB(0, 200, 255)
+        LoopIconVisual.TextColor3 = Color3.fromRGB(0, 200, 255)
+        LoopBtnStroke.Color = Color3.fromRGB(0, 200, 255)
     else
-        LoopButton.TextColor3 = Color3.fromRGB(160, 160, 180)
+        LoopIconVisual.TextColor3 = Color3.fromRGB(150, 150, 180)
+        LoopBtnStroke.Color = Color3.fromRGB(100, 100, 130)
     end
 end)
 
--- Track Progress & Detect Song End
-local function formatTime(seconds)
-    local mins = math.floor(seconds / 60)
-    local secs = math.floor(seconds % 60)
-    return string.format("%02d:%02d", mins, secs)
-end
-
+-- Loop Remote Keep-Alive Loop Thread
 task.spawn(function()
-    while task.wait(0.3) do
-        if isPlaying and activeSound.IsLoaded then
-            local currentTime = activeSound.TimePosition
-            local totalTime = activeSound.TimeLength
-            
-            if totalTime > 0 then
-                local ratio = math.clamp(currentTime / totalTime, 0, 1)
-                ProgressFill.Size = UDim2.new(ratio, 0, 1, 0)
-                TimeLabel.Text = formatTime(currentTime) .. " / " .. formatTime(totalTime)
-                
-                -- Detect Song End
-                if currentTime >= (totalTime - 0.5) then
-                    if isLooping then
-                        activeSound.TimePosition = 0
-                        sendMusicRemote(MusicTextBox.Text, true)
-                    else
-                        -- Reset instantly to 0 and Stop
-                        stopPlayback()
-                    end
-                end
-            end
+    while task.wait(5) do
+        if isPlaying and isLooping then
+            sendMusicRemote(MusicTextBox.Text, true)
         end
     end
 end)
 
 ----------------------------------------------------
--- SAVED SONGS SYSTEM
+-- SAVED SONGS LIST RENDER
 ----------------------------------------------------
 local renderSavedList
 
@@ -502,40 +511,28 @@ renderSavedList = function()
     for index, songData in ipairs(savedSongs) do
         local ItemFrame = Instance.new("Frame")
         ItemFrame.Size = UDim2.new(1, -5, 0, 36)
-        ItemFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+        ItemFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
         ItemFrame.Parent = ScrollFrame
         Instance.new("UICorner", ItemFrame).CornerRadius = UDim.new(0, 6)
+
+        local ItemStroke = Instance.new("UIStroke")
+        ItemStroke.Thickness = 1
+        ItemStroke.Color = Color3.fromRGB(40, 40, 60)
+        ItemStroke.Parent = ItemFrame
 
         local SongTitle = Instance.new("TextLabel")
         SongTitle.Size = UDim2.new(0.5, 0, 1, 0)
         SongTitle.Position = UDim2.new(0.03, 0, 0, 0)
         SongTitle.BackgroundTransparency = 1
-        SongTitle.Text = songData.Name
+        SongTitle.Text = songData.Name .. " (" .. songData.Id .. ")"
         SongTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
         SongTitle.Font = Enum.Font.Gotham
         SongTitle.TextSize = 11
         SongTitle.TextXAlignment = Enum.TextXAlignment.Left
         SongTitle.Parent = ItemFrame
 
-        local QPlayBtn = Instance.new("TextButton")
-        QPlayBtn.Size = UDim2.new(0.12, 0, 0.7, 0)
-        QPlayBtn.Position = UDim2.new(0.55, 0, 0.15, 0)
-        QPlayBtn.BackgroundTransparency = 1
-        QPlayBtn.Text = "▶"
-        QPlayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        QPlayBtn.Font = Enum.Font.GothamBold
-        QPlayBtn.TextSize = 14
-        QPlayBtn.Parent = ItemFrame
-
-        local DelBtn = Instance.new("TextButton")
-        DelBtn.Size = UDim2.new(0.12, 0, 0.7, 0)
-        DelBtn.Position = UDim2.new(0.82, 0, 0.15, 0)
-        DelBtn.BackgroundTransparency = 1
-        DelBtn.Text = "🗑"
-        DelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        DelBtn.Font = Enum.Font.GothamBold
-        DelBtn.TextSize = 14
-        DelBtn.Parent = ItemFrame
+        local QPlayBtn = createCustomButton(ItemFrame, UDim2.new(0, 50, 0, 26), UDim2.new(0.6, 0, 0.14, 0), "PLAY")
+        local DelBtn = createCustomButton(ItemFrame, UDim2.new(0, 50, 0, 26), UDim2.new(0.8, 0, 0.14, 0), "DEL")
 
         QPlayBtn.MouseButton1Click:Connect(function()
             playSFX:Play()
@@ -571,7 +568,7 @@ end)
 renderSavedList()
 
 ----------------------------------------------------
--- DRAGGABLE & TOGGLE SYSTEM
+-- DRAGGABLE & TOGGLE GUI LOGIC
 ----------------------------------------------------
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
