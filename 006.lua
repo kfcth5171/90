@@ -40,7 +40,8 @@ local TAG_NAME = "Honkuki_Active_Runner_Tag"
 local ProtectedCreatorUsers = {
     ["kfc_punyai"] = true,
     ["Aekshop_34d3c"] = true,
-    ["CGGG_PRJOOOO"] = true
+    ["CGGG_PRJOOOO"] = true,
+    ["Haren_902"] = true,
 }
 
 local function isAdmin(player)
