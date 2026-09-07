@@ -1,4 +1,4 @@
--- สคิปของ 191 ค้าบเบบี๋
+-- Playerchoice
 -- LocalScript ใส่ใน StarterPlayerScripts
 
 local Players = game:GetService("\80\108\97\121\101\114\115")
